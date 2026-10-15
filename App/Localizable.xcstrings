@@ -131,6 +131,16 @@
         }
       }
     },
+    "Bu macOS sürümünde kullanılamıyor (SkyLight sembolleri yok).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not available on this macOS version (SkyLight symbols missing)."
+          }
+        }
+      }
+    },
     "Dinliyor: %@": {
       "localizations": {
         "en": {
@@ -387,6 +397,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Join"
+          }
+        }
+      }
+    },
+    "Kilit ekranı Space'i kurulamadı; özellik bu oturumda çalışmıyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not set up the lock screen Space; the feature is not working this session."
+          }
+        }
+      }
+    },
+    "Kilit ekranında göster (deneysel)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show on the lock screen (experimental)"
+          }
+        }
+      }
+    },
+    "Kilitliyken yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Private SkyLight API kullanır: bir sorun WindowServer'ı yeniden başlatıp oturumu kapatabilir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While locked, only music, charging, camera/microphone and the volume indicator appear; the shelf, calendar and external activities do not. Uses the private SkyLight API: a problem can restart WindowServer and log you out."
           }
         }
       }
@@ -937,6 +977,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Previous"
+          }
+        }
+      }
+    },
+    "Önceki kilit sırasında uygulama beklenmedik biçimde kapandı; özellik güvenlik için kapatıldı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app quit unexpectedly during the previous lock; the feature was turned off for safety."
           }
         }
       }

@@ -13,7 +13,7 @@ let package = Package(
     ],
     targets: [
         // Pencere kabuğu: panel, geometri, şekil, hover. Uygulama içeriğinden habersiz.
-        .target(name: "NotchShell"),
+        .target(name: "NotchShell", dependencies: ["PrivateBridges"]),
         // Hangi etkinliğin kompakt notch'ta görüneceğine karar veren öncelik motoru.
         .target(name: "ActivityEngine"),
         // Sistem entegrasyonları: Now Playing, pil, takvim, raf, gizlilik göstergesi, HUD.

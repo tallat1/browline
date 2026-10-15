@@ -63,6 +63,12 @@ final class AppCoordinator {
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix) || [hud, download, downloadDone].contains(id)
         }
+
+        /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
+        /// etkinlik metni bilgisayarın başındaki herkese görünür.
+        static func isAllowedOnLockScreen(_ id: ActivityID) -> Bool {
+            [nowPlaying, power, privacy, hud].contains(id)
+        }
     }
 
     /// Başlık taşıyan dış etkinlikler için kompakt kanat genişliği.
@@ -80,6 +86,7 @@ final class AppCoordinator {
     let downloads = DownloadsMonitor()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
+    private(set) var lockScreen: LockScreenPresenter!
     private var activityServer: ActivitySocketServer?
     private var liveExternalIDs: Set<ActivityID> = []
 
@@ -87,10 +94,18 @@ final class AppCoordinator {
         panels = PanelManager(options: settings.panelOptions) { [unowned self] model in
             AnyView(NotchRootView(model: model, coordinator: self))
         }
+        lockScreen = LockScreenPresenter { [unowned self] model in
+            AnyView(LockScreenRootView(model: model, coordinator: self))
+        }
+    }
+
+    /// Kilit panelinde öne çıkan etkinlik.
+    var lockScreenActivityID: ActivityID? {
+        activities.current(allowing: ActivityKind.isAllowedOnLockScreen)?.id
     }
 
     func start() {
-        activities.onCurrentChanged = { [weak self] _ in self?.updateCompactState() }
+        activities.onActivitiesChanged = { [weak self] in self?.updateCompactState() }
         panels.onModelsChanged = { [weak self] _ in self?.updateCompactState() }
 
         nowPlaying.onInfoChanged = { [weak self] info in
@@ -144,8 +159,16 @@ final class AppCoordinator {
             activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
         }
         settings.onChange = { [weak self] in self?.applySettings() }
+        lockScreen.onLockChanged = { [weak self] locked in
+            guard let self else { return }
+            // Ana panel kilit altında kalır; açık kalmasın ki kilit açılınca raf ya da takvim görünmesin.
+            if locked { panels.models.forEach { $0.dismiss() } }
+            settings.setLockSessionOpen(locked && lockScreen.status == .ready)
+            updateCompactState()
+        }
 
         panels.start()
+        lockScreen.start()
         applySettings()
     }
 
@@ -157,6 +180,8 @@ final class AppCoordinator {
         nowPlaying.stop()
         battery.stop()
         calendar.stop()
+        lockScreen.stop()
+        settings.setLockSessionOpen(false)
         panels.stop()
     }
 
@@ -170,6 +195,8 @@ final class AppCoordinator {
         toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
         toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
         hud.setMode(settings.hudMode)
+        lockScreen.setLayoutConfig(settings.panelOptions.layout)
+        lockScreen.setEnabled(settings.lockScreenEnabled)
         if !settings.nowPlayingEnabled { activities.removeLive(ActivityKind.nowPlaying) }
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
@@ -194,8 +221,11 @@ final class AppCoordinator {
         let hasCompact = current != nil
         let wing: CGFloat? = current.map { ActivityKind.wantsWideWing($0.id) } == true ? Self.wideWingWidth : nil
         for model in panels.models {
-            if model.hasCompactContent != hasCompact { model.hasCompactContent = hasCompact }
-            if model.compactWingWidth != wing { model.compactWingWidth = wing }
+            model.setCompact(hasContent: hasCompact, wingWidth: wing)
+        }
+        if let model = lockScreen.model {
+            let id = lockScreenActivityID
+            model.setCompact(hasContent: id != nil, wingWidth: id.map(ActivityKind.wantsWideWing) == true ? Self.wideWingWidth : nil)
         }
     }
 
@@ -259,5 +289,13 @@ extension NowPlayingController.FallbackReason {
         case .adapterLaunchFailed: String(localized: "adaptör başlatılamadı")
         case let .adapterExited(status): String(localized: "adaptör \(Int(status)) koduyla kapandı")
         }
+    }
+}
+
+private extension NotchSurfaceModel {
+    /// Yalnız değişince atar; gözlemciler boşuna tetiklenmesin.
+    func setCompact(hasContent: Bool, wingWidth: CGFloat?) {
+        if hasCompactContent != hasContent { hasCompactContent = hasContent }
+        if compactWingWidth != wingWidth { compactWingWidth = wingWidth }
     }
 }

@@ -149,6 +149,29 @@ private struct ModuleSettings: View {
                 Toggle("İndirmeler (İndirilenler klasörü izni ister)", isOn: $settings.downloadsEnabled)
             }
             Section {
+                Toggle("Kilit ekranında göster (deneysel)", isOn: $settings.lockScreenEnabled)
+                Text("Kilitliyken yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Private SkyLight API kullanır: bir sorun WindowServer'ı yeniden başlatıp oturumu kapatabilir.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if settings.lockScreenAutoDisabled {
+                    Text("Önceki kilit sırasında uygulama beklenmedik biçimde kapandı; özellik güvenlik için kapatıldı.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                switch coordinator.lockScreen.status {
+                case .unavailable:
+                    Text("Bu macOS sürümünde kullanılamıyor (SkyLight sembolleri yok).")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                case .failed:
+                    Text("Kilit ekranı Space'i kurulamadı; özellik bu oturumda çalışmıyor.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                case .off, .ready:
+                    EmptyView()
+                }
+            }
+            Section {
                 Toggle("Pil ve şarj", isOn: $settings.batteryEnabled)
                 Toggle("Dosya rafı ve AirDrop", isOn: $settings.shelfEnabled)
                 Text("Rafta \(coordinator.shelf.items.count) öğe")

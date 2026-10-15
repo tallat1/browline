@@ -11,11 +11,28 @@ struct NotchRootView: View {
 
     var body: some View {
         NotchSurfaceView(model: model) {
-            CompactLeadingView(coordinator: coordinator)
+            CompactLeadingView(coordinator: coordinator, activityID: coordinator.activities.current?.id)
         } compactTrailing: {
-            CompactTrailingView(coordinator: coordinator)
+            CompactTrailingView(coordinator: coordinator, activityID: coordinator.activities.current?.id)
         } expanded: { context in
             ExpandedView(context: context, model: model, coordinator: coordinator)
+        }
+    }
+}
+
+/// Kilit ekranındaki notch: yalnız kompakt, yalnız kişisel içerik taşımayan etkinlikler.
+/// Panel olay almadığı için açılmaz; açık görünüm boş.
+struct LockScreenRootView: View {
+    let model: NotchSurfaceModel
+    let coordinator: AppCoordinator
+
+    var body: some View {
+        NotchSurfaceView(model: model) {
+            CompactLeadingView(coordinator: coordinator, activityID: coordinator.lockScreenActivityID)
+        } compactTrailing: {
+            CompactTrailingView(coordinator: coordinator, activityID: coordinator.lockScreenActivityID)
+        } expanded: { _ in
+            EmptyView()
         }
     }
 }
@@ -23,10 +40,11 @@ struct NotchRootView: View {
 /// Çentiğin solundaki kanat: etkinliğin simgesi ya da kapağı.
 struct CompactLeadingView: View {
     let coordinator: AppCoordinator
+    let activityID: ActivityID?
 
     var body: some View {
         Group {
-            switch coordinator.activities.current?.id {
+            switch activityID {
             case AppCoordinator.ActivityKind.nowPlaying:
                 if let artwork = coordinator.nowPlaying.artwork {
                     Image(nsImage: artwork)
@@ -56,7 +74,7 @@ struct CompactLeadingView: View {
             case AppCoordinator.ActivityKind.downloadDone:
                 WideWingLabel(symbol: "checkmark.circle.fill", tint: .green, text: String(localized: "İndirildi"))
             default:
-                if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
+                if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
                         Image(systemName: activity.symbolName).foregroundStyle(activity.tintColor)
                         Text(activity.title).lineLimit(1)
@@ -75,10 +93,11 @@ struct CompactLeadingView: View {
 /// Çentiğin sağındaki kanat: durum (dalga formu, kalan dakika, şarj yüzdesi).
 struct CompactTrailingView: View {
     let coordinator: AppCoordinator
+    let activityID: ActivityID?
 
     var body: some View {
         Group {
-            switch coordinator.activities.current?.id {
+            switch activityID {
             case AppCoordinator.ActivityKind.nowPlaying:
                 // Kapalı notch'ta sürekli animasyon yok (enerji kuralı): durağan simge.
                 Image(systemName: "waveform")
@@ -131,7 +150,7 @@ struct CompactTrailingView: View {
                     .padding(.trailing, 12)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             default:
-                if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
+                if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
                         if let progress = activity.progress {
                             Text("%\(Int((progress * 100).rounded()))").monospacedDigit()

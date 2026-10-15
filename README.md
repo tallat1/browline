@@ -25,7 +25,7 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
 | `Packages/NotchCore/Sources/NotchShell` | Panel (`NSPanel`, `.mainMenu + 3`), geometri, `NotchShape`, hover/peek/açık durumları, ekran başına yönetici, tam ekran sezgisi, sürükleme algılama |
 | `Packages/NotchCore/Sources/ActivityEngine` | Kompakt notch'ta hangi etkinliğin görüneceği: canlı etkinlikler önceliğe göre, geçici olanlar süre boyunca önde |
 | `Packages/NotchCore/Sources/Integrations` | Now Playing (adaptör + Music/Spotify yedeği), pil (IOKit), takvim (EventKit), dosya rafı (bookmark), kamera/mikrofon göstergesi (CMIO/CoreAudio), ses/parlaklık HUD'ı (CoreAudio + medya tuşu tap'i), indirmeler |
-| `Packages/NotchCore/Sources/PrivateBridges` | Private API'nin tek yeri: DisplayServices parlaklığı, `dlsym` ile; sembol yoksa özellik kapanır |
+| `Packages/NotchCore/Sources/PrivateBridges` | Private API'nin tek yeri, `dlsym` ile; sembol yoksa özellik kapanır: DisplayServices parlaklığı, SkyLight kilit ekranı Space'i |
 | `Packages/NotchCore/Sources/ActivityAPI` | Dış etkinlik API'si: JSON satır protokolü, doğrulama, Unix soketi sunucusu/istemcisi, durum |
 | `CLI/` | `notch` komut satırı aracı; uygulama paketinde `Contents/Helpers/notch` |
 | `App/` | Koordinatör, kompakt kanatlar, açık notch sekmeleri (Medya, Takvim, Raf), ayarlar, menü çubuğu |
@@ -84,14 +84,32 @@ notch list
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
 | v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
-| v1: TR/EN yerelleştirme (String Catalog) | ✓ 106 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
-| v1: kilit ekranı, Focus | ✗ yapılmadı (kilit ekranı private SkyLight, WindowServer riski; Focus entitlement ister) |
+| v1: TR/EN yerelleştirme (String Catalog) | ✓ 111 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
+| v1: kilit ekranı (deneysel, varsayılan kapalı) | ✓ yazıldı; semboller macOS 27.0.1'de var; kilitte gerçek deneme kullanıcıda |
+| v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
 
+## Kilit ekranı (deneysel)
+
+Public bir yol yok; private SkyLight Space'i (mutlak seviye 400, ekran kilidinin 300 üstü) kullanılır.
+Riskleri azaltmak için:
+
+- Ana panellere dokunulmaz. Kilitlenince ayrı bir panel kurulur; olay almaz (parola alanını örtemez),
+  yalnız kompakt durumu gösterir ve yalnız kilit süresince Space'te durur.
+- Kilitte yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; toplantı başlığı, dosya adı ve
+  dış etkinlik metni görünmez (`AppCoordinator.ActivityKind.isAllowedOnLockScreen`).
+- Semboller çalışma anında çözülür; biri yoksa ayar "kullanılamıyor" der. `SLSShowSpaces` dönüş değeri
+  macOS 27'de anlamsız olduğu için okunmaz.
+- Çökme koruması: Space'e girmeden önce bir bayrak yazılır, kilit açılınca ya da düzgün çıkışta silinir.
+  Açılışta bayrak duruyorsa önceki kilit yarıda kalmıştır (çökme, WindowServer); özellik kendiliğinden
+  kapanır ve ayarlarda nedeni yazar.
+- Kilit durumu `com.apple.screenIsLocked` / `screenIsUnlocked` dağıtık bildirimleriyle izlenir. Kilitlenince
+  açık ana notch kapatılır.
+
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (111 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

@@ -26,6 +26,18 @@ final class AppSettings {
     /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
     var downloadsEnabled: Bool { didSet { store(downloadsEnabled, "downloadsEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
+    /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
+    var lockScreenEnabled: Bool {
+        didSet {
+            if lockScreenEnabled { lockScreenAutoDisabled = false }
+            store(lockScreenEnabled, "lockScreenEnabled")
+        }
+    }
+    /// Önceki kilit kapanmadan uygulama sonlandıysa (çökme, WindowServer, zorla kapatma) özellik
+    /// kendiliğinden kapatılır; çökme döngüsüne girmemek için. Ayarlarda neden gösterilir.
+    private(set) var lockScreenAutoDisabled: Bool {
+        didSet { UserDefaults.standard.set(lockScreenAutoDisabled, forKey: "lockScreenAutoDisabled") }
+    }
 
     /// Giriş öğesi durumu sistemde tutulur; burada yalnız yansıtılır.
     private(set) var launchAtLoginStatus: SMAppService.Status = SMAppService.mainApp.status
@@ -53,6 +65,25 @@ final class AppSettings {
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
+        if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
+            defaults.set(false, forKey: "lockScreenEnabled")
+            defaults.set(true, forKey: "lockScreenAutoDisabled")
+        }
+        defaults.removeObject(forKey: Self.lockSessionKey)
+        lockScreenEnabled = defaults.bool(forKey: "lockScreenEnabled")
+        lockScreenAutoDisabled = defaults.bool(forKey: "lockScreenAutoDisabled")
+    }
+
+    private static let lockSessionKey = "lockScreenSessionOpen"
+
+    /// Kilit paneli SkyLight Space'indeyken true. Kilit açılınca ya da düzgün çıkışta silinir;
+    /// açılışta hâlâ duruyorsa önceki kilit yarıda kalmıştır.
+    func setLockSessionOpen(_ open: Bool) {
+        if open {
+            UserDefaults.standard.set(true, forKey: Self.lockSessionKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: Self.lockSessionKey)
+        }
     }
 
     var panelOptions: PanelManager.Options {

@@ -30,6 +30,9 @@ public final class ActivityCenter {
     public private(set) var current: Activity?
     /// Öne çıkan etkinlik değişince (görünür notch'ların kanatlanması bu bilgiye bağlı).
     @ObservationIgnored public var onCurrentChanged: ((Activity?) -> Void)?
+    /// Herhangi bir canlı ya da geçici etkinlik değişince; öne çıkan aynı kalsa bile. Kısıtlı
+    /// yüzeyler (kilit ekranı) arkada kalan etkinliği gösterebildiği için buna ihtiyaç duyar.
+    @ObservationIgnored public var onActivitiesChanged: (() -> Void)?
 
     private var live: [ActivityID: Activity] = [:]
     private var transient: Activity?
@@ -43,6 +46,13 @@ public final class ActivityCenter {
     }
 
     public func isLive(_ id: ActivityID) -> Bool { live[id] != nil }
+
+    /// Yalnız izin verilen kimlikler arasında öne çıkan; kilit ekranı gibi kısıtlı yüzeyler için.
+    /// İzinsiz bir kısa bildirim izinli canlı etkinliği gizlemez.
+    public func current(allowing isAllowed: (ActivityID) -> Bool) -> Activity? {
+        if let transient, isAllowed(transient.id) { return transient }
+        return liveActivities.first { isAllowed($0.id) }
+    }
 
     public func setLive(_ id: ActivityID, priority: Int) {
         let activity = Activity(id: id, priority: priority)
@@ -78,8 +88,10 @@ public final class ActivityCenter {
 
     private func recompute() {
         let next = transient ?? liveActivities.first
-        guard next != current else { return }
-        current = next
-        onCurrentChanged?(next)
+        if next != current {
+            current = next
+            onCurrentChanged?(next)
+        }
+        onActivitiesChanged?()
     }
 }

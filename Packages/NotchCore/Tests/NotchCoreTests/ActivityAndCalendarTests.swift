@@ -32,6 +32,32 @@ struct ActivityCenterTests {
         center.cancelFlash("charging")
         #expect(center.current?.id == "nowPlaying")
     }
+
+    /// Kilit ekranı: izinsiz etkinlik öndeyken arkadaki izinli etkinlik görünür.
+    @Test func filteredCurrentSkipsDisallowed() {
+        let center = ActivityCenter()
+        center.setLive("meeting", priority: 40)
+        center.setLive("nowPlaying", priority: 30)
+        center.flash("downloadDone", duration: .seconds(60))
+        let allowed: (ActivityID) -> Bool = { $0 == "nowPlaying" || $0 == "power" }
+        #expect(center.current?.id == "downloadDone")
+        #expect(center.current(allowing: allowed)?.id == "nowPlaying")
+        center.flash("power", duration: .seconds(60))
+        #expect(center.current(allowing: allowed)?.id == "power")
+        center.cancelFlash("power")
+        center.removeLive("nowPlaying")
+        #expect(center.current(allowing: allowed) == nil)
+    }
+
+    /// Öne çıkan değişmese de bildirilir; çağrıldığında current güncel olmalı.
+    @Test func activitiesChangedFiresAfterCurrentUpdates() {
+        let center = ActivityCenter()
+        var seen: [ActivityID?] = []
+        center.onActivitiesChanged = { seen.append(center.current?.id) }
+        center.setLive("meeting", priority: 40)
+        center.setLive("nowPlaying", priority: 30)
+        #expect(seen == ["meeting", "meeting"])
+    }
 }
 
 struct MeetingLinkTests {

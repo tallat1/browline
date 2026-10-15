@@ -42,7 +42,8 @@ final class DebugCommandChannel {
             debugLog.info("HUD önizleme: düzey \(hud.level, privacy: .public), sessiz \(hud.isMuted, privacy: .public)")
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
-                + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı")"
+                + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "
+                + "kilit ekranı \(coordinator.lockScreen.status) (kilitli: \(coordinator.lockScreen.isLocked))"
             debugLog.info("durum: \(summary, privacy: .public)")
         default:
             debugLog.error("bilinmeyen debug komutu: \(command, privacy: .public)")
