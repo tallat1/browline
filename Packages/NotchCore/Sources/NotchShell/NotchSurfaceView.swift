@@ -63,7 +63,7 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
     }
 
     private func surface(_ layout: NotchLayout, _ presentation: NotchPresentation) -> some View {
-        let size = layout.size(for: presentation)
+        let size = layout.size(for: presentation, wingWidth: model.compactWingWidth)
         let shape = SurfaceShape.make(for: layout, presentation: presentation)
         return ZStack(alignment: .top) {
             shape.fill(Color.black)
@@ -80,10 +80,11 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
     private func content(_ layout: NotchLayout, _ presentation: NotchPresentation, _ size: CGSize) -> some View {
         switch presentation {
         case .compact, .peek(compact: true):
+            let wing = layout.clampedWingWidth(model.compactWingWidth)
             HStack(spacing: 0) {
-                compactLeading().frame(width: layout.config.compactWingWidth, height: layout.bandHeight)
+                compactLeading().frame(width: wing, height: layout.bandHeight)
                 Spacer(minLength: 0)
-                compactTrailing().frame(width: layout.config.compactWingWidth, height: layout.bandHeight)
+                compactTrailing().frame(width: wing, height: layout.bandHeight)
             }
             .padding(.horizontal, layout.style == .notch ? NotchLayout.closedTopRadius : 8)
             .frame(width: size.width, height: layout.bandHeight)

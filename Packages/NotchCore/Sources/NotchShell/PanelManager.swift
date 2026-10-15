@@ -59,7 +59,7 @@ public final class PanelManager {
         pointerHub.onFileDrag = { [weak self] active, point in
             guard let self else { return }
             for model in self.models {
-                let hot = model.layout.shapeRect(for: model.presentation).insetBy(dx: -24, dy: -24)
+                let hot = model.currentShapeRect.insetBy(dx: -24, dy: -24)
                 model.fileDragChanged(active: active, overNotch: hot.contains(point))
             }
         }

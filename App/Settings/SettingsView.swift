@@ -98,6 +98,31 @@ private struct ModuleSettings: View {
                 }
             }
             Section {
+                Toggle("Etkinlik API'si (yerel soket ve notch komutu)", isOn: $settings.activityAPIEnabled)
+                Text(coordinator.ui.activityAPIStatus)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+                HStack {
+                    Text(coordinator.cliPath)
+                        .font(.system(size: 10.5, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                        .textSelection(.enabled)
+                    Spacer()
+                    Button("Yolu kopyala") {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(coordinator.cliPath, forType: .string)
+                    }
+                }
+            } footer: {
+                Text("Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir: "
+                     + "notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız erişebilir.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Section {
                 Toggle("Pil ve şarj", isOn: $settings.batteryEnabled)
                 Toggle("Dosya rafı ve AirDrop", isOn: $settings.shelfEnabled)
                 Text("Rafta \(coordinator.shelf.items.count) öğe")

@@ -88,27 +88,34 @@ public struct NotchLayout: Equatable, Sendable {
         return CGRect(x: x, y: screen.maxY - height, width: size.width, height: height)
     }
 
-    public func size(for presentation: NotchPresentation) -> CGSize {
+    /// `wingWidth`: kompakt kanat genişliği; nil ise yapılandırmadaki dar kanat. Geniş kanat
+    /// açık genişliği aşmayacak şekilde kırpılır, böylece panel karesi hiç değişmez.
+    public func size(for presentation: NotchPresentation, wingWidth: CGFloat? = nil) -> CGSize {
         switch presentation {
         case .closed:
             return closedSize
         case .compact:
-            return compactSize
+            return compactSize(wingWidth)
         case let .peek(compact):
-            let base = compact ? compactSize : closedSize
+            let base = compact ? compactSize(wingWidth) : closedSize
             return CGSize(width: base.width + config.peekGrowth.width, height: base.height + config.peekGrowth.height)
         case .open:
             return openSize
         }
     }
 
-    private var compactSize: CGSize {
-        CGSize(width: closedSize.width + 2 * config.compactWingWidth, height: closedSize.height)
+    public func clampedWingWidth(_ requested: CGFloat?) -> CGFloat {
+        let maximum = max(0, (openSize.width - config.peekGrowth.width - closedSize.width) / 2)
+        return min(requested ?? config.compactWingWidth, maximum)
+    }
+
+    private func compactSize(_ wingWidth: CGFloat?) -> CGSize {
+        CGSize(width: closedSize.width + 2 * clampedWingWidth(wingWidth), height: closedSize.height)
     }
 
     /// Görünür şeklin global dikdörtgeni (hover sıcak bölgesi ve sürükleme hedefi için).
-    public func shapeRect(for presentation: NotchPresentation) -> CGRect {
-        let size = size(for: presentation)
+    public func shapeRect(for presentation: NotchPresentation, wingWidth: CGFloat? = nil) -> CGRect {
+        let size = size(for: presentation, wingWidth: wingWidth)
         return CGRect(x: panelFrame.midX - size.width / 2, y: panelFrame.maxY - topInset - size.height,
                       width: size.width, height: size.height)
     }

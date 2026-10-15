@@ -1,3 +1,4 @@
+import ActivityAPI
 import ActivityEngine
 import AppKit
 import Integrations
@@ -9,6 +10,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
     case media
     case calendar
     case shelf
+    case activities
 
     var id: String { rawValue }
 
@@ -17,6 +19,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .media: "music.note"
         case .calendar: "calendar"
         case .shelf: "tray.full"
+        case .activities: "square.stack.3d.up"
         }
     }
 
@@ -25,6 +28,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .media: "Medya"
         case .calendar: "Takvim"
         case .shelf: "Raf"
+        case .activities: "Etkinlikler"
         }
     }
 }
@@ -34,6 +38,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
 @Observable
 final class NotchUIState {
     var selectedTab: NotchTab = .media
+    var activityAPIStatus = "Kapalı"
 }
 
 /// Modülleri birbirine bağlar: entegrasyonlar etkinlik üretir, etkinlik motoru kompakt içeriği
@@ -44,7 +49,13 @@ final class AppCoordinator {
         static let nowPlaying: ActivityID = "nowPlaying"
         static let meeting: ActivityID = "meeting"
         static let power: ActivityID = "power"
+        /// Dış etkinlikler "ext." önekiyle; kısa bildirim tek kimlikte.
+        static let externalPrefix = "ext."
+        static let externalFlash: ActivityID = "ext.flash"
     }
+
+    /// Başlık taşıyan dış etkinlikler için kompakt kanat genişliği.
+    static let wideWingWidth: CGFloat = 128
 
     let settings = AppSettings()
     let activities = ActivityCenter()
@@ -52,8 +63,11 @@ final class AppCoordinator {
     let battery = BatteryMonitor()
     let calendar = CalendarMonitor()
     let shelf = ShelfStore()
+    let externalActivities = ExternalActivityStore()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
+    private var activityServer: ActivitySocketServer?
+    private var liveExternalIDs: Set<ActivityID> = []
 
     init() {
         panels = PanelManager(options: settings.panelOptions) { [unowned self] model in
@@ -87,6 +101,10 @@ final class AppCoordinator {
             guard let self, old != nil else { return }
             activities.flash(ActivityKind.power, duration: .seconds(3))
         }
+        externalActivities.onActivitiesChanged = { [weak self] list in self?.syncExternal(list) }
+        externalActivities.onFlash = { [weak self] _, duration in
+            self?.activities.flash(ActivityKind.externalFlash, duration: duration)
+        }
         settings.onChange = { [weak self] in self?.applySettings() }
 
         panels.start()
@@ -94,6 +112,7 @@ final class AppCoordinator {
     }
 
     func stop() {
+        setActivityAPI(enabled: false)
         nowPlaying.stop()
         battery.stop()
         calendar.stop()
@@ -106,6 +125,7 @@ final class AppCoordinator {
         toggle(settings.nowPlayingEnabled, start: nowPlaying.start, stop: nowPlaying.stop)
         toggle(settings.batteryEnabled, start: battery.start, stop: battery.stop)
         toggle(settings.calendarEnabled, start: calendar.start, stop: calendar.stop)
+        setActivityAPI(enabled: settings.activityAPIEnabled)
         if !settings.nowPlayingEnabled { activities.removeLive(ActivityKind.nowPlaying) }
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
@@ -121,14 +141,61 @@ final class AppCoordinator {
         if settings.nowPlayingEnabled { tabs.append(.media) }
         if settings.calendarEnabled { tabs.append(.calendar) }
         if settings.shelfEnabled { tabs.append(.shelf) }
+        if settings.activityAPIEnabled { tabs.append(.activities) }
         return tabs
     }
 
     private func updateCompactState() {
-        let hasCompact = activities.current != nil
-        for model in panels.models where model.hasCompactContent != hasCompact {
-            model.hasCompactContent = hasCompact
+        let current = activities.current
+        let hasCompact = current != nil
+        let wing: CGFloat? = current.map { $0.id.rawValue.hasPrefix(ActivityKind.externalPrefix) } == true
+            ? Self.wideWingWidth : nil
+        for model in panels.models {
+            if model.hasCompactContent != hasCompact { model.hasCompactContent = hasCompact }
+            if model.compactWingWidth != wing { model.compactWingWidth = wing }
         }
+    }
+
+    // MARK: - Etkinlik API'si
+
+    /// Kompakt görünüm için: öne çıkan kimliğe karşılık gelen dış etkinlik ya da kısa bildirim.
+    func externalActivity(for id: ActivityID?) -> ExternalActivity? {
+        guard let id else { return nil }
+        if id == ActivityKind.externalFlash { return externalActivities.flash }
+        return externalActivities.activities.first { ActivityKind.externalPrefix + $0.id == id.rawValue }
+    }
+
+    var cliPath: String {
+        Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/notch").path
+    }
+
+    private func setActivityAPI(enabled: Bool) {
+        if enabled, activityServer == nil {
+            let store = externalActivities
+            let server = ActivitySocketServer { request in await store.handle(request) }
+            do {
+                try server.start()
+                activityServer = server
+                ui.activityAPIStatus = "Dinliyor: \(server.socketURL.path)"
+            } catch {
+                ui.activityAPIStatus = "Başlatılamadı: \(error)"
+            }
+        } else if !enabled, let server = activityServer {
+            server.stop()
+            activityServer = nil
+            ui.activityAPIStatus = "Kapalı"
+            syncExternal([])
+            activities.cancelFlash(ActivityKind.externalFlash)
+        }
+    }
+
+    private func syncExternal(_ list: [ExternalActivity]) {
+        let wanted = Set(list.map { ActivityID(ActivityKind.externalPrefix + $0.id) })
+        for id in liveExternalIDs where !wanted.contains(id) { activities.removeLive(id) }
+        for activity in list {
+            activities.setLive(ActivityID(ActivityKind.externalPrefix + activity.id), priority: activity.priority)
+        }
+        liveExternalIDs = wanted
     }
 
     var nowPlayingSourceDescription: String {

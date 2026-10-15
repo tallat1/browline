@@ -1,3 +1,4 @@
+import ActivityAPI
 import ActivityEngine
 import Integrations
 import NotchShell
@@ -43,7 +44,14 @@ struct CompactLeadingView: View {
                 Image(systemName: coordinator.battery.state?.isPluggedIn == true ? "bolt.fill" : "powerplug")
                     .foregroundStyle(coordinator.battery.state?.isPluggedIn == true ? .green : .white)
             default:
-                EmptyView()
+                if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
+                    HStack(spacing: 6) {
+                        Image(systemName: activity.symbolName).foregroundStyle(activity.tintColor)
+                        Text(activity.title).lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 4)
+                }
             }
         }
         .font(.system(size: 13, weight: .semibold))
@@ -74,7 +82,19 @@ struct CompactTrailingView: View {
                     Text("%\(state.percent)").monospacedDigit()
                 }
             default:
-                EmptyView()
+                if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
+                    HStack(spacing: 6) {
+                        Spacer(minLength: 0)
+                        if let progress = activity.progress {
+                            Text("%\(Int((progress * 100).rounded()))").monospacedDigit()
+                            ProgressRing(progress: progress, tint: activity.tintColor)
+                                .frame(width: 14, height: 14)
+                        } else if let subtitle = activity.subtitle {
+                            Text(subtitle).lineLimit(1).foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.trailing, 4)
+                }
             }
         }
         .font(.system(size: 11, weight: .semibold))
@@ -98,4 +118,34 @@ extension CalendarMonitor.Event {
 
 extension Array {
     subscript(safe index: Int) -> Element? { indices.contains(index) ? self[index] : nil }
+}
+
+struct ProgressRing: View {
+    let progress: Double
+    let tint: Color
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(.white.opacity(0.2), lineWidth: 2.5)
+            Circle().trim(from: 0, to: progress)
+                .stroke(tint, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+    }
+}
+
+extension ExternalActivity {
+    /// Geçersiz ya da bu sistemde olmayan sembol adı yerine genel simge.
+    var symbolName: String {
+        guard let symbol, NSImage(systemSymbolName: symbol, accessibilityDescription: nil) != nil else {
+            return "app.badge"
+        }
+        return symbol
+    }
+
+    var tintColor: Color {
+        guard let tint, tint.count == 7, let value = UInt32(tint.dropFirst(), radix: 16) else { return .white }
+        return Color(.sRGB, red: Double((value >> 16) & 0xFF) / 255, green: Double((value >> 8) & 0xFF) / 255,
+                     blue: Double(value & 0xFF) / 255)
+    }
 }

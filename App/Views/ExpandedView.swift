@@ -36,6 +36,7 @@ struct ExpandedView: View {
                                           sourceDescription: coordinator.nowPlayingSourceDescription)
                     case .calendar: CalendarTab(calendar: coordinator.calendar)
                     case .shelf: ShelfTab(shelf: coordinator.shelf)
+                    case .activities: ActivitiesTab(store: coordinator.externalActivities)
                     }
                 }
             }

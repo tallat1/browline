@@ -47,3 +47,23 @@ send("tab:media"); send("open"); Thread.sleep(forTimeInterval: 0.9); capture("3-
 send("tab:calendar"); Thread.sleep(forTimeInterval: 0.5); capture("4-takvim")
 send("tab:shelf"); Thread.sleep(forTimeInterval: 0.5); capture("5-raf")
 send("tab:media"); send("close"); Thread.sleep(forTimeInterval: 3.5); capture("6-kapali-tekrar")
+
+// Dış etkinlik API'si: uygulama paketindeki notch aracıyla.
+let cli = "build/Build/Products/Debug/NotchMVP.app/Contents/Helpers/notch"
+func notch(_ arguments: String...) {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: cli)
+    process.arguments = arguments
+    try? process.run()
+    process.waitUntilExit()
+}
+if FileManager.default.isExecutableFile(atPath: cli) {
+    notch("push", "--id", "smoke", "--title", "Derleme", "--subtitle", "NotchMVP", "--progress", "40%",
+          "--symbol", "hammer", "--tint", "#FF9F0A")
+    Thread.sleep(forTimeInterval: 0.8); capture("7-kompakt-dis-etkinlik")
+    send("tab:activities"); send("open"); Thread.sleep(forTimeInterval: 0.9); capture("8-acik-etkinlikler")
+    send("close"); notch("end", "--id", "smoke")
+    notch("flash", "--title", "Derleme bitti", "--symbol", "checkmark.circle.fill", "--tint", "#34C759")
+    Thread.sleep(forTimeInterval: 0.8); capture("9-kisa-bildirim")
+    send("tab:media")
+}

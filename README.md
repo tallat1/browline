@@ -25,6 +25,8 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
 | `Packages/NotchCore/Sources/NotchShell` | Panel (`NSPanel`, `.mainMenu + 3`), geometri, `NotchShape`, hover/peek/açık durumları, ekran başına yönetici, tam ekran sezgisi, sürükleme algılama |
 | `Packages/NotchCore/Sources/ActivityEngine` | Kompakt notch'ta hangi etkinliğin görüneceği: canlı etkinlikler önceliğe göre, geçici olanlar süre boyunca önde |
 | `Packages/NotchCore/Sources/Integrations` | Now Playing (adaptör + Music/Spotify yedeği), pil (IOKit), takvim (EventKit), dosya rafı (bookmark) |
+| `Packages/NotchCore/Sources/ActivityAPI` | Dış etkinlik API'si: JSON satır protokolü, doğrulama, Unix soketi sunucusu/istemcisi, durum |
+| `CLI/` | `notch` komut satırı aracı; uygulama paketinde `Contents/Helpers/notch` |
 | `App/` | Koordinatör, kompakt kanatlar, açık notch sekmeleri (Medya, Takvim, Raf), ayarlar, menü çubuğu |
 | `ThirdParty/mediaremote-adapter` | ungive/mediaremote-adapter `e3ff502`, BSD-3, değiştirilmedi |
 
@@ -46,6 +48,25 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
    komutlar AppleScript ile (Automation izni). Kapak ve konum yok.
 3. Arayüz ve menü hangi kaynağın kullanıldığını gösterir.
 
+## Etkinlik API'si
+
+Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir. Kanal yerel Unix soketi:
+`~/Library/Application Support/com.talatozcoban.notchmvp/activity.sock` (dosya 0600, klasör 0700, bağlanan sürecin
+kullanıcı kimliği ayrıca denetlenir). Satır başına bir JSON istek, satır başına bir JSON yanıt.
+
+```sh
+notch push  --id build --title "Derleme" --subtitle "NotchMVP" --progress 40% --symbol hammer --tint "#FF9F0A"
+notch end   --id build
+notch flash --title "Derleme bitti" --symbol checkmark.circle.fill --tint "#34C759" --duration 3
+notch list
+```
+
+- Sınırlar: en çok 8 etkinlik; id `[A-Za-z0-9._-]{1,64}`; başlık 80, alt başlık 120 karakter; öncelik 0–50
+  (yerleşikler: Now Playing 30, toplantı 40); güncellenmeyen etkinlik `--ttl` (varsayılan 600 sn) sonunda düşer.
+- Çıkış kodları: 0 tamam, 1 uygulama hatası (doğrulama), 2 kullanım, 3 uygulama çalışmıyor.
+- Dış etkinlik öne çıkınca kompakt kanatlar genişler (128 pt): solda sembol ve başlık, sağda ilerleme ya da alt başlık.
+- Ham protokol: `echo '{"op":"ping"}' | nc -U "$HOME/Library/Application Support/com.talatozcoban.notchmvp/activity.sock"`
+
 ## Durum (2026-10-15)
 
 | MVP maddesi | Durum |
@@ -55,7 +76,9 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
 | Now Playing (adaptör + yedek), kapak rengi | ✓ adaptör macOS 27.0.1'de geçti, Spotify verisi göründü; yedek yol denenmedi |
 | Pil, takvim (toplantıya katıl), raf + AirDrop, sürükleyince açılma | ✓ yazıldı; pil görsel doğrulandı; takvim izni verilip, dosya sürüklenip denenmedi |
 | Tam ekranda / ekran yakalamada gizleme, ayarlar, giriş öğesi | ✓ yazıldı; elle denenmedi |
-| Boşta enerji (kapalı notch, müzik duraklatılmış) | ✓ CPU %0,079, 0,08 uyanma/sn; adaptör süreci ≈ 0 |
+| Boşta enerji (kapalı notch, müzik duraklatılmış) | ✓ CPU %0,079, 0,08 uyanma/sn; adaptör süreci ≈ 0 (etkinlik API'si eklenmeden önce) |
+| v1: açık etkinlik API'si + `notch` aracı + Etkinlikler sekmesi | ✓ yazıldı; soket uçtan uca test, çıkış kodları ve görsel doğrulandı; API açıkken temiz boşta ölçüm yok |
+| v1: HUD değişimi, kamera/mikrofon göstergesi, dış ekran modları, kilit ekranı | ✗ yapılmadı |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
 

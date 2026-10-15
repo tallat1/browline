@@ -17,6 +17,8 @@ public final class NotchSurfaceModel {
     public private(set) var isFileDragActive = false
     /// Uygulamanın kompakt içeriği varsa (çalan müzik, yaklaşan toplantı) kapalı şekil kanatlanır.
     public var hasCompactContent = false
+    /// Kompakt kanat genişliği; nil ise dar kanat. Başlık taşıyan etkinlikler için genişletilir.
+    public var compactWingWidth: CGFloat?
     public private(set) var hapticTick = 0
 
     @ObservationIgnored public var openDelay: Duration = .milliseconds(150)
@@ -38,6 +40,11 @@ public final class NotchSurfaceModel {
         if isOpen { return .open }
         if isPeeking { return .peek(compact: hasCompactContent) }
         return hasCompactContent ? .compact : .closed
+    }
+
+    /// Şu anki görünür şekil, global koordinatta.
+    public var currentShapeRect: CGRect {
+        layout.shapeRect(for: presentation, wingWidth: compactWingWidth)
     }
 
     func update(layout: NotchLayout, screenName: String) {

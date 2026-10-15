@@ -52,6 +52,15 @@ struct NotchLayoutTests {
         #expect(layout.size(for: .compact).width == layout.closedSize.width + wings)
     }
 
+    /// Geniş kanat açık genişliği aşamaz; panel karesi hiç değişmez.
+    @Test func wideWingIsClampedInsidePanel() {
+        let layout = NotchLayout.make(metrics: Self.builtInDefault)
+        let wide = layout.shapeRect(for: .compact, wingWidth: 128)
+        #expect(wide.width == layout.closedSize.width + 256)
+        let huge = layout.shapeRect(for: .peek(compact: true), wingWidth: 10_000)
+        #expect(layout.panelFrame.contains(huge))
+    }
+
     /// Çoklu ekran: yerleşik ekran (0,0)'da değilken konum yardımcı alanlardan gelmeli.
     @Test func offsetScreenKeepsNotchCentered() throws {
         var metrics = Self.builtInDefault

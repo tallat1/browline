@@ -16,6 +16,7 @@ final class AppSettings {
     var batteryEnabled: Bool { didSet { store(batteryEnabled, "batteryEnabled") } }
     var calendarEnabled: Bool { didSet { store(calendarEnabled, "calendarEnabled") } }
     var shelfEnabled: Bool { didSet { store(shelfEnabled, "shelfEnabled") } }
+    var activityAPIEnabled: Bool { didSet { store(activityAPIEnabled, "activityAPIEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
 
     /// Giriş öğesi durumu sistemde tutulur; burada yalnız yansıtılır.
@@ -37,6 +38,7 @@ final class AppSettings {
         batteryEnabled = defaults.object(forKey: "batteryEnabled") as? Bool ?? true
         calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? true
         shelfEnabled = defaults.object(forKey: "shelfEnabled") as? Bool ?? true
+        activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
     }
 

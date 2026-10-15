@@ -1,0 +1,143 @@
+import Foundation
+
+/// Dış dünyanın notch'a etkinlik göndermesi için protokol: yerel Unix soketi, satır başına bir JSON.
+/// Örnek: `{"op":"push","id":"build","title":"Derleme","progress":0.4,"symbol":"hammer"}`
+public enum ActivityAPI {
+    /// Uygulama ile `notch` aracının buluştuğu soket. NOTCH_SOCKET ortam değişkeni ezer.
+    public static var defaultSocketURL: URL {
+        if let override = ProcessInfo.processInfo.environment["NOTCH_SOCKET"], !override.isEmpty {
+            return URL(fileURLWithPath: override)
+        }
+        return FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/com.talatozcoban.notchmvp/activity.sock")
+    }
+
+    /// Tek satırın üst sınırı; aşan bağlantı kapatılır.
+    public static let maximumLineBytes = 16 * 1024
+}
+
+public struct ActivityRequest: Codable, Equatable, Sendable {
+    public enum Operation: String, Codable, Sendable {
+        /// Ekle ya da güncelle (aynı id).
+        case push
+        /// Kaldır.
+        case end
+        /// Kısa süreli bildirim; canlı etkinliklerin önüne geçer.
+        case flash
+        case list
+        case ping
+    }
+
+    public var op: Operation
+    public var id: String?
+    public var title: String?
+    public var subtitle: String?
+    /// 0…1
+    public var progress: Double?
+    /// SF Symbols adı.
+    public var symbol: String?
+    /// #RRGGBB
+    public var tint: String?
+    /// 0…50; yerleşik etkinlikler: Now Playing 30, toplantı 40.
+    public var priority: Int?
+    /// Saniye; güncellenmeyen etkinlik bu süre sonunda kendiliğinden düşer.
+    public var ttl: Double?
+    /// flash için saniye.
+    public var duration: Double?
+
+    public init(op: Operation, id: String? = nil, title: String? = nil, subtitle: String? = nil,
+                progress: Double? = nil, symbol: String? = nil, tint: String? = nil, priority: Int? = nil,
+                ttl: Double? = nil, duration: Double? = nil) {
+        self.op = op
+        self.id = id
+        self.title = title
+        self.subtitle = subtitle
+        self.progress = progress
+        self.symbol = symbol
+        self.tint = tint
+        self.priority = priority
+        self.ttl = ttl
+        self.duration = duration
+    }
+}
+
+public struct ActivityResponse: Codable, Equatable, Sendable {
+    public var ok: Bool
+    public var error: String?
+    public var activities: [ExternalActivity]?
+
+    public static let success = ActivityResponse(ok: true)
+
+    public init(ok: Bool, error: String? = nil, activities: [ExternalActivity]? = nil) {
+        self.ok = ok
+        self.error = error
+        self.activities = activities
+    }
+
+    public static func failure(_ message: String) -> ActivityResponse { ActivityResponse(ok: false, error: message) }
+}
+
+/// Doğrulanmış dış etkinlik.
+public struct ExternalActivity: Codable, Equatable, Sendable, Identifiable {
+    public var id: String
+    public var title: String
+    public var subtitle: String?
+    public var progress: Double?
+    public var symbol: String?
+    public var tint: String?
+    public var priority: Int
+    public var updatedAt: Date
+    public var expiresAt: Date
+
+    public static let defaultPriority = 20
+    public static let priorityRange = 0...50
+    public static let defaultTTL: TimeInterval = 600
+    public static let ttlRange: ClosedRange<TimeInterval> = 1...86_400
+    public static let flashDurationRange: ClosedRange<TimeInterval> = 0.5...15
+
+    public enum ValidationError: Error, Equatable, CustomStringConvertible {
+        case missing(String)
+        case invalid(String)
+
+        public var description: String {
+            switch self {
+            case let .missing(field): "\(field) gerekli"
+            case let .invalid(field): "\(field) geçersiz"
+            }
+        }
+    }
+
+    /// İstemciden gelen alanları sınırlar içinde kabul eder; sınır dışını reddeder (sessizce kırpmaz).
+    public static func validated(from request: ActivityRequest, now: Date = .now,
+                                 requireID: Bool = true) throws(ValidationError) -> ExternalActivity {
+        let id = request.id ?? "flash"
+        if requireID {
+            guard let given = request.id else { throw .missing("id") }
+            guard given.range(of: #"^[A-Za-z0-9._-]{1,64}$"#, options: .regularExpression) != nil else {
+                throw .invalid("id")
+            }
+        }
+        guard let title = request.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty else {
+            throw .missing("title")
+        }
+        guard title.count <= 80 else { throw .invalid("title (en çok 80 karakter)") }
+        if let subtitle = request.subtitle, subtitle.count > 120 { throw .invalid("subtitle (en çok 120 karakter)") }
+        if let progress = request.progress, !(0...1).contains(progress) || progress.isNaN {
+            throw .invalid("progress (0…1)")
+        }
+        if let symbol = request.symbol,
+           symbol.range(of: #"^[a-z0-9.]{1,64}$"#, options: .regularExpression) == nil {
+            throw .invalid("symbol")
+        }
+        if let tint = request.tint, tint.range(of: #"^#[0-9A-Fa-f]{6}$"#, options: .regularExpression) == nil {
+            throw .invalid("tint (#RRGGBB)")
+        }
+        let priority = request.priority ?? defaultPriority
+        guard priorityRange.contains(priority) else { throw .invalid("priority (0…50)") }
+        let ttl = request.ttl ?? defaultTTL
+        guard ttlRange.contains(ttl) else { throw .invalid("ttl (1…86400 sn)") }
+        return ExternalActivity(id: id, title: title, subtitle: request.subtitle, progress: request.progress,
+                                symbol: request.symbol, tint: request.tint, priority: priority,
+                                updatedAt: now, expiresAt: now.addingTimeInterval(ttl))
+    }
+}

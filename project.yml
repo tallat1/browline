@@ -23,6 +23,11 @@ targets:
           - "Info.plist"
           - "NotchMVP.entitlements"
     dependencies:
+      # Yalnız derleme sırası için; ikili Scripts/embed-adapter.sh ile Helpers'a kopyalanır.
+      - target: notch
+        embed: false
+      - package: NotchCore
+        product: ActivityAPI
       - package: NotchCore
         product: NotchShell
       - package: NotchCore
@@ -63,3 +68,19 @@ targets:
       - name: Embed mediaremote-adapter
         script: "\"$SRCROOT/Scripts/embed-adapter.sh\""
         basedOnDependencyAnalysis: false
+  notch:
+    type: tool
+    platform: macOS
+    sources:
+      - path: CLI
+    dependencies:
+      - package: NotchCore
+        product: ActivityAPI
+    settings:
+      base:
+        PRODUCT_NAME: notch
+        PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.notchmvp.cli
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "Apple Development"
+        ENABLE_HARDENED_RUNTIME: YES
+        SKIP_INSTALL: YES
