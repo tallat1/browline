@@ -78,6 +78,10 @@ final class DebugCommandChannel {
             Task { @MainActor in
                 if let place = try? await WeatherMonitor.geocode(city) { coordinator.weather.start(place: place) }
             }
+        case "claude:limit-preview":
+            // ÖRNEK veri: 2 sa 13 dk sonra sıfırlanacak 5 saatlik limit.
+            coordinator.claudeUsage.previewLimit([ClaudeLimitHit(type: "five_hour",
+                                                                 resetsAt: .now.addingTimeInterval(7_980), hitAt: .now)])
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "

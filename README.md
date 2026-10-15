@@ -201,6 +201,15 @@ zamanlarını `~/Library/Application Support/com.talatozcoban.notchmvp/claude-us
 yazılmaz) ve "Model · oturum %N · hafta %N" durum satırını basar; uygulama klasörü olay güdümlü izler.
 Kurulum `~/.claude/settings.json`: `"statusLine": {"type": "command", "command": "/YOL/usage-statusline.sh"}`.
 ⚠️ Veri yalnız bir Claude Code oturumu çalışırken tazelenir; sekme "son güncelleme" zamanını gösterir.
+Limit dolunca: oturum kayıtlarında (`~/.claude/projects/**/*.jsonl`, masaüstü oturumları dahil) kullanım
+yüzdesi yok, yalnız limit dolduğunda dönen hata satırında `apiErrorParams.rate_limit_info` / `quotaLimits`
+(tür, sıfırlanma zamanı) var. `ClaudeLimitLog` son 7 günde değişen en yeni 24 kaydın son 256 KB'ını okur
+(değişmeyen dosya önbellekten), sıfırlanmamış limitleri türe göre çıkarır; sekme açılınca, ana iş parçacığı
+dışında. Sekmede "5 saatlik oturum limiti doldu · 03:42'de sıfırlanır · 2 sa 14 dk sonra"; yoksa "Dolmuş bir
+limit yok". Debug: `claude:limit-preview` (yalnız bellekte örnek).
+
+Sekmenin üstünde etkin hesap: `~/.claude.json` içindeki `oauthAccount` profilinden e-posta, kuruluş (kişisel
+hesapta e-postayı tekrarladığı için gizli) ve plan rozeti ("Max 20x"); kimlik bilgisi okunmaz.
 ⚠️ Claude masaüstü uygulamasının Code sekmesi durum satırını çalıştırmıyor (2026-10-16: yeni oturum bir yanıt
 verdi, betiğin iz dosyası `claude-statusline.seen` oluşmadı); veri yalnız terminaldeki `claude` oturumlarından gelir.
 Belgelenmemiş OAuth kullanım uç noktası (Anahtar Zinciri'ndeki oturum anahtarı) bilerek kullanılmadı.

@@ -23,6 +23,12 @@ public final class ClaudeUsageMonitor {
     public private(set) var usage: Usage?
     /// Durum satırı betiğinin en son çalıştığı an (limit gelmese de). nil: hiç çalışmadı, kurulu değil.
     public private(set) var statuslineSeenAt: Date?
+    /// Claude Code'un etkin hesabı (`~/.claude.json`); sekme her göründüğünde yeniden okunur.
+    public private(set) var account: ClaudeAccount?
+    /// Oturum kayıtlarından: dolmuş ve henüz sıfırlanmamış limitler (yüzde değil, yalnız "doldu").
+    public private(set) var activeLimits: [ClaudeLimitHit] = []
+    @ObservationIgnored private let limitLog = ClaudeLimitLog()
+    @ObservationIgnored private var limitTask: Task<Void, Never>?
     /// 5 saatlik pencere %80 ve %95 eşiğini yukarı geçince.
     @ObservationIgnored public var onAlert: ((Int) -> Void)?
     @ObservationIgnored private let fileURL: URL
@@ -44,6 +50,9 @@ public final class ClaudeUsageMonitor {
 
     /// Sekme görünürken çağrılır: iz dosyasının yalnız zamanı değişir, klasör olayı gelmez.
     public func refreshSeen() {
+        let loaded = ClaudeAccount.load()
+        if loaded != account { account = loaded }
+        refreshLimits()
         let seen = (try? seenURL.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
         if seen != statuslineSeenAt { statuslineSeenAt = seen }
     }
@@ -71,6 +80,30 @@ public final class ClaudeUsageMonitor {
         source?.cancel()
         source = nil
         usage = nil
+        limitTask?.cancel()
+        limitTask = nil
+        activeLimits = []
+    }
+
+    #if DEBUG
+    /// Yalnız debug: "doldu" kartını gerçek limit beklemeden göstermek için ÖRNEK; dosyaya yazılmaz,
+    /// uygulama yeniden açılınca ya da sekme yeniden taranınca kaybolur.
+    public func previewLimit(_ hits: [ClaudeLimitHit]) { activeLimits = hits }
+    #endif
+
+    /// Kayıt taraması dosya okur; ana iş parçacığında değil. Üst üste çağrı tek taramaya iner.
+    private func refreshLimits() {
+        guard limitTask == nil else { return }
+        let log = limitLog
+        limitTask = Task { [weak self] in
+            let hits = await Task.detached(priority: .utility) { log.activeHits() }.value
+            guard let self, !Task.isCancelled else { return }
+            self.limitTask = nil
+            if hits != self.activeLimits {
+                self.activeLimits = hits
+                Log.integrations.notice("Claude kayıtları: \(hits.count) etkin limit")
+            }
+        }
     }
 
     private func reload(alerting: Bool) {

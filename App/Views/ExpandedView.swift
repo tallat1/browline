@@ -98,7 +98,7 @@ extension NotchTab {
         case .timer: CGSize(width: 480, height: 84)
         case .system: CGSize(width: 560, height: 88)
         case .mirror: CGSize(width: 400, height: 300)
-        case .claude: CGSize(width: 560, height: 112)
+        case .claude: CGSize(width: 560, height: 150)
         }
     }
 }

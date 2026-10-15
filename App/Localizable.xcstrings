@@ -51,6 +51,22 @@
         }
       }
     },
+    "%@ sıfırlanır · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets %1$@ · %2$@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ sıfırlanır · %2$@"
+          }
+        }
+      }
+    },
     "%@ uygulamasını aç": {
       "localizations": {
         "en": {
@@ -233,6 +249,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "30 Minutes"
+          }
+        }
+      }
+    },
+    "5 saatlik oturum limiti doldu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5-hour session limit reached"
           }
         }
       }
@@ -437,6 +463,16 @@
         }
       }
     },
+    "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür. Kullanım yüzdelerini yalnız terminaldeki Claude Code bildiriyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you hit a limit, when it resets shows here. Only Claude Code in the terminal reports usage percentages."
+          }
+        }
+      }
+    },
     "Birkaç saniyelik bildirim; diğer etkinliklerin önüne geçer.": {
       "localizations": {
         "en": {
@@ -487,12 +523,22 @@
         }
       }
     },
-    "Claude Code durum satırı kurulunca 5 saatlik ve haftalık limitler burada görünür.": {
+    "Claude Code'un etkin hesabı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Once the Claude Code status line is set up, your 5-hour and weekly limits show here."
+            "value": "Claude Code's active account"
+          }
+        }
+      }
+    },
+    "Claude Code'un etkin hesabı · profil %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code's active account · profile %@"
           }
         }
       }
@@ -543,6 +589,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Haptic feedback (Force Touch trackpad)"
+          }
+        }
+      }
+    },
+    "Dolmuş bir limit yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit reached"
           }
         }
       }
@@ -777,6 +833,26 @@
         }
       }
     },
+    "Haftalık limit doldu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly limit reached"
+          }
+        }
+      }
+    },
+    "Haftalık limit doldu (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly limit reached (%@)"
+          }
+        }
+      }
+    },
     "Hakkında": {
       "localizations": {
         "en": {
@@ -823,16 +899,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "No external activities yet"
-          }
-        }
-      }
-    },
-    "Henüz limit verisi yok": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No limit data yet"
           }
         }
       }

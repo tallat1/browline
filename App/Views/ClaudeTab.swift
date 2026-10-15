@@ -8,13 +8,21 @@ struct ClaudeTab: View {
     let usage: ClaudeUsageMonitor
 
     var body: some View {
-        // Veri gelince boş durumdan kartlara çapraz geçiş; yüzdeler akarak değişir.
-        ZStack {
-            stateContent
-                .id(stateKey)
-                .notchTransition(.swap)
+        VStack(alignment: .leading, spacing: 8) {
+            if let account = usage.account {
+                AccountRow(account: account).notchTransition(.fade)
+            }
+            // Veri gelince boş durumdan kartlara çapraz geçiş; yüzdeler akarak değişir.
+            ZStack {
+                stateContent
+                    .id(stateKey)
+                    .notchTransition(.swap)
+            }
+            .notchAnimation(value: stateKey)
         }
-        .notchAnimation(value: stateKey)
+        .notchAnimation(value: usage.account)
+        // Hesap ve durum satırı izi sekme her açıldığında yeniden okunur (hesap değişmiş olabilir).
+        .onAppear { usage.refreshSeen() }
     }
 
     @ViewBuilder
@@ -31,20 +39,32 @@ struct ClaudeTab: View {
                         .foregroundStyle(.tertiary)
                 }
             }
+        } else if !usage.activeLimits.isEmpty {
+            // Oturum kayıtlarından: limit doldu, ne zaman sıfırlanacak (yüzde yok).
+            TimelineView(.everyMinute) { timeline in
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(usage.activeLimits.filter { $0.resetsAt > timeline.date }.prefix(2), id: \.type) { hit in
+                        LimitHitCard(hit: hit, now: timeline.date).notchTransition(.listItem)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
         } else if usage.statuslineSeenAt != nil {
             // Betik çalışıyor ama limit gelmiyor: hesap Pro/Max değil ya da oturumda henüz yanıt yok.
             EmptyStateView(symbol: "sparkles", title: "Durum satırı çalışıyor, limit gelmedi",
                            message: "Claude yalnız Pro ve Max aboneliklerinde, oturumdaki ilk yanıttan sonra limit bildirir.")
-                .onAppear { usage.refreshSeen() }
         } else {
-            EmptyStateView(symbol: "sparkles", title: "Henüz limit verisi yok",
-                           message: "Claude Code durum satırı kurulunca 5 saatlik ve haftalık limitler burada görünür.")
-                .onAppear { usage.refreshSeen() }
+            // 2026-10-16: masaüstü uygulaması durum satırını çalıştırmıyor; yüzdeleri yalnız terminaldeki
+            // Claude Code bildiriyor.
+            EmptyStateView(symbol: "checkmark.circle", title: "Dolmuş bir limit yok",
+                           message: "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür. Kullanım yüzdelerini yalnız terminaldeki Claude Code bildiriyor.")
         }
     }
 
     private var stateKey: Int {
-        usage.usage != nil ? 2 : (usage.statuslineSeenAt != nil ? 1 : 0)
+        if usage.usage != nil { return 2 }
+        if !usage.activeLimits.isEmpty { return 3 }
+        return usage.statuslineSeenAt != nil ? 1 : 0
     }
 
     private func updatedText(_ captured: Date, now: Date) -> String {
@@ -94,5 +114,74 @@ private struct WindowCard: View {
                 : String(localized: "\(minutes / 60) sa \(minutes % 60) dk sonra sıfırlanır")
         }
         return String(localized: "\(reset.formatted(.dateTime.weekday(.wide).hour().minute())) sıfırlanır")
+    }
+}
+
+/// Etkin Claude hesabı: ad/e-posta, kuruluş ve plan rozeti. Uzun e-posta üzerine gelince kayar.
+private struct AccountRow: View {
+    let account: ClaudeAccount
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 15))
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 0) {
+                MarqueeText(text: account.email ?? account.displayName ?? "", size: 12, weight: .semibold, trigger: .hover)
+                if let organization = account.organizationName {
+                    Text(verbatim: organization).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+            }
+            Spacer(minLength: 8)
+            if let plan = account.plan {
+                Text(verbatim: plan)
+                    .font(NotchDesign.captionEmphasized)
+                    .padding(.horizontal, 8)
+                    .frame(height: 20)
+                    .background(Capsule().fill(Color(red: 0.85, green: 0.47, blue: 0.34).opacity(0.25)))
+                    .foregroundStyle(Color(red: 0.95, green: 0.62, blue: 0.5))
+            }
+        }
+        .help(account.fetchedAt.map {
+            String(localized: "Claude Code'un etkin hesabı · profil \($0.formatted(date: .abbreviated, time: .shortened))")
+        } ?? String(localized: "Claude Code'un etkin hesabı"))
+    }
+}
+
+/// Dolmuş limit: hangi pencere, ne zaman ve ne kadar sonra sıfırlanacak.
+private struct LimitHitCard: View {
+    let hit: ClaudeLimitHit
+    let now: Date
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.octagon.fill")
+                .font(.system(size: 18))
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(NotchDesign.bodyEmphasized)
+                Text(detail).font(NotchDesign.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .notchCard()
+    }
+
+    private var title: String {
+        if hit.isWeekly {
+            return hit.modelSuffix.map { String(localized: "Haftalık limit doldu (\($0))") }
+                ?? String(localized: "Haftalık limit doldu")
+        }
+        return String(localized: "5 saatlik oturum limiti doldu")
+    }
+
+    private var detail: String {
+        let minutes = max(1, Int((hit.resetsAt.timeIntervalSince(now) / 60).rounded(.up)))
+        let relative = minutes < 60 ? String(localized: "\(minutes) dk sonra")
+                                    : String(localized: "\(minutes / 60) sa \(minutes % 60) dk sonra")
+        let clock = hit.resetsAt.formatted(Calendar.current.isDateInToday(hit.resetsAt)
+                                           ? .dateTime.hour().minute()
+                                           : .dateTime.weekday(.wide).hour().minute())
+        return String(localized: "\(clock) sıfırlanır · \(relative)")
     }
 }
