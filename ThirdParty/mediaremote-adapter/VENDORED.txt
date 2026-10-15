@@ -1,0 +1,4 @@
+Kaynak: https://github.com/ungive/mediaremote-adapter
+Commit: e3ff502 (v0.7.7)
+Lisans: BSD-3-Clause (LICENSE)
+Değiştirilmedi; make adapter ile cmake derlenir.
