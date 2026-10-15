@@ -194,6 +194,7 @@ private struct ModuleSettings: View {
             }
             Section {
                 Toggle("Şarkı değişince kısa göster", isOn: $settings.trackPeekEnabled)
+                Toggle("Çalarken hareketli çubuklar (az miktarda enerji harcar)", isOn: $settings.animatedEqualizer)
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Hızlı not", isOn: $settings.notesEnabled)

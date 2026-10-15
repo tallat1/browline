@@ -32,6 +32,8 @@ final class AppSettings {
     /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
     var downloadsEnabled: Bool { didSet { store(downloadsEnabled, "downloadsEnabled") } }
     var trackPeekEnabled: Bool { didSet { store(trackPeekEnabled, "trackPeekEnabled") } }
+    /// Kapalı notch'taki tek sürekli animasyon; kullanıcı istedi, kapatılabilir.
+    var animatedEqualizer: Bool { didSet { store(animatedEqualizer, "animatedEqualizer") } }
     var audioOutputAlertEnabled: Bool { didSet { store(audioOutputAlertEnabled, "audioOutputAlertEnabled") } }
     var keepAwakeEnabled: Bool { didSet { store(keepAwakeEnabled, "keepAwakeEnabled") } }
     var timerEnabled: Bool { didSet { store(timerEnabled, "timerEnabled") } }
@@ -96,6 +98,7 @@ final class AppSettings {
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
         trackPeekEnabled = defaults.object(forKey: "trackPeekEnabled") as? Bool ?? true
+        animatedEqualizer = defaults.object(forKey: "animatedEqualizer") as? Bool ?? true
         audioOutputAlertEnabled = defaults.object(forKey: "audioOutputAlertEnabled") as? Bool ?? true
         keepAwakeEnabled = defaults.object(forKey: "keepAwakeEnabled") as? Bool ?? true
         timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true

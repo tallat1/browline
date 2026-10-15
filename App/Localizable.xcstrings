@@ -2069,6 +2069,16 @@
         }
       }
     },
+    "Çalarken hareketli çubuklar (az miktarda enerji harcar)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animated bars while playing (uses a little energy)"
+          }
+        }
+      }
+    },
     "Çalışma adı; ürün adı henüz belirlenmedi.": {
       "localizations": {
         "en": {

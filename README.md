@@ -81,6 +81,21 @@ kayan yazı kaymaz. Kökten düzeltilenler: sekme yalnız şerit düğmesinden d
 ayar ve debug yolu sıçrıyordu); panel `orderOut/orderFront` ile anında kaybolup beliriyordu; şarkı geçişinde
 oynatıcının anlık "çalan yok" bildirimi notch'u kapatıp açıyordu.
 
+## Kapalı notch'ta ekolayzer
+
+Müzik çalarken sağ kanattaki dört çubuk hafifçe oynar (ses verisi değil; her çubuk farklı süreyle salınır).
+Kapalı notch'taki tek sürekli animasyon olduğu için ölçülerek seçildi (2026-10-16, müzik çalarken 20 sn):
+
+| Yöntem | CPU | Güç |
+|---|---|---|
+| Durağan dalga (önceki) | %0,32 | 0,63 mW |
+| SwiftUI `TimelineView(.animation)` 12 kare + ara yumuşatma | %7,3 | 15,7 mW |
+| SwiftUI `TimelineView` 12 kare, yumuşatmasız / `.periodic` | %5,8–12 | 11–168 mW |
+| **Core Animation katmanı (`EqualizerBars`)** | **%0,33** | **0,71 mW** |
+
+SwiftUI her karede büyük saydam paneli yeniden çizdiriyor; Core Animation animasyonu pencere sunucusunda
+yürür, uygulama uyanmaz. Duraklatınca, azaltılmış harekette ya da Ayarlar › Modüller'den kapatılınca durur.
+
 ## Hareket ve şarkı geçişleri
 
 - Tek hareket sistemi `NotchShell/NotchMotion.swift`: açılış/kapanış kritik sönümlü yay, kanat genişliği ve

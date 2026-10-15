@@ -155,9 +155,10 @@ struct CompactTrailingView: View {
         Group {
             switch activityID {
             case AppCoordinator.ActivityKind.nowPlaying:
-                // Kapalı notch'ta sürekli animasyon yok (enerji kuralı): durağan simge.
-                Image(systemName: "waveform")
-                    .foregroundStyle(coordinator.nowPlaying.accentColor.map(Color.init(nsColor:)) ?? .white)
+                // Çalarken hafifçe oynayan çubuklar; ayar kapalıysa ya da azaltılmış harekette durağan.
+                EqualizerBars(isPlaying: coordinator.nowPlaying.info?.isPlaying == true,
+                              tint: coordinator.nowPlaying.accentColor.map(Color.init(nsColor:)) ?? .white,
+                              isEnabled: coordinator.settings.animatedEqualizer)
             case AppCoordinator.ActivityKind.meeting:
                 if let event = coordinator.calendar.imminentMeeting {
                     // Dakikada bir güncellenir; yalnız toplantı yaklaşırken görünür.
