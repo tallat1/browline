@@ -82,6 +82,15 @@ final class DebugCommandChannel {
             // ÖRNEK veri: 2 sa 13 dk sonra sıfırlanacak 5 saatlik limit.
             coordinator.claudeUsage.previewLimit([ClaudeLimitHit(type: "five_hour",
                                                                  resetsAt: .now.addingTimeInterval(7_980), hitAt: .now)])
+        case "sessions":
+            let nowPlaying = coordinator.nowPlaying
+            let list = nowPlaying.sessions.map { "\($0.id) \($0.info.isPlaying ? "▶" : "⏸") \($0.info.title)" }
+            debugLog.info("oturumlar (odak \(nowPlaying.focusedSessionID ?? "-", privacy: .public)): \(list.joined(separator: " | "), privacy: .public)")
+        case let command where command.hasPrefix("session:"):
+            // Yalnız gösterilen oturumu değiştirir; çalmaya dokunmaz.
+            if let index = Int(command.dropFirst("session:".count)), coordinator.nowPlaying.sessions.indices.contains(index) {
+                coordinator.nowPlaying.selectSession(coordinator.nowPlaying.sessions[index].id)
+            }
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "

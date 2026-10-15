@@ -13,6 +13,17 @@ if [ -x "$BUILT_PRODUCTS_DIR/notch" ]; then
   codesign --force --timestamp=none --options runtime --sign "$IDENTITY" "$APP/Contents/Helpers/notch"
 fi
 
+# Çoklu medya oturumu yardımcısı (Helpers/MediaSessions); yoksa tek oturum gösterilir.
+SESSIONS_LIBRARY="$SRCROOT/build/sessions/MediaSessions.dylib"
+if [ -f "$SESSIONS_LIBRARY" ]; then
+  mkdir -p "$APP/Contents/Frameworks" "$APP/Contents/Resources"
+  cp "$SESSIONS_LIBRARY" "$APP/Contents/Frameworks/MediaSessions.dylib"
+  cp "$SRCROOT/Helpers/MediaSessions/media-sessions.pl" "$APP/Contents/Resources/"
+  codesign --force --timestamp=none --sign "$IDENTITY" "$APP/Contents/Frameworks/MediaSessions.dylib"
+else
+  echo "warning: çoklu medya oturumu yardımcısı derlenmemiş ('make sessions'); tek oturum gösterilecek."
+fi
+
 ADAPTER_BUILD="$SRCROOT/build/adapter"
 
 if [ ! -d "$ADAPTER_BUILD/MediaRemoteAdapter.framework" ]; then

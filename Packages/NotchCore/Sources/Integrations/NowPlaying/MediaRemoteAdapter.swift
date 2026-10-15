@@ -88,6 +88,7 @@ public struct MediaRemoteAdapterBundle: Equatable, Sendable {
 /// Uzun yaşayan `stream` süreci. Satırları arka planda çözer, yalnız değişen sonucu iletir.
 final class AdapterStream: @unchecked Sendable {
     private let process = Process()
+    private var reader: PipeLineReader?
     private let lock = NSLock()
     private var stoppedByUs = false
 
@@ -106,17 +107,11 @@ final class AdapterStream: @unchecked Sendable {
             onExit(process.terminationStatus, self?.wasStoppedByUs ?? true)
         }
         try process.run()
-        let handle = output.fileHandleForReading
-        Task.detached(priority: .utility) {
-            var parser = AdapterStreamParser()
-            do {
-                for try await line in handle.bytes.lines {
-                    if let update = parser.consume(line: line) { onUpdate(update) }
-                }
-            } catch {
-                // Boru kapandı; çıkış terminationHandler'dan raporlanır.
-            }
+        var parser = AdapterStreamParser()
+        reader = PipeLineReader(handle: output.fileHandleForReading) { line in
+            if let update = parser.consume(line: line) { onUpdate(update) }
         }
+        reader?.start()
     }
 
     func stop() {

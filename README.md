@@ -30,6 +30,7 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
 | `CLI/` | `notch` komut satırı aracı; uygulama paketinde `Contents/Helpers/notch` |
 | `App/` | Koordinatör, kompakt kanatlar, açık notch sekmeleri (Medya, Takvim, Raf), ayarlar, menü çubuğu |
 | `ThirdParty/mediaremote-adapter` | ungive/mediaremote-adapter `e3ff502`, BSD-3, değiştirilmedi |
+| `Helpers/MediaSessions` | Çoklu medya oturumu yardımcısı (kendi kodumuz, Objective-C + perl yükleyici); `make sessions` |
 
 ## Faz 0'dan gelen kararlar
 
@@ -57,6 +58,9 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
   yalnız sekme açıkken. Kaydırıcı, ilerleme ya da menü kullanılınca notch sabitlenir, imleç kayınca kapanmaz.
 - Açık notch'ta yatay iki parmak kaydırma parça geçirir.
 - Adaptör komutlarının başarısızlığı artık günlüğe düşer ("Medya komutu başarısız").
+- Birden çok oynatıcı (ör. Chrome'da video, Spotify'da şarkı): sağ üstte uygulama simgeleriyle oturum seçici,
+  çalanın simgesinde nokta. Seçilen oturum gösterilir ve denetimler ona gider; sekme kapanınca seçilen
+  çalmıyorsa bırakılır. Oynatıcı sonraki/önceki desteklemiyorsa (Chrome'da tek video) düğmeler soluk.
 
 ## Hareket standardı (ürün geneli)
 
@@ -115,6 +119,18 @@ yürür, uygulama uyanmaz. Duraklatınca, azaltılmış harekette ya da Ayarlar 
 2. Geçmezse ya da akış sıfır dışı kodla kapanırsa: Music ve Spotify dağıtık bildirimleri (okuma izinsiz),
    komutlar AppleScript ile (Automation izni). Kapak ve konum yok.
 3. Arayüz ve menü hangi kaynağın kullanıldığını gösterir.
+4. Adaptör yalnız sistemin seçtiği oynatıcıyı verir; iki medya açıkken diğeri görünmüyordu. Çoklu oturum
+   yardımcısı (`Helpers/MediaSessions`, adaptör gibi `/usr/bin/perl` yükler) tüm oynatıcıları ayrı okur:
+   `MRMediaRemoteGetNowPlayingClients` + oynatıcı yolu başına bilgi, durum ve etkin komutlar; bildirimle,
+   en geç 5 sn'de bir; yalnız değişince bir JSON satırı, kapak yalnız değişince. ⚠️ Belgelenmemiş işlevler;
+   imzalar macOS 27'de disassembly ve denemeyle doğrulandı. Yardımcı yoksa ya da çökerse tek oturuma düşülür.
+   - Odak: elle seçilen → çalanlardan sistemin seçtiği → en son çalmaya başlayan → sistemin seçtiği. Sistem
+     duraklatılmış bir videoyu seçmişken çalan şarkı artık gizlenmez.
+   - Komutlar: sistemin seçtiği oturuma adaptörle (eski yol); diğerine Spotify/Music ise AppleScript (Spotify
+     doğrudan yolda sonraki/önceki komutunu reddediyor), başka oynatıcıysa `MRMediaRemoteSendCommandToPlayer`.
+   - ⚠️ İki uzun ömürlü süreç çıktısı `FileHandle.bytes` ile okunmaz: okumalar ortak yürütücüde sıraya giriyor,
+     veri beklemeyen akış diğerini durduruyor (yardımcı dolu boruda `write`'ta kaldı). `PipeLineReader`
+     (`readabilityHandler`) kullanılır.
 
 ## Etkinlik API'si
 

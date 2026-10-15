@@ -93,20 +93,44 @@ final class PlayerNotificationSource {
         }
     }
 
-    /// Oynatıcı açık değilse komut gönderilmez: `tell application` kapalı uygulamayı başlatır.
-    func send(_ command: MediaRemoteAdapterBundle.Command, to bundleIdentifier: String) {
-        guard Self.players.contains(where: { $0.bundleIdentifier == bundleIdentifier }),
-              !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty
-        else { return }
-        let verb = switch command {
+    /// Ayrı `osascript` süreciyle komut (sistemin seçmediği Spotify/Music oturumu için): Spotify
+    /// doğrudan MediaRemote yolunda sonraki/önceki komutunu reddediyor (2026-10-16).
+    nonisolated static func sendScripted(_ command: MediaRemoteAdapterBundle.Command, bundleIdentifier: String) {
+        guard supportsScriptedSeek(bundleIdentifier),
+              !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", "tell application id \"\(bundleIdentifier)\" to \(verb(for: command))"]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        process.terminationHandler = { finished in
+            if finished.terminationStatus != 0 {
+                Log.integrations.error("AppleScript komutu başarısız: \(finished.terminationStatus)")
+            }
+        }
+        do { try process.run() } catch {
+            Log.integrations.error("osascript başlatılamadı: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    nonisolated static func verb(for command: MediaRemoteAdapterBundle.Command) -> String {
+        switch command {
         case .play: "play"
         case .pause: "pause"
         case .togglePlayPause: "playpause"
         case .nextTrack: "next track"
         case .previousTrack: "previous track"
         }
+    }
+
+    /// Oynatıcı açık değilse komut gönderilmez: `tell application` kapalı uygulamayı başlatır.
+    func send(_ command: MediaRemoteAdapterBundle.Command, to bundleIdentifier: String) {
+        guard Self.players.contains(where: { $0.bundleIdentifier == bundleIdentifier }),
+              !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty
+        else { return }
         var error: NSDictionary?
-        NSAppleScript(source: "tell application id \"\(bundleIdentifier)\" to \(verb)")?.executeAndReturnError(&error)
+        NSAppleScript(source: "tell application id \"\(bundleIdentifier)\" to \(Self.verb(for: command))")?
+            .executeAndReturnError(&error)
         if let error {
             Log.integrations.error("AppleScript komutu başarısız: \(String(describing: error), privacy: .public)")
         }

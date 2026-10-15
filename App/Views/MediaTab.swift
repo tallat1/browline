@@ -5,7 +5,8 @@ import SwiftUI
 
 /// Medya: kapak (tıklayınca oynatıcıyı açar), başlık, sürüklenebilir ilerleme; altında denetimler
 /// (±15 sn, önceki/oynat/sonraki, oynatıcı bildirirse karıştır/tekrar) ve ses + çıkış seçici.
-/// Kaydırıcı ya da menü kullanılırken notch sabitlenir; imleç dışarı kayınca kapanmaz.
+/// Birden çok oynatıcı varken sağ üstte oturum seçici. Kaydırıcı ya da menü kullanılırken notch
+/// sabitlenir; imleç dışarı kayınca kapanmaz.
 struct MediaTab: View {
     let nowPlaying: NowPlayingController
     let volume: VolumeController
@@ -19,6 +20,8 @@ struct MediaTab: View {
             player.notchTransition(.swap)
         }
         .notchAnimation(value: nowPlaying.info == nil)
+        // Elle seçilen ama çalmayan oturum bırakılır: kapalı notch çalanı göstersin.
+        .onDisappear { nowPlaying.releaseSelection() }
     }
 
     @ViewBuilder
@@ -28,16 +31,25 @@ struct MediaTab: View {
                 HStack(alignment: .center, spacing: 14) {
                     artwork(bundleIdentifier: info.bundleIdentifier)
                     VStack(alignment: .leading, spacing: 3) {
-                        // Şarkı değişince başlık ve sanatçı çapraz geçişle; uzun başlık kayar.
-                        VStack(alignment: .leading, spacing: 3) {
-                            MarqueeText(text: info.title, size: 14, weight: .semibold, loops: true)
-                            Text(subtitle(for: info))
-                                .font(NotchDesign.body)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+                        HStack(alignment: .top, spacing: 8) {
+                            // Şarkı değişince başlık ve sanatçı çapraz geçişle; uzun başlık kayar.
+                            VStack(alignment: .leading, spacing: 3) {
+                                MarqueeText(text: info.title, size: 14, weight: .semibold, loops: true)
+                                Text(subtitle(for: info))
+                                    .font(NotchDesign.body)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            .id(info.title)
+                            .notchTransition(.swap)
+                            if nowPlaying.sessions.count > 1 {
+                                SessionSwitcher(sessions: nowPlaying.sessions, focusedID: nowPlaying.focusedSessionID) {
+                                    nowPlaying.selectSession($0)
+                                }
+                                .notchTransition(.fade)
+                            }
                         }
-                        .id(info.title)
-                        .notchTransition(.swap)
+                        .notchAnimation(value: nowPlaying.sessions.count > 1)
                         Spacer(minLength: 4)
                         ScrubBar(info: info, accent: accent, canSeek: nowPlaying.canSeek,
                                  onBegin: { model.tapped() }) { seconds in
@@ -113,12 +125,16 @@ struct MediaTab: View {
                 nowPlaying.skip(by: -15)
             }
         }
-        control("backward.fill", size: 15, frame: 34, help: "Önceki") { nowPlaying.previousTrack() }
+        control("backward.fill", size: 15, frame: 34, help: "Önceki", enabled: nowPlaying.canSkipTracks) {
+            nowPlaying.previousTrack()
+        }
         control(info.isPlaying ? "pause.fill" : "play.fill", size: 22, frame: 42,
                 help: info.isPlaying ? LocalizedStringKey("Duraklat") : LocalizedStringKey("Oynat")) {
             nowPlaying.togglePlayPause()
         }
-        control("forward.fill", size: 15, frame: 34, help: "Sonraki") { nowPlaying.nextTrack() }
+        control("forward.fill", size: 15, frame: 34, help: "Sonraki", enabled: nowPlaying.canSkipTracks) {
+            nowPlaying.nextTrack()
+        }
         if nowPlaying.canSeek {
             control("goforward.15", size: 15, frame: 32, help: "15 sn ileri") {
                 AppLog.coordinator.notice("medya: 15 sn ileri")
@@ -133,12 +149,14 @@ struct MediaTab: View {
     }
 
     private func control(_ symbol: String, size: CGFloat, frame: CGFloat, help: LocalizedStringKey,
-                         action: @escaping () -> Void) -> some View {
+                         enabled: Bool = true, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: size))
         }
         .buttonStyle(IconButtonStyle(size: frame))
-        .help(help)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.3)
+        .help(enabled ? help : "Bu oynatıcı parça atlamayı desteklemiyor")
     }
 
     private func toggle(_ symbol: String, isOn: Bool, help: LocalizedStringKey, action: @escaping () -> Void) -> some View {
@@ -154,6 +172,97 @@ struct MediaTab: View {
     static func appName(for bundleIdentifier: String) -> String? {
         NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier)
             .map { FileManager.default.displayName(atPath: $0.path).replacingOccurrences(of: ".app", with: "") }
+    }
+}
+
+/// Birden çok oynatıcı varken (ör. Chrome'da video, Spotify'da şarkı): uygulama simgeleri. Basınca
+/// o oturum gösterilir ve denetimler ona gider; çalan oturumun simgesinde nokta.
+private struct SessionSwitcher: View {
+    let sessions: [MediaSession]
+    let focusedID: String?
+    let select: (String) -> Void
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(sessions) { session in
+                Button {
+                    AppLog.coordinator.notice("medya: oturum seçici (\(session.id, privacy: .public))")
+                    select(session.id)
+                } label: {
+                    SessionIcon(session: session, isSelected: session.id == focusedID)
+                }
+                .buttonStyle(.plain)
+                .help(Self.help(for: session))
+                .notchTransition(.listItem)
+            }
+        }
+        .padding(2)
+        .background(Capsule().fill(NotchDesign.cardFill))
+        .notchAnimation(value: sessions.map(\.id))
+        .notchAnimation(NotchMotion.hover, value: focusedID)
+    }
+
+    static func help(for session: MediaSession) -> String {
+        let app = session.appBundleIdentifier.flatMap(MediaTab.appName(for:)) ?? session.displayName ?? ""
+        let title = session.info.title
+        return session.info.isPlaying ? String(localized: "\(app) — \(title)")
+            : String(localized: "\(app) — \(title) (duraklatıldı)")
+    }
+}
+
+private struct SessionIcon: View {
+    let session: MediaSession
+    let isSelected: Bool
+    @State private var isHovering = false
+
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            AppIcon(bundleIdentifier: session.appBundleIdentifier)
+                .frame(width: 16, height: 16)
+                .frame(width: 24, height: 24)
+            if session.info.isPlaying {
+                Circle()
+                    .fill(.white)
+                    .frame(width: 6, height: 6)
+                    .overlay(Circle().stroke(.black, lineWidth: 1.5))
+                    .offset(x: -2, y: -2)
+                    .notchTransition(.fade)
+            }
+        }
+        .frame(width: 24, height: 24)
+        .background(Circle().fill(isSelected ? NotchDesign.selectionFill
+                                  : (isHovering ? NotchDesign.cardHoverFill : .clear)))
+        .opacity(isSelected || isHovering ? 1 : 0.55)
+        .contentShape(Circle())
+        .onHover { isHovering = $0 }
+        .notchAnimation(NotchMotion.hover, value: isHovering)
+        .notchAnimation(value: session.info.isPlaying)
+    }
+}
+
+/// Uygulama simgesi; bulunamazsa müzik notası. Önbellekte: yeniden çizimde disk okunmaz.
+private struct AppIcon: View {
+    let bundleIdentifier: String?
+
+    var body: some View {
+        if let image = Self.icon(for: bundleIdentifier) {
+            Image(nsImage: image).resizable().interpolation(.high)
+        } else {
+            Image(systemName: "music.note")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    @MainActor private static var cache: [String: NSImage] = [:]
+
+    @MainActor private static func icon(for bundleIdentifier: String?) -> NSImage? {
+        guard let bundleIdentifier else { return nil }
+        if let cached = cache[bundleIdentifier] { return cached }
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) else { return nil }
+        let image = NSWorkspace.shared.icon(forFile: url.path)
+        cache[bundleIdentifier] = image
+        return image
     }
 }
 

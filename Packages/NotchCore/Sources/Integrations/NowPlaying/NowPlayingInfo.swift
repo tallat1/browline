@@ -17,11 +17,14 @@ public struct NowPlayingInfo: Equatable, Sendable {
     public var shuffleMode: Int?
     /// MediaRemote tekrar: 1 kapalı, 2 parça, 3 liste. Bildirilmiyorsa nil.
     public var repeatMode: Int?
+    /// Oynatıcı süreci; birden çok oturumu eşleştirmek ve komutu doğrudan ona göndermek için.
+    public var processIdentifier: Int32?
 
     public init(bundleIdentifier: String? = nil, title: String, artist: String? = nil, album: String? = nil,
                 duration: TimeInterval? = nil, elapsedTime: TimeInterval? = nil, timestamp: Date? = nil,
                 playbackRate: Double = 1, isPlaying: Bool, artworkData: Data? = nil,
-                shuffleMode: Int? = nil, repeatMode: Int? = nil) {
+                shuffleMode: Int? = nil, repeatMode: Int? = nil, processIdentifier: Int32? = nil) {
+        self.processIdentifier = processIdentifier
         self.shuffleMode = shuffleMode
         self.repeatMode = repeatMode
         self.bundleIdentifier = bundleIdentifier

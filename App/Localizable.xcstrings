@@ -77,6 +77,38 @@
         }
       }
     },
+    "%@ — %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ — %2$@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "%@ — %@ (duraklatıldı)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ — %2$@ (paused)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ — %2$@ (duraklatıldı)"
+          }
+        }
+      }
+    },
     "%lld dk": {
       "localizations": {
         "en": {
@@ -549,6 +581,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not available on this macOS version (SkyLight symbols missing)."
+          }
+        }
+      }
+    },
+    "Bu oynatıcı parça atlamayı desteklemiyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This player doesn't support skipping tracks"
           }
         }
       }

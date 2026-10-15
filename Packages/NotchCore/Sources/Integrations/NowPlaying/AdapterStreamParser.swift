@@ -55,7 +55,8 @@ public struct AdapterStreamParser {
             isPlaying: playing,
             artworkData: artwork,
             shuffleMode: (state["shuffleMode"] as? NSNumber)?.intValue,
-            repeatMode: (state["repeatMode"] as? NSNumber)?.intValue
+            repeatMode: (state["repeatMode"] as? NSNumber)?.intValue,
+            processIdentifier: (state["processIdentifier"] as? NSNumber)?.int32Value
         ))
     }
 
