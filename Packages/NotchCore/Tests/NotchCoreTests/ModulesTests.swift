@@ -250,3 +250,31 @@ struct ClaudeLimitLogTests {
         #expect(hits.last?.resetsAt == Date(timeIntervalSince1970: TimeInterval(base + 3_600)))
     }
 }
+
+/// Uç nokta biçimi topluluk raporlarından; sahte veriyle. Gerçek anahtar testlere hiç girmez.
+struct ClaudeUsageAPITests {
+    @Test func parsesUtilizationAndMicrosecondResets() throws {
+        let body = Data(#"{"five_hour":{"utilization":23.0,"resets_at":"2026-10-16T04:59:59.943648+00:00"},"seven_day":{"utilization":41.5,"resets_at":"2026-10-20T08:00:00+00:00"},"seven_day_opus":null}"#.utf8)
+        let captured = Date(timeIntervalSince1970: 1_800_000_000)
+        let usage = try #require(ClaudeUsageAPI.parse(body, capturedAt: captured))
+        #expect(usage.fiveHour?.usedPercentage == 23)
+        #expect(usage.sevenDay?.usedPercentage == 41.5)
+        #expect(usage.fiveHour?.resetsAt == ClaudeUsageAPI.date(from: "2026-10-16T04:59:59+00:00"))
+        #expect(usage.capturedAt == captured)
+        #expect(ClaudeUsageAPI.parse(Data(#"{"error":"x"}"#.utf8), capturedAt: captured) == nil)
+    }
+
+    @Test func dates() {
+        #expect(ClaudeUsageAPI.date(from: "2026-10-16T04:59:59Z") == Date(timeIntervalSince1970: 1_792_126_799))
+        #expect(ClaudeUsageAPI.date(from: "2026-10-16T04:59:59.5Z") == Date(timeIntervalSince1970: 1_792_126_799))
+        #expect(ClaudeUsageAPI.date(from: "dün") == nil)
+    }
+
+    @Test func credentialsNeedAccessTokenOnly() throws {
+        let fake = Data(#"{"claudeAiOauth":{"accessToken":"sahte-anahtar","refreshToken":"sahte-yenileme","expiresAt":1800000000000}}"#.utf8)
+        let credentials = try #require(ClaudeUsageAPI.parseCredentials(fake))
+        #expect(credentials.accessToken == "sahte-anahtar")
+        #expect(credentials.expiresAt == Date(timeIntervalSince1970: 1_800_000_000))
+        #expect(ClaudeUsageAPI.parseCredentials(Data(#"{"claudeAiOauth":{}}"#.utf8)) == nil)
+    }
+}

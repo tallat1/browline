@@ -107,6 +107,16 @@
         }
       }
     },
+    "%lld dk önce güncellendi · 5 dakikada bir tazelenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %lld min ago · refreshes every 5 minutes"
+          }
+        }
+      }
+    },
     "%lld dk önce güncellendi · Claude Code oturumu açıkken tazelenir": {
       "localizations": {
         "en": {
@@ -293,6 +303,26 @@
         }
       }
     },
+    "Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If asked for Keychain access, choose \"Always Allow\"."
+          }
+        }
+      }
+    },
+    "Anahtar reddedildi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The token was rejected"
+          }
+        }
+      }
+    },
     "Anladım": {
       "localizations": {
         "en": {
@@ -383,12 +413,32 @@
         }
       }
     },
+    "Az önce güncellendi · 5 dakikada bir tazelenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated just now · refreshes every 5 minutes"
+          }
+        }
+      }
+    },
     "Ağ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network"
+          }
+        }
+      }
+    },
+    "Bağlantı ya da uç nokta sorunu; birazdan yeniden denenecek.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A connection or endpoint problem; it will retry shortly."
           }
         }
       }
@@ -473,6 +523,16 @@
         }
       }
     },
+    "Biraz sonra kendiliğinden yeniden denenecek.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It will retry on its own shortly."
+          }
+        }
+      }
+    },
     "Birkaç saniyelik bildirim; diğer etkinliklerin önüne geçer.": {
       "localizations": {
         "en": {
@@ -523,6 +583,26 @@
         }
       }
     },
+    "Claude Code oturumu bulunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Claude Code sign-in found"
+          }
+        }
+      }
+    },
+    "Claude Code'un Anahtar Zinciri'ndeki oturum anahtarıyla 5 dakikada bir sorulur; anahtar yalnız bu istekte kullanılır, saklanmaz. Uç nokta haber vermeden değişebilir. Önce terminalde claude auth login gerekir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Queried every 5 minutes with Claude Code's sign-in token from the Keychain; the token is used only for this request and never stored. The endpoint can change without notice. Run claude auth login in a terminal first."
+          }
+        }
+      }
+    },
     "Claude Code'un etkin hesabı": {
       "localizations": {
         "en": {
@@ -543,12 +623,12 @@
         }
       }
     },
-    "Claude limitleri (durum satırından)": {
+    "Claude limitleri": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Claude limits (from the status line)"
+            "value": "Claude limits"
           }
         }
       }
@@ -569,6 +649,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude reports limits only on Pro and Max plans, after the first response in a session."
+          }
+        }
+      }
+    },
+    "Claude çok fazla istek dedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude said too many requests"
           }
         }
       }
@@ -1093,6 +1183,26 @@
         }
       }
     },
+    "Limitler alınamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't get limits"
+          }
+        }
+      }
+    },
+    "Limitler alınıyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fetching limits…"
+          }
+        }
+      }
+    },
     "Lisans metni bulunamadı.": {
       "localizations": {
         "en": {
@@ -1369,6 +1479,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Session (5 hours)"
+          }
+        }
+      }
+    },
+    "Oturum anahtarının süresi dolmuş": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sign-in token has expired"
           }
         }
       }
@@ -1793,6 +1913,36 @@
         }
       }
     },
+    "Terminalde claude auth login ile oturum açın; Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in with claude auth login in a terminal; if asked for Keychain access, choose \"Always Allow\"."
+          }
+        }
+      }
+    },
+    "Terminalde claude auth login ile yeniden oturum açın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign in again with claude auth login in a terminal."
+          }
+        }
+      }
+    },
+    "Terminalde claude komutunu bir kez çalıştırın; Claude Code anahtarı yeniler.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run claude once in a terminal; Claude Code renews the token."
+          }
+        }
+      }
+    },
     "Tüm ekranlar (çentiksiz ekranda hap)": {
       "localizations": {
         "en": {
@@ -1969,6 +2119,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copy Path"
+          }
+        }
+      }
+    },
+    "Yüzdeleri kullanım uç noktasından al (belgelenmemiş)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get percentages from the usage endpoint (undocumented)"
           }
         }
       }

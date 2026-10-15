@@ -335,6 +335,7 @@ final class AppCoordinator {
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
         if !settings.systemStatsEnabled { systemStats.stop() }
         toggle(settings.claudeUsageEnabled, start: claudeUsage.start, stop: claudeUsage.stop)
+        claudeUsage.setAPIEnabled(settings.claudeUsageEnabled && settings.claudeUsageAPIEnabled)
         if settings.weatherEnabled, let place = settings.weatherPlace { weather.start(place: place) } else { weather.stop() }
         if !settings.keepAwakeEnabled { keepAwake.stop() }
         if !settings.timerEnabled { cancelTimer() }

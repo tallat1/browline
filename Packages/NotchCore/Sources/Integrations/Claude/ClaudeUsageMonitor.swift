@@ -12,15 +12,50 @@ public final class ClaudeUsageMonitor {
         /// 0–100
         public var usedPercentage: Double
         public var resetsAt: Date?
+
+        public init(usedPercentage: Double, resetsAt: Date?) {
+            self.usedPercentage = usedPercentage
+            self.resetsAt = resetsAt
+        }
     }
 
     public struct Usage: Equatable, Sendable {
         public var fiveHour: Window?
         public var sevenDay: Window?
         public var capturedAt: Date
+
+        public init(fiveHour: Window?, sevenDay: Window?, capturedAt: Date) {
+            self.fiveHour = fiveHour
+            self.sevenDay = sevenDay
+            self.capturedAt = capturedAt
+        }
     }
 
     public private(set) var usage: Usage?
+
+    public enum UsageSource: Equatable, Sendable {
+        case statusline
+        case api
+    }
+
+    /// Belgelenmemiş kullanım uç noktasının durumu (kullanıcı açtıysa).
+    public enum APIStatus: Equatable, Sendable {
+        case off
+        case waiting
+        case ok
+        case noCredentials
+        case expired
+        case unauthorized
+        case rateLimited(until: Date)
+        case failed(String)
+    }
+
+    public private(set) var usageSource: UsageSource?
+    public private(set) var apiStatus: APIStatus = .off
+    @ObservationIgnored private var apiTask: Task<Void, Never>?
+    @ObservationIgnored private var lastAPIAttempt: Date?
+    /// Olağan sorgu aralığı; 429'da Retry-After ya da 15 dk, kimlik sorununda 15 dk.
+    public static let apiInterval: TimeInterval = 300
     /// Durum satırı betiğinin en son çalıştığı an (limit gelmese de). nil: hiç çalışmadı, kurulu değil.
     public private(set) var statuslineSeenAt: Date?
     /// Claude Code'un etkin hesabı (`~/.claude.json`); sekme her göründüğünde yeniden okunur.
@@ -48,11 +83,78 @@ public final class ClaudeUsageMonitor {
 
     @ObservationIgnored private let seenURL: URL
 
+    // MARK: - Belgelenmemiş kullanım uç noktası
+
+    /// Kullanıcı açtıysa 5 dk'da bir sorgular; kapalıyken ağ isteği yok.
+    public func setAPIEnabled(_ enabled: Bool) {
+        if enabled {
+            guard apiTask == nil else { return }
+            apiStatus = .waiting
+            startAPILoop()
+        } else {
+            apiTask?.cancel()
+            apiTask = nil
+            apiStatus = .off
+            if usageSource == .api {
+                usage = nil
+                usageSource = nil
+            }
+        }
+    }
+
+    private func startAPILoop() {
+        apiTask?.cancel()
+        apiTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                let wait = await self.pollAPI()
+                try? await Task.sleep(for: .seconds(wait))
+            }
+        }
+    }
+
+    /// Bir sorgu; sonraki beklemeyi döndürür.
+    private func pollAPI() async -> TimeInterval {
+        lastAPIAttempt = .now
+        // Anahtar Zinciri izin penceresi ve ağ beklediği için ayrı görevde.
+        let result = await Task.detached(priority: .utility) { await ClaudeUsageAPI.fetch() }.value
+        guard !Task.isCancelled else { return Self.apiInterval }
+        switch result {
+        case let .success(new):
+            apiStatus = .ok
+            apply(new, source: .api, alerting: true)
+            Log.integrations.notice("Claude kullanımı (uç nokta): oturum \(new.fiveHour.map { Int($0.usedPercentage) } ?? -1), hafta \(new.sevenDay.map { Int($0.usedPercentage) } ?? -1)")
+            return Self.apiInterval
+        case let .failure(failure):
+            Log.integrations.notice("Claude kullanım uç noktası: \(String(describing: failure), privacy: .public)")
+            switch failure {
+            case .noCredentials: apiStatus = .noCredentials; return 900
+            case .expired: apiStatus = .expired; return 900
+            case .unauthorized: apiStatus = .unauthorized; return 900
+            case let .rateLimited(retryAfter):
+                let wait = max(retryAfter ?? 900, Self.apiInterval)
+                apiStatus = .rateLimited(until: .now.addingTimeInterval(wait))
+                return wait
+            case let .badResponse(code): apiStatus = .failed("HTTP \(code)"); return 600
+            case let .network(message): apiStatus = .failed(message); return 600
+            }
+        }
+    }
+
+    /// Sekme açılınca: son denemeden 60 sn geçtiyse ve 429 beklemesinde değilsek hemen sorgula.
+    private func refreshAPIIfStale() {
+        guard apiTask != nil else { return }
+        if case let .rateLimited(until) = apiStatus, until > .now { return }
+        guard (lastAPIAttempt.map { Date.now.timeIntervalSince($0) > 60 } ?? true) else { return }
+        startAPILoop()
+    }
+
     /// Sekme görünürken çağrılır: iz dosyasının yalnız zamanı değişir, klasör olayı gelmez.
     public func refreshSeen() {
         let loaded = ClaudeAccount.load()
         if loaded != account { account = loaded }
         refreshLimits()
+        refreshAPIIfStale()
         let seen = (try? seenURL.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
         if seen != statuslineSeenAt { statuslineSeenAt = seen }
     }
@@ -77,6 +179,7 @@ public final class ClaudeUsageMonitor {
     }
 
     public func stop() {
+        setAPIEnabled(false)
         source?.cancel()
         source = nil
         usage = nil
@@ -112,8 +215,15 @@ public final class ClaudeUsageMonitor {
               let new = Self.parse(data, fallbackCapturedAt: (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]))?
                 .contentModificationDate ?? .now),
               new != usage else { return }
+        // Uç noktadan gelen daha yeniyse durum satırının eski verisi onu ezmez.
+        if let current = usage, current.capturedAt > new.capturedAt { return }
+        apply(new, source: .statusline, alerting: alerting)
+    }
+
+    private func apply(_ new: Usage, source: UsageSource, alerting: Bool) {
         let old = usage
         usage = new
+        usageSource = source
         Log.integrations.notice("Claude limitleri: oturum \(new.fiveHour.map { Int($0.usedPercentage) } ?? -1), hafta \(new.sevenDay.map { Int($0.usedPercentage) } ?? -1)")
         if alerting, let percent = new.fiveHour?.usedPercentage,
            let threshold = Self.crossedThreshold(from: old?.fiveHour?.usedPercentage, to: percent) {

@@ -39,6 +39,8 @@ struct ClaudeTab: View {
                         .foregroundStyle(.tertiary)
                 }
             }
+        } else if let problem = apiProblem, usage.activeLimits.isEmpty {
+            EmptyStateView(symbol: problem.symbol, title: problem.title, message: problem.message)
         } else if !usage.activeLimits.isEmpty {
             // Oturum kayıtlarından: limit doldu, ne zaman sıfırlanacak (yüzde yok).
             TimelineView(.everyMinute) { timeline in
@@ -64,11 +66,38 @@ struct ClaudeTab: View {
     private var stateKey: Int {
         if usage.usage != nil { return 2 }
         if !usage.activeLimits.isEmpty { return 3 }
+        if apiProblem != nil { return 4 }
         return usage.statuslineSeenAt != nil ? 1 : 0
+    }
+
+    /// Uç nokta açık ama veri yoksa kullanıcıya ne yapacağı söylenir.
+    private var apiProblem: (symbol: String, title: LocalizedStringKey, message: LocalizedStringKey)? {
+        switch usage.apiStatus {
+        case .off, .ok: nil
+        case .waiting:
+            ("hourglass", "Limitler alınıyor…", "Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.")
+        case .noCredentials:
+            ("key", "Claude Code oturumu bulunamadı",
+             "Terminalde claude auth login ile oturum açın; Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.")
+        case .expired:
+            ("clock.badge.exclamationmark", "Oturum anahtarının süresi dolmuş",
+             "Terminalde claude komutunu bir kez çalıştırın; Claude Code anahtarı yeniler.")
+        case .unauthorized:
+            ("lock", "Anahtar reddedildi", "Terminalde claude auth login ile yeniden oturum açın.")
+        case .rateLimited:
+            ("tortoise", "Claude çok fazla istek dedi", "Biraz sonra kendiliğinden yeniden denenecek.")
+        case .failed:
+            ("exclamationmark.triangle", "Limitler alınamadı", "Bağlantı ya da uç nokta sorunu; birazdan yeniden denenecek.")
+        }
     }
 
     private func updatedText(_ captured: Date, now: Date) -> String {
         let minutes = Int(now.timeIntervalSince(captured) / 60)
+        if usage.usageSource == .api {
+            // Uç noktadan: 5 dk'da bir tazelenir, oturum açık olması gerekmez.
+            if minutes < 1 { return String(localized: "Az önce güncellendi · 5 dakikada bir tazelenir") }
+            return String(localized: "\(minutes) dk önce güncellendi · 5 dakikada bir tazelenir")
+        }
         if minutes < 1 { return String(localized: "Az önce güncellendi") }
         if minutes < 60 { return String(localized: "\(minutes) dk önce güncellendi · Claude Code oturumu açıkken tazelenir") }
         return String(localized: "\(minutes / 60) sa önce güncellendi · Claude Code oturumu açıkken tazelenir")

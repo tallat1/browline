@@ -198,7 +198,13 @@ private struct ModuleSettings: View {
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Hızlı not", isOn: $settings.notesEnabled)
-                Toggle("Claude limitleri (durum satırından)", isOn: $settings.claudeUsageEnabled)
+                Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled)
+                if settings.claudeUsageEnabled {
+                    Toggle("Yüzdeleri kullanım uç noktasından al (belgelenmemiş)", isOn: $settings.claudeUsageAPIEnabled)
+                    Text("Claude Code'un Anahtar Zinciri'ndeki oturum anahtarıyla 5 dakikada bir sorulur; anahtar yalnız bu istekte kullanılır, saklanmaz. Uç nokta haber vermeden değişebilir. Önce terminalde claude auth login gerekir.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Toggle("Zamanlayıcı", isOn: $settings.timerEnabled)
                 Toggle("Anımsatıcılar (Takvim sekmesinde)", isOn: $settings.remindersEnabled)
                 Toggle("Sistem durumu (işlemci, bellek, ağ)", isOn: $settings.systemStatsEnabled)

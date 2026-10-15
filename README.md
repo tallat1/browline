@@ -223,6 +223,14 @@ yüzdesi yok, yalnız limit dolduğunda dönen hata satırında `apiErrorParams.
 dışında. Sekmede "5 saatlik oturum limiti doldu · 03:42'de sıfırlanır · 2 sa 14 dk sonra"; yoksa "Dolmuş bir
 limit yok". Debug: `claude:limit-preview` (yalnız bellekte örnek).
 
+Yüzdeler (isteğe bağlı, BELGELENMEMİŞ): Ayarlar › Modüller › "Yüzdeleri kullanım uç noktasından al" açılınca
+`ClaudeUsageAPI` 5 dakikada bir `GET https://api.anthropic.com/api/oauth/usage` sorar (`five_hour`/`seven_day`
+`utilization` + `resets_at`). Kimlik Claude Code'un Anahtar Zinciri kaydı ("Claude Code-credentials"; ilk seferde
+macOS izin ister) ya da `~/.claude/.credentials.json`; anahtar yalnız istek başlığında, saklanmaz, günlüğe yazılmaz.
+Süresi dolmuş anahtar yenilenmez (yenileme Claude Code'un işi; terminalde `claude` çalışınca). 429'da Retry-After
+ya da 15 dk beklenir, sekme açılınca en çok dakikada bir. Önce terminalde `claude auth login` gerekir. Kullanıcı
+riskleri kabul edip istedi (2026-10-16); varsayılan kapalı.
+
 Sekmenin üstünde etkin hesap: `~/.claude.json` içindeki `oauthAccount` profilinden e-posta, kuruluş (kişisel
 hesapta e-postayı tekrarladığı için gizli) ve plan rozeti ("Max 20x"); kimlik bilgisi okunmaz.
 ⚠️ Claude masaüstü uygulamasının Code sekmesi durum satırını çalıştırmıyor (2026-10-16: yeni oturum bir yanıt
