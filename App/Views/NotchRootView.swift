@@ -54,7 +54,7 @@ struct CompactLeadingView: View {
                     WideWingLabel(symbol: "arrow.down.circle.fill", tint: .blue, text: download.name)
                 }
             case AppCoordinator.ActivityKind.downloadDone:
-                WideWingLabel(symbol: "checkmark.circle.fill", tint: .green, text: "İndirildi")
+                WideWingLabel(symbol: "checkmark.circle.fill", tint: .green, text: String(localized: "İndirildi"))
             default:
                 if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
                     HStack(spacing: 6) {
@@ -159,9 +159,9 @@ extension CalendarMonitor.Event {
     }
 
     func compactCountdown(at now: Date) -> String {
-        guard start > now else { return "şimdi" }
+        guard start > now else { return String(localized: "şimdi") }
         let minutes = Int((start.timeIntervalSince(now) / 60).rounded(.up))
-        return "\(minutes) dk"
+        return String(localized: "\(minutes) dk")
     }
 }
 
@@ -243,8 +243,8 @@ extension HUDController {
 
     var title: String {
         switch kind {
-        case .brightness: "Parlaklık"
-        case .volume: isMuted ? "Sessiz" : "Ses"
+        case .brightness: String(localized: "Parlaklık")
+        case .volume: isMuted ? String(localized: "Sessiz") : String(localized: "Ses")
         }
     }
 }

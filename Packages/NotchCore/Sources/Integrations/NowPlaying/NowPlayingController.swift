@@ -10,8 +10,25 @@ public final class NowPlayingController {
         case checking
         case mediaRemote
         /// Yedek kaynak; neden düşüldüğü kullanıcıya gösterilir.
-        case playerNotifications(reason: String)
+        case playerNotifications(FallbackReason)
         case off
+    }
+
+    /// Metin değil neden: kullanıcıya gösterilecek çeviriyi uygulama yapar.
+    public enum FallbackReason: Equatable, Sendable, CustomStringConvertible {
+        case adapterMissing
+        case adapterTestFailed
+        case adapterLaunchFailed
+        case adapterExited(Int32)
+
+        public var description: String {
+            switch self {
+            case .adapterMissing: "adapter-missing"
+            case .adapterTestFailed: "adapter-test-failed"
+            case .adapterLaunchFailed: "adapter-launch-failed"
+            case let .adapterExited(status): "adapter-exited(\(status))"
+            }
+        }
     }
 
     public private(set) var info: NowPlayingInfo?
@@ -38,7 +55,7 @@ public final class NowPlayingController {
         generation += 1
         let current = generation
         guard let bundle = MediaRemoteAdapterBundle.locate() else {
-            useFallback(reason: "Adaptör uygulama paketinde yok")
+            useFallback(reason: .adapterMissing)
             return
         }
         adapter = bundle
@@ -49,7 +66,7 @@ public final class NowPlayingController {
             if works {
                 self.startStream()
             } else {
-                self.useFallback(reason: "Adaptör testi bu macOS sürümünde başarısız")
+                self.useFallback(reason: .adapterTestFailed)
             }
         }
     }
@@ -120,7 +137,7 @@ public final class NowPlayingController {
             source = .mediaRemote
             Log.integrations.info("Now Playing: mediaremote-adapter akışı başladı")
         } catch {
-            useFallback(reason: "Adaptör başlatılamadı")
+            useFallback(reason: .adapterLaunchFailed)
         }
     }
 
@@ -128,7 +145,7 @@ public final class NowPlayingController {
         stream = nil
         // Belge: sıfır dışı çıkış ölümcül hatadır, betik yeniden çağrılmamalı.
         guard status == 0, restartAttempt < Self.restartDelays.count else {
-            useFallback(reason: "Adaptör \(status) koduyla kapandı")
+            useFallback(reason: .adapterExited(status))
             return
         }
         let delay = Self.restartDelays[restartAttempt]
@@ -141,11 +158,11 @@ public final class NowPlayingController {
         }
     }
 
-    private func useFallback(reason: String) {
+    private func useFallback(reason: FallbackReason) {
         stream?.stop()
         stream = nil
-        source = .playerNotifications(reason: reason)
-        Log.integrations.notice("Now Playing yedeğe düştü: \(reason, privacy: .public)")
+        source = .playerNotifications(reason)
+        Log.integrations.notice("Now Playing yedeğe düştü: \(reason.description, privacy: .public)")
         fallback.onUpdate = { [weak self] info in self?.set(info: info) }
         fallback.start()
     }

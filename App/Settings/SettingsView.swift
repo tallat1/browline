@@ -28,9 +28,7 @@ private struct GeneralSettings: View {
                 Section {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Hoş geldiniz").font(.headline)
-                        Text("İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. "
-                             + "İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. "
-                             + "Takvim ve Automation izinleri yalnız ilgili özelliği kullandığınızda istenir.")
+                        Text("İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. Takvim ve Automation izinleri yalnız ilgili özelliği kullandığınızda istenir.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         Button("Anladım") { settings.hasCompletedOnboarding = true }
@@ -41,6 +39,11 @@ private struct GeneralSettings: View {
             Section("Görünüm") {
                 Picker("Ekranlar", selection: $settings.screenPolicy) {
                     ForEach(PanelManager.ScreenPolicy.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                if settings.screenPolicy == .allScreens {
+                    Picker("Çentiksiz ekranlarda hap", selection: $settings.notchlessVisibility) {
+                        ForEach(PanelManager.NotchlessVisibility.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
                 }
                 Picker("Üzerine gelince açılma gecikmesi", selection: $settings.openDelayMilliseconds) {
                     ForEach(AppSettings.openDelayChoices, id: \.self) { Text("\($0) ms").tag($0) }
@@ -77,8 +80,7 @@ private struct ModuleSettings: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } footer: {
-                Text("Sistem geneli kaynak macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. "
-                     + "Çalışmazsa yalnız Music ve Spotify desteklenir.")
+                Text("Sistem geneli kaynak macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. Çalışmazsa yalnız Music ve Spotify desteklenir.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -117,8 +119,7 @@ private struct ModuleSettings: View {
                     }
                 }
             } footer: {
-                Text("Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir: "
-                     + "notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız erişebilir.")
+                Text("Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir: notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız erişebilir.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -128,9 +129,9 @@ private struct ModuleSettings: View {
                 }
                 if settings.hudMode == .replace {
                     HStack {
-                        Text(coordinator.hud.isTapActive
-                             ? "Medya tuşları yakalanıyor"
-                             : "Erişilebilirlik izni bekleniyor; izin verince kendiliğinden başlar")
+                        (coordinator.hud.isTapActive
+                             ? Text("Medya tuşları yakalanıyor")
+                             : Text("Erişilebilirlik izni bekleniyor; izin verince kendiliğinden başlar"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -138,9 +139,9 @@ private struct ModuleSettings: View {
                             Button("Erişilebilirlik ayarlarını aç") { HUDController.openAccessibilitySettings() }
                         }
                     }
-                    Text(coordinator.hud.isBrightnessAvailable
-                         ? "Parlaklık: yerleşik ekranda ayarlanıyor (private DisplayServices)."
-                         : "Parlaklık: bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır.")
+                    (coordinator.hud.isBrightnessAvailable
+                         ? Text("Parlaklık: yerleşik ekranda ayarlanıyor (private DisplayServices).")
+                         : Text("Parlaklık: bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -160,9 +161,9 @@ private struct ModuleSettings: View {
 
     private var calendarStatus: String {
         switch coordinator.calendar.access {
-        case .notDetermined: "İzin henüz istenmedi"
-        case .denied: "İzin verilmedi"
-        case .granted: "İzin var · \(coordinator.calendar.upcoming.count) yaklaşan etkinlik"
+        case .notDetermined: String(localized: "İzin henüz istenmedi")
+        case .denied: String(localized: "İzin verilmedi")
+        case .granted: String(localized: "İzin var · \(coordinator.calendar.upcoming.count) yaklaşan etkinlik")
         }
     }
 }
@@ -174,7 +175,7 @@ private struct AboutSettings: View {
 
     private var adapterLicense: String {
         Bundle.main.url(forResource: "mediaremote-adapter-LICENSE", withExtension: "txt")
-            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? "Lisans metni bulunamadı."
+            .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? String(localized: "Lisans metni bulunamadı.")
     }
 
     var body: some View {

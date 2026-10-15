@@ -83,9 +83,28 @@ notch list
 | v1: ses/parlaklık HUD'ı (kapalı / ek gösterge / sistemin yerine) | ✓ yazıldı; önizleme görsel doğrulandı; "yerine geç" Erişilebilirlik izni ve tuşla elle denenmedi; klavye ışığı sisteme bırakılıyor |
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
-| v1: dış ekran modları, kilit ekranı, Focus, TR/EN yerelleştirme | ✗ yapılmadı |
+| v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
+| v1: TR/EN yerelleştirme (String Catalog) | ✓ 106 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
+| v1: kilit ekranı, Focus | ✗ yapılmadı (kilit ekranı private SkyLight, WindowServer riski; Focus entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
+
+## Yerelleştirme
+
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` ve
+`App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
+Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
+
+Komut satırı derlemesi kataloğa yeni anahtar eklemez; yeni ekran metninden sonra:
+
+```sh
+make build
+xcrun xcstringstool sync App/Localizable.xcstrings --stringsdata $(find build/Build/Intermediates.noindex -name '*.stringsdata' -path '*NotchMVP.build*')
+```
+
+Ekranda Türkçe metin yalnız `LocalizedStringKey` ya da `String(localized:)` ile; değişkenden gelen metin
+(`Text(info.title)`) çevrilmez. Üçlü ifade `koşul ? Text("a") : Text("b")` biçiminde yazılır, yoksa `String` olur
+ve kataloğa girmez. Dili zorlayarak deneme: `open -n …/NotchMVP.app --args -AppleLanguages "(en)"`.
 
 ## Lisans notu
 

@@ -83,3 +83,20 @@ struct NotchLayoutTests {
         #expect(layout.panelFrame.maxY == 1317)
     }
 }
+
+struct NotchlessVisibilityTests {
+    typealias Visibility = PanelManager.NotchlessVisibility
+
+    @Test func alwaysNeverHides() {
+        #expect(!Visibility.always.hidesPanel(style: .pill, hasCompactContent: false, isOpen: false))
+    }
+
+    @Test func whenActiveHidesOnlyIdlePill() {
+        let visibility = Visibility.whenActive
+        #expect(visibility.hidesPanel(style: .pill, hasCompactContent: false, isOpen: false))
+        #expect(!visibility.hidesPanel(style: .pill, hasCompactContent: true, isOpen: false))
+        #expect(!visibility.hidesPanel(style: .pill, hasCompactContent: false, isOpen: true))
+        // Çentikli ekranda seçenek etkisiz.
+        #expect(!visibility.hidesPanel(style: .notch, hasCompactContent: false, isOpen: false))
+    }
+}

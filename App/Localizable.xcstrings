@@ -1,0 +1,1066 @@
+{
+  "sourceLanguage": "tr",
+  "strings": {
+    "%%%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "%lld dk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        }
+      }
+    },
+    "%lld dk sonra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld min"
+          }
+        }
+      }
+    },
+    "%lld ms": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ms"
+          }
+        }
+      }
+    },
+    "%lld sa %lld dk sonra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in %lld h %lld min"
+          }
+        }
+      }
+    },
+    "%lld öğe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items"
+          }
+        }
+      }
+    },
+    "AirDrop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AirDrop"
+          }
+        }
+      }
+    },
+    "AirDrop ile gönder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send with AirDrop"
+          }
+        }
+      }
+    },
+    "Anladım": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got It"
+          }
+        }
+      }
+    },
+    "Ayarlar…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings…"
+          }
+        }
+      }
+    },
+    "Başlatılamadı: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not start: %@"
+          }
+        }
+      }
+    },
+    "Başlıksız etkinlik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled event"
+          }
+        }
+      }
+    },
+    "Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir: notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız erişebilir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts, AI agents and Shortcuts (Run Shell Script) can send activities to the notch: notch push --id build --title Build --progress 40%. Only your user account can connect."
+          }
+        }
+      }
+    },
+    "Dinliyor: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listening: %@"
+          }
+        }
+      }
+    },
+    "Dokunsal geri bildirim (Force Touch trackpad)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptic feedback (Force Touch trackpad)"
+          }
+        }
+      }
+    },
+    "Dosya rafı ve AirDrop": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File shelf and AirDrop"
+          }
+        }
+      }
+    },
+    "Dosyaları buraya sürükleyin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop files here"
+          }
+        }
+      }
+    },
+    "Duraklat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause"
+          }
+        }
+      }
+    },
+    "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Additional indicator (no permission; the system indicator also appears)"
+          }
+        }
+      }
+    },
+    "Ekran kaydı ve ekran paylaşımında gizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide during screen recording and sharing"
+          }
+        }
+      }
+    },
+    "Ekranlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Displays"
+          }
+        }
+      }
+    },
+    "Erişilebilirlik ayarlarını aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Accessibility Settings"
+          }
+        }
+      }
+    },
+    "Erişilebilirlik izni bekleniyor; izin verince kendiliğinden başlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for Accessibility permission; starts automatically once granted"
+          }
+        }
+      }
+    },
+    "Etkinlik API'si (yerel soket ve notch komutu)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity API (local socket and notch command)"
+          }
+        }
+      }
+    },
+    "Etkinlikler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activities"
+          }
+        }
+      }
+    },
+    "Finder'da göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in Finder"
+          }
+        }
+      }
+    },
+    "Genel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        }
+      }
+    },
+    "Girişte başlat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Launch at login"
+          }
+        }
+      }
+    },
+    "Gizleme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hiding"
+          }
+        }
+      }
+    },
+    "Gizlilik ayarlarını aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Privacy Settings"
+          }
+        }
+      }
+    },
+    "Görünüm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearance"
+          }
+        }
+      }
+    },
+    "Hakkında": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About"
+          }
+        }
+      }
+    },
+    "Henüz dış etkinlik yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No external activities yet"
+          }
+        }
+      }
+    },
+    "Her zaman": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always"
+          }
+        }
+      }
+    },
+    "Hoş geldiniz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome"
+          }
+        }
+      }
+    },
+    "Kamera kullanımda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera in use"
+          }
+        }
+      }
+    },
+    "Kamera ve mikrofon göstergesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera and microphone indicator"
+          }
+        }
+      }
+    },
+    "Kapalı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Katıl": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Join"
+          }
+        }
+      }
+    },
+    "Lisans metni bulunamadı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "License text not found."
+          }
+        }
+      }
+    },
+    "Medya": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media"
+          }
+        }
+      }
+    },
+    "Medya (Now Playing)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media (Now Playing)"
+          }
+        }
+      }
+    },
+    "Medya kaynağı denetleniyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking media source…"
+          }
+        }
+      }
+    },
+    "Medya tuşları yakalanıyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capturing media keys"
+          }
+        }
+      }
+    },
+    "Mikrofon kullanımda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone in use"
+          }
+        }
+      }
+    },
+    "Modüller": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modules"
+          }
+        }
+      }
+    },
+    "NotchMVP %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NotchMVP %@"
+          }
+        }
+      }
+    },
+    "NotchMVP Ayarları": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NotchMVP Settings"
+          }
+        }
+      }
+    },
+    "Now Playing: MediaRemote (sistem geneli)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now Playing: MediaRemote (system-wide)"
+          }
+        }
+      }
+    },
+    "Now Playing: Music/Spotify yedeği (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now Playing: Music/Spotify fallback (%@)"
+          }
+        }
+      }
+    },
+    "Now Playing: denetleniyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now Playing: checking…"
+          }
+        }
+      }
+    },
+    "Now Playing: kapalı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now Playing: off"
+          }
+        }
+      }
+    },
+    "Oynat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Play"
+          }
+        }
+      }
+    },
+    "Paneli yeniden kur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rebuild Panel"
+          }
+        }
+      }
+    },
+    "Parlaklık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brightness"
+          }
+        }
+      }
+    },
+    "Parlaklık: bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brightness: not adjustable on this Mac; brightness keys are left to the system."
+          }
+        }
+      }
+    },
+    "Parlaklık: yerleşik ekranda ayarlanıyor (private DisplayServices).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brightness: adjusted on the built-in display (private DisplayServices)."
+          }
+        }
+      }
+    },
+    "Pil ve şarj": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery and charging"
+          }
+        }
+      }
+    },
+    "Raf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shelf"
+          }
+        }
+      }
+    },
+    "Rafta %lld öğe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld items on the shelf"
+          }
+        }
+      }
+    },
+    "Raftan kaldır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from Shelf"
+          }
+        }
+      }
+    },
+    "Ses": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume"
+          }
+        }
+      }
+    },
+    "Ses ve parlaklık göstergesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume and brightness indicator"
+          }
+        }
+      }
+    },
+    "Sessiz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muted"
+          }
+        }
+      }
+    },
+    "Sistem": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        }
+      }
+    },
+    "Sistem Ayarları › Genel › Giriş Öğeleri'nden onay gerekiyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approval needed in System Settings › General › Login Items."
+          }
+        }
+      }
+    },
+    "Sistem geneli kaynak macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. Çalışmazsa yalnız Music ve Spotify desteklenir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The system-wide source has not been public since macOS 15.4; mediaremote-adapter is used. If it fails, only Music and Spotify are supported."
+          }
+        }
+      }
+    },
+    "Sistem göstergesinin yerine geç (Erişilebilirlik izni)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace the system indicator (Accessibility permission)"
+          }
+        }
+      }
+    },
+    "Sonraki": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
+          }
+        }
+      }
+    },
+    "Takvim": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "Takvim izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar access is off. Allow NotchMVP in Privacy settings."
+          }
+        }
+      }
+    },
+    "Takvim ve toplantılar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar and meetings"
+          }
+        }
+      }
+    },
+    "Takvime erişim ver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Calendar Access"
+          }
+        }
+      }
+    },
+    "Tam ekran uygulamalarda gizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide over full-screen apps"
+          }
+        }
+      }
+    },
+    "Temizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "Tüm ekranlar (çentiksiz ekranda hap)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All displays (pill on displays without a notch)"
+          }
+        }
+      }
+    },
+    "Tüm gün": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All day"
+          }
+        }
+      }
+    },
+    "Tüm modüller kapalı. Menü çubuğundaki simgeden Ayarlar'ı açın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All modules are off. Open Settings from the menu bar icon."
+          }
+        }
+      }
+    },
+    "Yaklaşan toplantıları görmek için takvim izni gerekiyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar access is needed to show upcoming meetings."
+          }
+        }
+      }
+    },
+    "Yalnız gösterecek bir etkinlik varken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only when there is an activity to show"
+          }
+        }
+      }
+    },
+    "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Built-in display only (main display when the lid is closed)"
+          }
+        }
+      }
+    },
+    "Yarın": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "Yolu kopyala": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Path"
+          }
+        }
+      }
+    },
+    "adaptör %lld koduyla kapandı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "adapter exited with code %lld"
+          }
+        }
+      }
+    },
+    "adaptör başlatılamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "adapter could not start"
+          }
+        }
+      }
+    },
+    "adaptör testi bu macOS sürümünde başarısız": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "adapter test failed on this macOS version"
+          }
+        }
+      }
+    },
+    "adaptör uygulama paketinde yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "adapter is missing from the app bundle"
+          }
+        }
+      }
+    },
+    "mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mediaremote-adapter (ungive), BSD-3-Clause. Used unmodified, as a separate process."
+          }
+        }
+      }
+    },
+    "notch push --id build --title Derleme --progress 40%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "notch push --id build --title Build --progress 40%"
+          }
+        }
+      }
+    },
+    "sürüyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "in progress"
+          }
+        }
+      }
+    },
+    "Çalışma adı; ürün adı henüz belirlenmedi.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Working name; the product name is not decided yet."
+          }
+        }
+      }
+    },
+    "Çentiksiz ekranlarda hap": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pill on displays without a notch"
+          }
+        }
+      }
+    },
+    "Çık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        }
+      }
+    },
+    "Önceki": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous"
+          }
+        }
+      }
+    },
+    "Önümüzdeki 24 saatte etkinlik yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events in the next 24 hours"
+          }
+        }
+      }
+    },
+    "Üzerine gelince açılma gecikmesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hover delay before opening"
+          }
+        }
+      }
+    },
+    "Üçüncü taraf yazılım": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Third-party software"
+          }
+        }
+      }
+    },
+    "İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. Takvim ve Automation izinleri yalnız ilgili özelliği kullandığınızda istenir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move the pointer over the notch to open it; click to keep it open. A two-finger swipe down also opens it. Drag files onto the notch to put them on the shelf. Calendar and Automation permissions are requested only when you use the related feature."
+          }
+        }
+      }
+    },
+    "İndirildi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloaded"
+          }
+        }
+      }
+    },
+    "İndirmeler (İndirilenler klasörü izni ister)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloads (asks for Downloads folder access)"
+          }
+        }
+      }
+    },
+    "İzin henüz istenmedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission not requested yet"
+          }
+        }
+      }
+    },
+    "İzin var · %lld yaklaşan etkinlik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed · %lld upcoming events"
+          }
+        }
+      }
+    },
+    "İzin ver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow"
+          }
+        }
+      }
+    },
+    "İzin verilmedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not allowed"
+          }
+        }
+      }
+    },
+    "Şu an bir şey çalmıyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is playing"
+          }
+        }
+      }
+    },
+    "şimdi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "now"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

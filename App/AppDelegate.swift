@@ -50,10 +50,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         source.isEnabled = false
         menu.addItem(source)
         menu.addItem(.separator())
-        menu.addItem(action("Ayarlar…", key: ",") { [weak self] in self?.settingsWindow.show() })
-        menu.addItem(action("Paneli yeniden kur") { [weak self] in self?.coordinator.panels.rebuild(trigger: "menü") })
+        menu.addItem(action(String(localized: "Ayarlar…"), key: ",") { [weak self] in self?.settingsWindow.show() })
+        menu.addItem(action(String(localized: "Paneli yeniden kur")) { [weak self] in self?.coordinator.panels.rebuild(trigger: "menü") })
         menu.addItem(.separator())
-        menu.addItem(action("Çık", key: "q") { NSApp.terminate(nil) })
+        menu.addItem(action(String(localized: "Çık"), key: "q") { NSApp.terminate(nil) })
     }
 
     private func action(_ title: String, key: String = "", _ handler: @escaping () -> Void) -> NSMenuItem {

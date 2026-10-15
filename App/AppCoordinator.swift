@@ -25,10 +25,10 @@ enum NotchTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .media: "Medya"
-        case .calendar: "Takvim"
-        case .shelf: "Raf"
-        case .activities: "Etkinlikler"
+        case .media: String(localized: "Medya")
+        case .calendar: String(localized: "Takvim")
+        case .shelf: String(localized: "Raf")
+        case .activities: String(localized: "Etkinlikler")
         }
     }
 }
@@ -38,7 +38,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
 @Observable
 final class NotchUIState {
     var selectedTab: NotchTab = .media
-    var activityAPIStatus = "Kapalı"
+    var activityAPIStatus = String(localized: "Kapalı")
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""
 }
@@ -219,14 +219,14 @@ final class AppCoordinator {
             do {
                 try server.start()
                 activityServer = server
-                ui.activityAPIStatus = "Dinliyor: \(server.socketURL.path)"
+                ui.activityAPIStatus = String(localized: "Dinliyor: \(server.socketURL.path)")
             } catch {
-                ui.activityAPIStatus = "Başlatılamadı: \(error)"
+                ui.activityAPIStatus = String(localized: "Başlatılamadı: \(String(describing: error))")
             }
         } else if !enabled, let server = activityServer {
             server.stop()
             activityServer = nil
-            ui.activityAPIStatus = "Kapalı"
+            ui.activityAPIStatus = String(localized: "Kapalı")
             syncExternal([])
             activities.cancelFlash(ActivityKind.externalFlash)
         }
@@ -243,10 +243,21 @@ final class AppCoordinator {
 
     var nowPlayingSourceDescription: String {
         switch nowPlaying.source {
-        case .checking: "Now Playing: denetleniyor…"
-        case .mediaRemote: "Now Playing: MediaRemote (sistem geneli)"
-        case let .playerNotifications(reason): "Now Playing: Music/Spotify yedeği (\(reason))"
-        case .off: "Now Playing: kapalı"
+        case .checking: String(localized: "Now Playing: denetleniyor…")
+        case .mediaRemote: String(localized: "Now Playing: MediaRemote (sistem geneli)")
+        case let .playerNotifications(reason): String(localized: "Now Playing: Music/Spotify yedeği (\(reason.localizedText))")
+        case .off: String(localized: "Now Playing: kapalı")
+        }
+    }
+}
+
+extension NowPlayingController.FallbackReason {
+    var localizedText: String {
+        switch self {
+        case .adapterMissing: String(localized: "adaptör uygulama paketinde yok")
+        case .adapterTestFailed: String(localized: "adaptör testi bu macOS sürümünde başarısız")
+        case .adapterLaunchFailed: String(localized: "adaptör başlatılamadı")
+        case let .adapterExited(status): String(localized: "adaptör \(Int(status)) koduyla kapandı")
         }
     }
 }

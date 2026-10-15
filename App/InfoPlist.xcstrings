@@ -1,0 +1,36 @@
+{
+  "sourceLanguage": "tr",
+  "strings": {
+    "CFBundleDisplayName": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NotchMVP"
+          }
+        }
+      }
+    },
+    "NSAppleEventsUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When MediaRemote is unavailable, controls play/pause and track changes in Music and Spotify."
+          }
+        }
+      }
+    },
+    "NSCalendarsFullAccessUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows upcoming meetings in the notch and opens their join link."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

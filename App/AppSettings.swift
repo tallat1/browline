@@ -9,6 +9,9 @@ import ServiceManagement
 @Observable
 final class AppSettings {
     var screenPolicy: PanelManager.ScreenPolicy { didSet { store(screenPolicy.rawValue, "screenPolicy") } }
+    var notchlessVisibility: PanelManager.NotchlessVisibility {
+        didSet { store(notchlessVisibility.rawValue, "notchlessVisibility") }
+    }
     var openDelayMilliseconds: Int { didSet { store(openDelayMilliseconds, "openDelayMilliseconds") } }
     var hapticsEnabled: Bool { didSet { store(hapticsEnabled, "hapticsEnabled") } }
     var hideInFullScreen: Bool { didSet { store(hideInFullScreen, "hideInFullScreen") } }
@@ -35,6 +38,8 @@ final class AppSettings {
         let defaults = UserDefaults.standard
         screenPolicy = PanelManager.ScreenPolicy(rawValue: defaults.string(forKey: "screenPolicy") ?? "")
             ?? .builtInOrMain
+        notchlessVisibility = PanelManager.NotchlessVisibility(
+            rawValue: defaults.string(forKey: "notchlessVisibility") ?? "") ?? .always
         openDelayMilliseconds = defaults.object(forKey: "openDelayMilliseconds") as? Int ?? 150
         hapticsEnabled = defaults.object(forKey: "hapticsEnabled") as? Bool ?? true
         hideInFullScreen = defaults.bool(forKey: "hideInFullScreen")
@@ -53,6 +58,7 @@ final class AppSettings {
     var panelOptions: PanelManager.Options {
         var options = PanelManager.Options()
         options.screenPolicy = screenPolicy
+        options.notchlessVisibility = notchlessVisibility
         options.openDelay = .milliseconds(openDelayMilliseconds)
         options.hapticsEnabled = hapticsEnabled
         options.hideInFullScreen = hideInFullScreen
@@ -86,8 +92,8 @@ final class AppSettings {
 extension PanelManager.ScreenPolicy {
     var title: String {
         switch self {
-        case .builtInOrMain: "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)"
-        case .allScreens: "Tüm ekranlar (çentiksiz ekranda hap)"
+        case .builtInOrMain: String(localized: "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)")
+        case .allScreens: String(localized: "Tüm ekranlar (çentiksiz ekranda hap)")
         }
     }
 }
@@ -95,9 +101,18 @@ extension PanelManager.ScreenPolicy {
 extension HUDController.Mode {
     var title: String {
         switch self {
-        case .off: "Kapalı"
-        case .overlay: "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)"
-        case .replace: "Sistem göstergesinin yerine geç (Erişilebilirlik izni)"
+        case .off: String(localized: "Kapalı")
+        case .overlay: String(localized: "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)")
+        case .replace: String(localized: "Sistem göstergesinin yerine geç (Erişilebilirlik izni)")
+        }
+    }
+}
+
+extension PanelManager.NotchlessVisibility {
+    var title: String {
+        switch self {
+        case .always: String(localized: "Her zaman")
+        case .whenActive: String(localized: "Yalnız gösterecek bir etkinlik varken")
         }
     }
 }

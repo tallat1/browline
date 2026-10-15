@@ -38,7 +38,8 @@ struct CalendarTab: View {
         }
     }
 
-    private func permissionPrompt(text: String, button: String, action: @escaping () -> Void) -> some View {
+    private func permissionPrompt(text: LocalizedStringKey, button: LocalizedStringKey,
+                                  action: @escaping () -> Void) -> some View {
         VStack(spacing: 10) {
             Text(text)
                 .font(.system(size: 12))
@@ -59,7 +60,7 @@ private struct EventRow: View {
         HStack(spacing: 10) {
             Circle().fill(event.swiftUIColor).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 1) {
-                Text(event.title.isEmpty ? "Başlıksız etkinlik" : event.title)
+                (event.title.isEmpty ? Text("Başlıksız etkinlik") : Text(verbatim: event.title))
                     .font(.system(size: 12, weight: .semibold))
                     .lineLimit(1)
                 Text(detail)
@@ -77,18 +78,18 @@ private struct EventRow: View {
     }
 
     private var detail: String {
-        if event.isAllDay { return "Tüm gün" }
+        if event.isAllDay { return String(localized: "Tüm gün") }
         let time = event.start.formatted(date: .omitted, time: .shortened) + "–"
             + event.end.formatted(date: .omitted, time: .shortened)
-        let day = Calendar.current.isDateInTomorrow(event.start) ? "Yarın " : ""
+        let day = Calendar.current.isDateInTomorrow(event.start) ? String(localized: "Yarın") + " " : ""
         return day + time + " · " + relative
     }
 
     private var relative: String {
-        if event.start <= now { return "sürüyor" }
+        if event.start <= now { return String(localized: "sürüyor") }
         let minutes = Int((event.start.timeIntervalSince(now) / 60).rounded(.up))
-        if minutes < 60 { return "\(minutes) dk sonra" }
+        if minutes < 60 { return String(localized: "\(minutes) dk sonra") }
         let hours = minutes / 60
-        return "\(hours) sa \(minutes % 60) dk sonra"
+        return String(localized: "\(hours) sa \(minutes % 60) dk sonra")
     }
 }

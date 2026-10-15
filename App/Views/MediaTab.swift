@@ -31,7 +31,7 @@ struct MediaTab: View {
                     Image(systemName: "music.note")
                         .font(.system(size: 20))
                         .foregroundStyle(.secondary)
-                    Text(nowPlaying.source == .checking ? "Medya kaynağı denetleniyor…" : "Şu an bir şey çalmıyor")
+                    (nowPlaying.source == .checking ? Text("Medya kaynağı denetleniyor…") : Text("Şu an bir şey çalmıyor"))
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
@@ -73,14 +73,15 @@ struct MediaTab: View {
     private func controls(isPlaying: Bool) -> some View {
         HStack(spacing: 6) {
             controlButton("backward.fill", size: 15, help: "Önceki") { nowPlaying.previousTrack() }
-            controlButton(isPlaying ? "pause.fill" : "play.fill", size: 22, help: isPlaying ? "Duraklat" : "Oynat") {
+            controlButton(isPlaying ? "pause.fill" : "play.fill", size: 22,
+                          help: isPlaying ? LocalizedStringKey("Duraklat") : LocalizedStringKey("Oynat")) {
                 nowPlaying.togglePlayPause()
             }
             controlButton("forward.fill", size: 15, help: "Sonraki") { nowPlaying.nextTrack() }
         }
     }
 
-    private func controlButton(_ symbol: String, size: CGFloat, help: String,
+    private func controlButton(_ symbol: String, size: CGFloat, help: LocalizedStringKey,
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)

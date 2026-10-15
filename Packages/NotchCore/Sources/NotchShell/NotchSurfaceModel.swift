@@ -16,7 +16,9 @@ public final class NotchSurfaceModel {
     /// Notch üzerine dosya sürükleniyor; uygulama bunu rafı öne almak için kullanır.
     public private(set) var isFileDragActive = false
     /// Uygulamanın kompakt içeriği varsa (çalan müzik, yaklaşan toplantı) kapalı şekil kanatlanır.
-    public var hasCompactContent = false
+    public var hasCompactContent = false {
+        didSet { if hasCompactContent != oldValue { onVisibilityInputsChanged?() } }
+    }
     /// Kompakt kanat genişliği; nil ise dar kanat. Başlık taşıyan etkinlikler için genişletilir.
     public var compactWingWidth: CGFloat?
     public private(set) var hapticTick = 0
@@ -25,6 +27,8 @@ public final class NotchSurfaceModel {
     @ObservationIgnored public var hapticsEnabled = true
     /// Açık/kapalı geçişinde yönetici imleç izleyicilerini kurar ya da kaldırır.
     @ObservationIgnored var onOpenChanged: ((Bool) -> Void)?
+    /// Çentiksiz ekranda "yalnız etkinlik varken" görünürlüğü bu değişikliklere bağlı.
+    @ObservationIgnored var onVisibilityInputsChanged: (() -> Void)?
 
     @ObservationIgnored private var hoverTask: Task<Void, Never>?
     @ObservationIgnored private var isPointerInside = false

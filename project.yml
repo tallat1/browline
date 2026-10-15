@@ -1,6 +1,8 @@
 name: NotchMVP
 options:
   bundleIdPrefix: com.talatozcoban
+  # Kaynak dil Türkçe; İngilizce çeviri App/Localizable.xcstrings ve App/InfoPlist.xcstrings'te.
+  developmentLanguage: tr
   deploymentTarget:
     macOS: "14.0"
   createIntermediateGroups: true
@@ -13,6 +15,8 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     SWIFT_STRICT_CONCURRENCY: complete
     DEVELOPMENT_TEAM: C6BVU6GSM6
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
 targets:
   NotchMVP:
     type: application

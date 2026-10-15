@@ -16,8 +16,21 @@ public final class PanelManager {
         case allScreens
     }
 
+    /// Çentiksiz ekrandaki hap: her zaman ya da yalnız gösterecek bir etkinlik varken.
+    public enum NotchlessVisibility: String, CaseIterable, Sendable {
+        case always
+        case whenActive
+
+        /// Boştaki hap gizlensin mi? Çentikli ekran hep görünür; açıkken (dosya sürükleme hapın
+        /// konumuna gelince de açar) gizlenmez.
+        public func hidesPanel(style: NotchLayout.Style, hasCompactContent: Bool, isOpen: Bool) -> Bool {
+            self == .whenActive && style == .pill && !hasCompactContent && !isOpen
+        }
+    }
+
     public struct Options: Equatable, Sendable {
         public var screenPolicy: ScreenPolicy = .builtInOrMain
+        public var notchlessVisibility: NotchlessVisibility = .always
         public var layout = NotchLayoutConfig()
         public var openDelay: Duration = .milliseconds(150)
         public var hapticsEnabled = true
@@ -107,8 +120,12 @@ public final class PanelManager {
                 controller.apply(layout: layout, screenName: metrics.name, options: options)
             } else {
                 let model = NotchSurfaceModel(layout: layout, displayID: metrics.displayID, screenName: metrics.name)
-                model.onOpenChanged = { [weak self] _ in self?.updatePointerTracking() }
                 let controller = PanelController(model: model, rootView: makeRootView(model))
+                model.onOpenChanged = { [weak self, weak controller] _ in
+                    self?.updatePointerTracking()
+                    controller?.updateVisibility()
+                }
+                model.onVisibilityInputsChanged = { [weak controller] in controller?.updateVisibility() }
                 controller.apply(layout: layout, screenName: metrics.name, options: options)
                 controllers[metrics.displayID] = controller
                 changed = true
@@ -139,9 +156,9 @@ public final class PanelManager {
     /// doğrulandı. Private API kullanmaz; pencere adı okumadığı için Ekran Kaydı izni istemez.
     private func refreshFullScreenState() {
         let displays = options.hideInFullScreen ? Self.fullScreenDisplays() : []
-        // setHidden idempotent; yeni kurulan paneller de aynı karardan geçer.
+        // İdempotent; yeni kurulan paneller de aynı karardan geçer.
         for (id, controller) in controllers {
-            controller.setHidden(displays.contains(id))
+            controller.setFullScreenHidden(displays.contains(id))
         }
     }
 
@@ -188,6 +205,8 @@ private final class PanelController {
     let model: NotchSurfaceModel
     private let panel: NotchPanel
     private var isHidden = false
+    private var fullScreenHidden = false
+    private var notchlessVisibility: PanelManager.NotchlessVisibility = .always
 
     init(model: NotchSurfaceModel, rootView: AnyView) {
         self.model = model
@@ -212,6 +231,8 @@ private final class PanelController {
         }
         let sharing: NSWindow.SharingType = options.hideFromScreenCapture ? .none : .readOnly
         if panel.sharingType != sharing { panel.sharingType = sharing }
+        notchlessVisibility = options.notchlessVisibility
+        updateVisibility()
         if !isHidden, !panel.isVisible {
             // boring.notch #336 senaryosu: uyanmadan sonra pencere kaybolursa geri getir.
             Log.shell.notice("panel görünür değildi, öne getirildi (\(screenName, privacy: .public))")
@@ -219,11 +240,21 @@ private final class PanelController {
         }
     }
 
-    func setHidden(_ hidden: Bool) {
+    func setFullScreenHidden(_ hidden: Bool) {
+        fullScreenHidden = hidden
+        updateVisibility()
+    }
+
+    /// Tam ekranda gizleme ve çentiksiz ekranda boştaki hap. İdempotent.
+    func updateVisibility() {
+        let idlePill = notchlessVisibility.hidesPanel(style: model.layout.style,
+                                                      hasCompactContent: model.hasCompactContent,
+                                                      isOpen: model.isOpen)
+        let hidden = fullScreenHidden || idlePill
         guard hidden != isHidden else { return }
         isHidden = hidden
         if hidden {
-            model.dismiss()
+            if fullScreenHidden { model.dismiss() }
             panel.orderOut(nil)
         } else {
             panel.orderFrontRegardless()
