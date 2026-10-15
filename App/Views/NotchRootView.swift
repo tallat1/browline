@@ -77,6 +77,30 @@ struct CompactLeadingView: View {
                 }
             case AppCoordinator.ActivityKind.downloadDone:
                 WideWingLabel(symbol: "checkmark.circle.fill", tint: .green, text: String(localized: "İndirildi"))
+            case AppCoordinator.ActivityKind.trackChange:
+                if let info = coordinator.nowPlaying.info {
+                    HStack(spacing: 6) {
+                        TrackArtwork(image: coordinator.nowPlaying.artwork)
+                        Text(info.title).lineLimit(1)
+                    }
+                    .padding(.leading, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            case AppCoordinator.ActivityKind.audioOutput:
+                if let device = coordinator.audioOutput.current {
+                    WideWingLabel(symbol: AudioOutputMonitor.symbolName(for: device), tint: .white, text: device.name,
+                                  truncation: .tail)
+                }
+            case AppCoordinator.ActivityKind.keepAwake:
+                Image(systemName: "cup.and.saucer.fill").foregroundStyle(.orange)
+            case AppCoordinator.ActivityKind.timer:
+                // Saniyelik çizim yalnız zamanlayıcı çalışıp kanat ekrandayken.
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    ProgressRing(progress: coordinator.timer.progress(at: timeline.date), tint: .orange)
+                        .frame(width: 14, height: 14)
+                }
+            case AppCoordinator.ActivityKind.timerDone:
+                WideWingLabel(symbol: "timer", tint: .orange, text: String(localized: "Süre doldu"))
             default:
                 if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
@@ -147,6 +171,38 @@ struct CompactTrailingView: View {
                     .padding(.trailing, 12)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 }
+            case AppCoordinator.ActivityKind.trackChange:
+                if let artist = coordinator.nowPlaying.info?.artist {
+                    Text(artist)
+                        .foregroundStyle(.secondary)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.audioOutput:
+                if let percent = AudioOutputMonitor.volumePercent() {
+                    Text("%\(percent)")
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.keepAwake:
+                if let endsAt = coordinator.keepAwake.endsAt {
+                    TimelineView(.everyMinute) { timeline in
+                        let minutes = Int((max(0, endsAt.timeIntervalSince(timeline.date)) / 60).rounded(.up))
+                        Text("\(minutes) dk").monospacedDigit()
+                    }
+                }
+            case AppCoordinator.ActivityKind.timer:
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    Text(CountdownTimer.format(coordinator.timer.remaining(at: timeline.date))).monospacedDigit()
+                }
+            case AppCoordinator.ActivityKind.timerDone:
+                Text(CountdownTimer.format(coordinator.timer.duration))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             case AppCoordinator.ActivityKind.downloadDone:
                 Text(coordinator.ui.lastFinishedDownload)
                     .truncationMode(.middle)
@@ -223,15 +279,34 @@ extension ExternalActivity {
 }
 
 /// Geniş kanadın sol tarafı: sembol ve kısa metin, görünen kenardan 12 pt içeride.
+/// Kompakt kanatta küçük kapak; yoksa nota simgesi.
+struct TrackArtwork: View {
+    let image: NSImage?
+
+    var body: some View {
+        if let image {
+            Image(nsImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 20, height: 20)
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+        } else {
+            Image(systemName: "music.note")
+        }
+    }
+}
+
 struct WideWingLabel: View {
     let symbol: String
     let tint: Color
     let text: String
+    /// Dosya adında uzantı görünsün diye ortadan; cihaz ve başlıkta sondan.
+    var truncation: Text.TruncationMode = .middle
 
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: symbol).foregroundStyle(tint)
-            Text(text).lineLimit(1).truncationMode(.middle)
+            Text(text).lineLimit(1).truncationMode(truncation)
         }
         .padding(.leading, 12)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -92,8 +92,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(.separator())
         menu.addItem(action(String(localized: "Ayarlar…"), key: ",") { [weak self] in self?.settingsWindow.show() })
         menu.addItem(action(String(localized: "Paneli yeniden kur")) { [weak self] in self?.coordinator.panels.rebuild(trigger: "menü") })
+        if coordinator.settings.keepAwakeEnabled { menu.addItem(keepAwakeMenu()) }
         menu.addItem(.separator())
         menu.addItem(action(String(localized: "Çık"), key: "q") { NSApp.terminate(nil) })
+    }
+
+    /// Uyanık tutma süreleri; notch'taki düğme süresiz açar.
+    private func keepAwakeMenu() -> NSMenuItem {
+        let awake = coordinator.keepAwake
+        let item = NSMenuItem(title: awake.isActive ? String(localized: "Uyanık tutuluyor") : String(localized: "Uyanık tut"),
+                              action: nil, keyEquivalent: "")
+        let submenu = NSMenu()
+        let reason = String(localized: "NotchMVP: uyanık tut")
+        for (title, duration) in [(String(localized: "30 dakika"), Duration.seconds(30 * 60)),
+                                  (String(localized: "1 saat"), .seconds(60 * 60)),
+                                  (String(localized: "2 saat"), .seconds(2 * 60 * 60))] {
+            submenu.addItem(action(title) { awake.start(for: duration, reason: reason) })
+        }
+        submenu.addItem(action(String(localized: "Kapatana kadar")) { awake.start(reason: reason) })
+        if awake.isActive {
+            submenu.addItem(.separator())
+            submenu.addItem(action(String(localized: "Kapat")) { awake.stop() })
+        }
+        item.submenu = submenu
+        return item
     }
 
     private func action(_ title: String, key: String = "", _ handler: @escaping () -> Void) -> NSMenuItem {

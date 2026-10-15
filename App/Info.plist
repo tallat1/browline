@@ -39,6 +39,8 @@
 	<string>MediaRemote kullanılamadığında Music ve Spotify'ı oynat/duraklat ve parça geçişi için denetlemek.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Çalışma adı NotchMVP</string>
 </dict>

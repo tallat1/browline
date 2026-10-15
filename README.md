@@ -116,12 +116,27 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
 | v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
+| v1+: şarkı değişince önizleme, ses çıkışı (AirPods) uyarısı, uyanık tutma, zamanlayıcı, ayna | ✓ yazıldı ve birim testli (parça değişimi, cihaz simgesi, zamanlayıcı, güç iddiası); hepsi debug komutlarıyla görsel doğrulandı; gerçek AirPods bağlantısı ve kamera görüntüsü elle denenmedi |
 | v1: ekran başına mod (otomatik: çentik/hap · yüzen kart · kapalı), Mission Control'de ve oyunlarda gizleme | ✓ mod çözümü, yüzen yerleşim ve oyun kategorisi birim testli; yüzen kart yerleşik ekranda debug komutuyla görsel doğrulandı; dış ekran, Mission Control ve oyun elle denenmedi |
 | v1: TR/EN yerelleştirme (String Catalog) | ✓ 111 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
 | v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
+
+## Rakiplerden gelen küçük modüller
+
+Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken arka plan işi yok.
+
+| Modül | Esin | Nasıl | Enerji / izin |
+|---|---|---|---|
+| Şarkı değişince kısa göster | MediaMate, DynamicLake "Sneak Peek" | Başlık ya da sanatçı değişince 3 sn geniş kanat: kapak, şarkı, sanatçı | Ek iş yok |
+| Ses çıkışı değişince göster | Alcove, DynamicLake | CoreAudio varsayılan çıkış dinleyicisi; AirPods türünü addan seçer, yanında ses düzeyi | İzin yok; AirPods pili public değil, gösterilmez |
+| Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut" |
+| Zamanlayıcı | NotchFlow, Atoll | Hazır süreler, +1 dk, iptal; bitince "Süre doldu" ve ses. Kilit ekranında da görünür | Tek uyuyan Task; saniyelik çizim yalnız kanat ya da sekme ekrandayken |
+| Ayna | boring.notch, NotchNook | AVFoundation önizleme, yatay çevrilmiş | Kamera yalnız sekme açıkken; izin ilk "Kameraya erişim ver"de, `com.apple.security.device.camera` |
+
+Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `tab:timer`, `tab:mirror`.
 
 ## Ekranlar
 
@@ -165,7 +180,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (143 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (166 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

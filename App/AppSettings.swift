@@ -31,6 +31,12 @@ final class AppSettings {
     var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
     /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
     var downloadsEnabled: Bool { didSet { store(downloadsEnabled, "downloadsEnabled") } }
+    var trackPeekEnabled: Bool { didSet { store(trackPeekEnabled, "trackPeekEnabled") } }
+    var audioOutputAlertEnabled: Bool { didSet { store(audioOutputAlertEnabled, "audioOutputAlertEnabled") } }
+    var keepAwakeEnabled: Bool { didSet { store(keepAwakeEnabled, "keepAwakeEnabled") } }
+    var timerEnabled: Bool { didSet { store(timerEnabled, "timerEnabled") } }
+    /// Kamera izni yalnız Ayna sekmesinde düğmeye basınca istenir.
+    var mirrorEnabled: Bool { didSet { store(mirrorEnabled, "mirrorEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
     var lockScreenEnabled: Bool {
@@ -74,6 +80,11 @@ final class AppSettings {
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
+        trackPeekEnabled = defaults.object(forKey: "trackPeekEnabled") as? Bool ?? true
+        audioOutputAlertEnabled = defaults.object(forKey: "audioOutputAlertEnabled") as? Bool ?? true
+        keepAwakeEnabled = defaults.object(forKey: "keepAwakeEnabled") as? Bool ?? true
+        timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true
+        mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
             defaults.set(false, forKey: "lockScreenEnabled")

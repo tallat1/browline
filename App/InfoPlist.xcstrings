@@ -30,6 +30,16 @@
           }
         }
       }
+    },
+    "NSCameraUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So you can see yourself in the Mirror tab. Nothing is recorded or sent anywhere."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

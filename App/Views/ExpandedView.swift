@@ -35,6 +35,8 @@ struct ExpandedView: View {
                     case .calendar: CalendarTab(calendar: coordinator.calendar)
                     case .shelf: ShelfTab(shelf: coordinator.shelf)
                     case .activities: ActivitiesTab(store: coordinator.externalActivities)
+                    case .timer: TimerTab(timer: coordinator.timer)
+                    case .mirror: MirrorTab(mirror: coordinator.mirror)
                     }
                 }
             }
@@ -70,6 +72,19 @@ struct ExpandedView: View {
 
     private var statusArea: some View {
         HStack(spacing: 8) {
+            if coordinator.settings.keepAwakeEnabled {
+                let awake = coordinator.keepAwake
+                Button {
+                    if awake.isActive { awake.stop() } else { awake.start(reason: String(localized: "NotchMVP: uyanık tut")) }
+                } label: {
+                    Image(systemName: awake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
+                        .foregroundStyle(awake.isActive ? .orange : .secondary)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(awake.isActive ? String(localized: "Uyanık tutmayı kapat") : String(localized: "Ekranı uyanık tut"))
+            }
             // Kamera yeşil, mikrofon turuncu: macOS menü çubuğu göstergeleriyle aynı renkler.
             if coordinator.privacy.isCameraActive {
                 Circle().fill(.green).frame(width: 6, height: 6).help("Kamera kullanımda")

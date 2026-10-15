@@ -1,0 +1,115 @@
+import AppKit
+import AVFoundation
+import SwiftUI
+
+/// Ayna: kamera yalnız bu sekme ekrandayken açık; notch kapanınca ya da sekme değişince durur.
+/// Görüntü kaydedilmez, hiçbir yere gönderilmez.
+struct MirrorTab: View {
+    let mirror: CameraMirror
+    @State private var status = AVCaptureDevice.authorizationStatus(for: .video)
+
+    var body: some View {
+        switch status {
+        case .authorized:
+            CameraPreview(session: mirror.session)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .onAppear { mirror.start() }
+                .onDisappear { mirror.stop() }
+        case .notDetermined:
+            prompt(text: "Ayna için kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.",
+                   button: "Kameraya erişim ver") {
+                Task { @MainActor in
+                    _ = await AVCaptureDevice.requestAccess(for: .video)
+                    status = AVCaptureDevice.authorizationStatus(for: .video)
+                }
+            }
+        default:
+            prompt(text: "Kamera izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.",
+                   button: "Gizlilik ayarlarını aç") {
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+        }
+    }
+
+    private func prompt(text: LocalizedStringKey, button: LocalizedStringKey,
+                        action: @escaping () -> Void) -> some View {
+        VStack(spacing: 10) {
+            Text(text)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button(button, action: action).controlSize(.small)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Kamera oturumu. `startRunning` bloklayıcı; oturum yalnız kendi kuyruğunda değiştirilir.
+final class CameraMirror: @unchecked Sendable {
+    let session = AVCaptureSession()
+    private let queue = DispatchQueue(label: "com.talatozcoban.notchmvp.mirror")
+    private var isConfigured = false
+
+    func start() {
+        queue.async { [self] in
+            configureIfNeeded()
+            if isConfigured, !session.isRunning { session.startRunning() }
+        }
+    }
+
+    func stop() {
+        queue.async { [self] in
+            if session.isRunning { session.stopRunning() }
+        }
+    }
+
+    /// Önce yerleşik kamera; yoksa (kapak kapalı) sistemin varsayılanı, Continuity Camera dahil.
+    private func configureIfNeeded() {
+        guard !isConfigured,
+              let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .unspecified)
+                ?? AVCaptureDevice.default(for: .video),
+              let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) else { return }
+        session.beginConfiguration()
+        session.sessionPreset = .medium
+        session.addInput(input)
+        session.commitConfiguration()
+        isConfigured = true
+    }
+}
+
+/// Önizleme katmanı; ayna gibi yatay çevrilmiş.
+private struct CameraPreview: NSViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeNSView(context: Context) -> PreviewView { PreviewView(session: session) }
+    func updateNSView(_ view: PreviewView, context: Context) {}
+
+    final class PreviewView: NSView {
+        private let previewLayer: AVCaptureVideoPreviewLayer
+
+        init(session: AVCaptureSession) {
+            previewLayer = AVCaptureVideoPreviewLayer(session: session)
+            super.init(frame: .zero)
+            previewLayer.videoGravity = .resizeAspectFill
+            previewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+            wantsLayer = true
+            layer = CALayer()
+            layer?.backgroundColor = NSColor.black.cgColor
+            layer?.addSublayer(previewLayer)
+        }
+
+        @available(*, unavailable)
+        required init?(coder: NSCoder) { fatalError("init(coder:) kullanılmıyor") }
+
+        override func layout() {
+            super.layout()
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            previewLayer.frame = bounds
+            CATransaction.commit()
+        }
+    }
+}

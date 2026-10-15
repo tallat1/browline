@@ -189,6 +189,13 @@ private struct ModuleSettings: View {
                 }
             }
             Section {
+                Toggle("Şarkı değişince kısa göster", isOn: $settings.trackPeekEnabled)
+                Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
+                Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
+                Toggle("Zamanlayıcı", isOn: $settings.timerEnabled)
+                Toggle("Ayna (kamera izni yalnız ilk kullanımda istenir)", isOn: $settings.mirrorEnabled)
+            }
+            Section {
                 Toggle("Pil ve şarj", isOn: $settings.batteryEnabled)
                 Toggle("Dosya rafı ve AirDrop", isOn: $settings.shelfEnabled)
                 Text("Rafta \(coordinator.shelf.items.count) öğe")

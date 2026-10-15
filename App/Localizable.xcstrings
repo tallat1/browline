@@ -91,12 +91,52 @@
         }
       }
     },
+    "+1 dk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+1 min"
+          }
+        }
+      }
+    },
     "0–50; çalan müzik 30, toplantı 40.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "0–50; playing music is 30, meetings are 40."
+          }
+        }
+      }
+    },
+    "1 saat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 Hour"
+          }
+        }
+      }
+    },
+    "2 saat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 Hours"
+          }
+        }
+      }
+    },
+    "30 dakika": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 Minutes"
           }
         }
       }
@@ -157,6 +197,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Settings…"
+          }
+        }
+      }
+    },
+    "Ayna": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror"
+          }
+        }
+      }
+    },
+    "Ayna (kamera izni yalnız ilk kullanımda istenir)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mirror (camera access is asked only on first use)"
+          }
+        }
+      }
+    },
+    "Ayna için kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The mirror needs camera access. Nothing is recorded or sent anywhere."
           }
         }
       }
@@ -307,6 +377,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Displays"
+          }
+        }
+      }
+    },
+    "Ekranı uyanık tut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the Display Awake"
           }
         }
       }
@@ -491,6 +571,16 @@
         }
       }
     },
+    "Kamera izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera access is off. Allow NotchMVP in Privacy settings."
+          }
+        }
+      }
+    },
     "Kamera kullanımda": {
       "localizations": {
         "en": {
@@ -511,12 +601,42 @@
         }
       }
     },
+    "Kameraya erişim ver": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Camera Access"
+          }
+        }
+      }
+    },
     "Kapalı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Off"
+          }
+        }
+      }
+    },
+    "Kapat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn Off"
+          }
+        }
+      }
+    },
+    "Kapatana kadar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until Turned Off"
           }
         }
       }
@@ -751,6 +871,16 @@
         }
       }
     },
+    "NotchMVP: uyanık tut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NotchMVP: keep awake"
+          }
+        }
+      }
+    },
     "Now Playing: MediaRemote (sistem geneli)": {
       "localizations": {
         "en": {
@@ -931,6 +1061,16 @@
         }
       }
     },
+    "Ses çıkışı değişince göster (AirPods, hoparlör)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show audio output changes (AirPods, speakers)"
+          }
+        }
+      }
+    },
     "Sessiz": {
       "localizations": {
         "en": {
@@ -997,6 +1137,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Duration (seconds)"
+          }
+        }
+      }
+    },
+    "Süre doldu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time's up"
+          }
+        }
+      }
+    },
+    "Süre seçin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a duration"
           }
         }
       }
@@ -1091,6 +1251,46 @@
         }
       }
     },
+    "Uyanık tut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep Awake"
+          }
+        }
+      }
+    },
+    "Uyanık tutma düğmesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep-awake button"
+          }
+        }
+      }
+    },
+    "Uyanık tutmayı kapat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop Keeping Awake"
+          }
+        }
+      }
+    },
+    "Uyanık tutuluyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping Awake"
+          }
+        }
+      }
+    },
     "Yaklaşan toplantıları görmek için takvim izni gerekiyor.": {
       "localizations": {
         "en": {
@@ -1147,6 +1347,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Floating card (below the menu bar)"
+          }
+        }
+      }
+    },
+    "Zamanlayıcı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
           }
         }
       }
@@ -1371,6 +1581,16 @@
         }
       }
     },
+    "İptal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
     "İzin henüz istenmedi": {
       "localizations": {
         "en": {
@@ -1407,6 +1627,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not allowed"
+          }
+        }
+      }
+    },
+    "Şarkı değişince kısa göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Briefly show the new song"
           }
         }
       }

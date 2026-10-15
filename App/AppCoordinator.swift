@@ -11,6 +11,8 @@ enum NotchTab: String, CaseIterable, Identifiable {
     case calendar
     case shelf
     case activities
+    case timer
+    case mirror
 
     var id: String { rawValue }
 
@@ -20,6 +22,8 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .calendar: "calendar"
         case .shelf: "tray.full"
         case .activities: "square.stack.3d.up"
+        case .timer: "timer"
+        case .mirror: "person.crop.square"
         }
     }
 
@@ -29,6 +33,8 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .calendar: String(localized: "Takvim")
         case .shelf: String(localized: "Raf")
         case .activities: String(localized: "Etkinlikler")
+        case .timer: String(localized: "Zamanlayıcı")
+        case .mirror: String(localized: "Ayna")
         }
     }
 }
@@ -58,16 +64,22 @@ final class AppCoordinator {
         static let hud: ActivityID = "hud"
         static let download: ActivityID = "download"
         static let downloadDone: ActivityID = "downloadDone"
+        static let trackChange: ActivityID = "trackChange"
+        static let audioOutput: ActivityID = "audioOutput"
+        static let keepAwake: ActivityID = "keepAwake"
+        static let timer: ActivityID = "timer"
+        static let timerDone: ActivityID = "timerDone"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
-            id.rawValue.hasPrefix(externalPrefix) || [hud, download, downloadDone].contains(id)
+            id.rawValue.hasPrefix(externalPrefix)
+                || [hud, download, downloadDone, trackChange, audioOutput, timerDone].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
         /// etkinlik metni bilgisayarın başındaki herkese görünür.
         static func isAllowedOnLockScreen(_ id: ActivityID) -> Bool {
-            [nowPlaying, power, privacy, hud].contains(id)
+            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake].contains(id)
         }
     }
 
@@ -84,11 +96,17 @@ final class AppCoordinator {
     let privacy = PrivacyIndicatorMonitor()
     let hud = HUDController()
     let downloads = DownloadsMonitor()
+    let audioOutput = AudioOutputMonitor()
+    let keepAwake = KeepAwake()
+    let timer = CountdownTimer()
+    let mirror = CameraMirror()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
     private var activityServer: ActivitySocketServer?
     private var liveExternalIDs: Set<ActivityID> = []
+    /// Parça değişimini anlamak için bir önceki Now Playing bilgisi.
+    private var lastTrackInfo: NowPlayingInfo?
 
     /// Etkin koordinatör; Kestirmeler eylemleri buradan ulaşır.
     private(set) static var current: AppCoordinator?
@@ -123,6 +141,10 @@ final class AppCoordinator {
 
         nowPlaying.onInfoChanged = { [weak self] info in
             guard let self else { return }
+            if settings.trackPeekEnabled, NowPlayingInfo.isTrackChange(from: lastTrackInfo, to: info) {
+                activities.flash(ActivityKind.trackChange, duration: .seconds(3))
+            }
+            lastTrackInfo = info
             // Kompakt kanatlar yalnız çalarken; duraklatılmış parça açık notch'ta görünmeye devam eder.
             if info?.isPlaying == true {
                 activities.setLive(ActivityKind.nowPlaying, priority: 30)
@@ -174,6 +196,21 @@ final class AppCoordinator {
             ui.lastFinishedDownload = name
             activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
         }
+        audioOutput.onChange = { [weak self] _ in
+            self?.activities.flash(ActivityKind.audioOutput, duration: .seconds(3))
+        }
+        keepAwake.onChange = { [weak self] active in
+            guard let self else { return }
+            if active { activities.setLive(ActivityKind.keepAwake, priority: 5) } else { activities.removeLive(ActivityKind.keepAwake) }
+        }
+        timer.onRunningChanged = { [weak self] running in
+            guard let self else { return }
+            if running { activities.setLive(ActivityKind.timer, priority: 35) } else { activities.removeLive(ActivityKind.timer) }
+        }
+        timer.onFinished = { [weak self] in
+            self?.activities.flash(ActivityKind.timerDone, duration: .seconds(5))
+            NSSound(named: "Glass")?.play()
+        }
         settings.onChange = { [weak self] in self?.applySettings() }
         lockScreen.onLockChanged = { [weak self] locked in
             guard let self else { return }
@@ -196,6 +233,10 @@ final class AppCoordinator {
         nowPlaying.stop()
         battery.stop()
         calendar.stop()
+        audioOutput.stop()
+        keepAwake.stop()
+        timer.cancel()
+        mirror.stop()
         lockScreen.stop()
         settings.setLockSessionOpen(false)
         panels.stop()
@@ -210,6 +251,10 @@ final class AppCoordinator {
         setActivityAPI(enabled: settings.activityAPIEnabled)
         toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
         toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
+        toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
+        if !settings.keepAwakeEnabled { keepAwake.stop() }
+        if !settings.timerEnabled { timer.cancel() }
+        if !settings.trackPeekEnabled { activities.cancelFlash(ActivityKind.trackChange) }
         hud.setMode(settings.hudMode)
         lockScreen.setLayoutConfig(settings.panelOptions.layout)
         lockScreen.setEnabled(settings.lockScreenEnabled)
@@ -229,6 +274,8 @@ final class AppCoordinator {
         if settings.calendarEnabled { tabs.append(.calendar) }
         if settings.shelfEnabled { tabs.append(.shelf) }
         if settings.activityAPIEnabled { tabs.append(.activities) }
+        if settings.timerEnabled { tabs.append(.timer) }
+        if settings.mirrorEnabled { tabs.append(.mirror) }
         return tabs
     }
 

@@ -8,7 +8,8 @@ private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: 
 /// Yalnız debug derlemesi: test betikleri notch'u imleci ele geçirmeden yönetebilsin.
 /// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
 /// flash:power, hud:preview, state, lock:on|lock:off (kilit benzetimi, SkyLight kullanmaz),
-/// display:floating|off|reset (birinci ekranın modu).
+/// display:floating|off|reset (birinci ekranın modu), timer:<sn>|cancel, audio:preview, track:preview,
+/// awake:on|off.
 @MainActor
 final class DebugCommandChannel {
     static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
@@ -51,6 +52,17 @@ final class DebugCommandChannel {
             let mode = PanelManager.DisplayMode(rawValue: String(command.dropFirst("display:".count)))
             coordinator.settings.displayModes[display.persistentID] = mode
             debugLog.info("ekran modu \(command, privacy: .public): \(display.name, privacy: .public)")
+        case let timer where timer.hasPrefix("timer:"):
+            if timer == "timer:cancel" { coordinator.timer.cancel() }
+            else if let seconds = Double(timer.dropFirst(6)) { coordinator.timer.start(seconds: seconds) }
+        case "audio:preview":
+            coordinator.activities.flash(AppCoordinator.ActivityKind.audioOutput, duration: .seconds(3))
+        case "track:preview":
+            coordinator.activities.flash(AppCoordinator.ActivityKind.trackChange, duration: .seconds(3))
+        case "awake:on":
+            coordinator.keepAwake.start(for: .seconds(90), reason: "NotchMVP debug")
+        case "awake:off":
+            coordinator.keepAwake.stop()
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "
