@@ -100,3 +100,52 @@ struct NotchlessVisibilityTests {
         #expect(!visibility.hidesPanel(style: .notch, hasCompactContent: false, isOpen: false))
     }
 }
+
+struct FloatingAndDisplayModeTests {
+    typealias Mode = PanelManager.DisplayMode
+
+    /// Yüzen kart çentikli ekranda da menü çubuğunun altında, çentikten bağımsız durur.
+    @Test func floatingSitsBelowMenuBar() {
+        let layout = NotchLayout.make(metrics: NotchLayoutTests.builtInDefault, floating: true)
+        #expect(layout.style == .floating)
+        #expect(layout.notchRect == nil)
+        #expect(layout.topInset == 33 + NotchLayout.floatingGap)
+        let closed = layout.shapeRect(for: .closed)
+        #expect(closed.maxY == 1117 - 33 - NotchLayout.floatingGap)
+        #expect(closed.midX == 864)
+    }
+
+    @Test func floatingHidesWhenIdleRegardlessOfSetting() {
+        for visibility in PanelManager.NotchlessVisibility.allCases {
+            #expect(visibility.hidesPanel(style: .floating, hasCompactContent: false, isOpen: false))
+            #expect(!visibility.hidesPanel(style: .floating, hasCompactContent: true, isOpen: false))
+            #expect(!visibility.hidesPanel(style: .floating, hasCompactContent: false, isOpen: true))
+        }
+    }
+
+    @Test func policyGivesDefaultsAndOverridesWin() {
+        let builtIn = PanelManager.DisplayDescriptor(persistentID: "B", isBuiltIn: true)
+        let external = PanelManager.DisplayDescriptor(persistentID: "E", isBuiltIn: false)
+        #expect(PanelManager.resolveModes(for: [external, builtIn], policy: .builtInOrMain, overrides: [:])
+            == [.off, .automatic])
+        #expect(PanelManager.resolveModes(for: [external, builtIn], policy: .allScreens, overrides: [:])
+            == [.automatic, .automatic])
+        #expect(PanelManager.resolveModes(for: [external, builtIn], policy: .builtInOrMain,
+                                          overrides: ["E": .floating, "B": .off]) == [.floating, .off])
+    }
+
+    /// Kapak kapalı: yerleşik ekran yok, ilk ekran varsayılan alır.
+    @Test func clamshellUsesFirstDisplay() {
+        let first = PanelManager.DisplayDescriptor(persistentID: "1", isBuiltIn: false)
+        let second = PanelManager.DisplayDescriptor(persistentID: "2", isBuiltIn: false)
+        #expect(PanelManager.resolveModes(for: [first, second], policy: .builtInOrMain, overrides: [:])
+            == [.automatic, .off])
+    }
+
+    @Test func gameCategories() {
+        #expect(PanelManager.isGameCategory("public.app-category.games"))
+        #expect(PanelManager.isGameCategory("public.app-category.board-games"))
+        #expect(!PanelManager.isGameCategory("public.app-category.productivity"))
+        #expect(!PanelManager.isGameCategory(nil))
+    }
+}

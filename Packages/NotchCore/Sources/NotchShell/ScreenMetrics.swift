@@ -12,10 +12,14 @@ public struct ScreenMetrics: Equatable, Sendable {
     public var safeAreaTop: CGFloat
     public var auxiliaryTopLeft: CGRect?
     public var auxiliaryTopRight: CGRect?
+    /// Ekranın kalıcı kimliği (CoreGraphics UUID). displayID yeniden bağlanınca değişebilir;
+    /// ekran başına ayar bununla saklanır.
+    public var persistentID: String
 
     public init(displayID: CGDirectDisplayID, name: String, isBuiltIn: Bool, frame: CGRect,
                 visibleFrame: CGRect, safeAreaTop: CGFloat,
-                auxiliaryTopLeft: CGRect?, auxiliaryTopRight: CGRect?) {
+                auxiliaryTopLeft: CGRect?, auxiliaryTopRight: CGRect?, persistentID: String? = nil) {
+        self.persistentID = persistentID ?? "display-\(displayID)"
         self.displayID = displayID
         self.name = name
         self.isBuiltIn = isBuiltIn
@@ -51,6 +55,13 @@ extension NSScreen {
         displayID.map { CGDisplayIsBuiltin($0) != 0 } ?? false
     }
 
+    public var persistentID: String? {
+        guard let displayID, let uuid = CGDisplayCreateUUIDFromDisplayID(displayID)?.takeRetainedValue() else {
+            return nil
+        }
+        return CFUUIDCreateString(nil, uuid) as String
+    }
+
     /// Değerler ölçeklemeye göre değişir (Faz 0: 24,5–38 pt); her ekran değişiminde yeniden okunur.
     @MainActor
     public var metrics: ScreenMetrics? {
@@ -59,6 +70,7 @@ extension NSScreen {
                              frame: frame, visibleFrame: visibleFrame,
                              safeAreaTop: safeAreaInsets.top,
                              auxiliaryTopLeft: auxiliaryTopLeftArea,
-                             auxiliaryTopRight: auxiliaryTopRightArea)
+                             auxiliaryTopRight: auxiliaryTopRightArea,
+                             persistentID: persistentID)
     }
 }

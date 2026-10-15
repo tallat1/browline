@@ -36,15 +36,30 @@ private struct GeneralSettings: View {
                     }
                 }
             }
-            Section("Görünüm") {
-                Picker("Ekranlar", selection: $settings.screenPolicy) {
+            Section("Ekranlar") {
+                let displays = PanelManager.displaySummaries(for: settings.panelOptions)
+                ForEach(displays) { display in
+                    Picker(display.name, selection: Binding(
+                        get: { display.mode },
+                        set: { settings.displayModes[display.persistentID] = $0 })) {
+                        ForEach(PanelManager.DisplayMode.allCases, id: \.self) {
+                            Text($0.title(hasNotch: display.hasNotch)).tag($0)
+                        }
+                    }
+                }
+                Picker("Ayar verilmemiş ekranlar", selection: $settings.screenPolicy) {
                     ForEach(PanelManager.ScreenPolicy.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
-                if settings.screenPolicy == .allScreens {
+                if displays.contains(where: { $0.mode == .automatic && !$0.hasNotch }) {
                     Picker("Çentiksiz ekranlarda hap", selection: $settings.notchlessVisibility) {
                         ForEach(PanelManager.NotchlessVisibility.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
                 }
+                Text("Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Section("Görünüm") {
                 Picker("Üzerine gelince açılma gecikmesi", selection: $settings.openDelayMilliseconds) {
                     ForEach(AppSettings.openDelayChoices, id: \.self) { Text("\($0) ms").tag($0) }
                 }
@@ -53,6 +68,8 @@ private struct GeneralSettings: View {
             Section("Gizleme") {
                 Toggle("Tam ekran uygulamalarda gizle", isOn: $settings.hideInFullScreen)
                 Toggle("Ekran kaydı ve ekran paylaşımında gizle", isOn: $settings.hideFromScreenCapture)
+                Toggle("Mission Control'de gizle", isOn: $settings.hideInMissionControl)
+                Toggle("Oyunlarda gizle", isOn: $settings.hideInGames)
             }
             Section("Sistem") {
                 Toggle("Girişte başlat", isOn: Binding(get: { settings.launchAtLogin },

@@ -141,6 +141,16 @@
         }
       }
     },
+    "Ayar verilmemiş ekranlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Displays without a choice"
+          }
+        }
+      }
+    },
     "Ayarlar…": {
       "localizations": {
         "en": {
@@ -281,6 +291,16 @@
         }
       }
     },
+    "Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The choice is saved per display and kept when you unplug and reconnect it. The floating card sits below the menu bar and appears only when there is something to show."
+          }
+        }
+      }
+    },
     "Ekranlar": {
       "localizations": {
         "en": {
@@ -417,6 +437,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "About"
+          }
+        }
+      }
+    },
+    "Hap (menü çubuğunda)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pill (in the menu bar)"
           }
         }
       }
@@ -611,6 +641,16 @@
         }
       }
     },
+    "Mission Control'de gizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide in Mission Control"
+          }
+        }
+      }
+    },
     "Modüller": {
       "localizations": {
         "en": {
@@ -757,6 +797,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Play"
+          }
+        }
+      }
+    },
+    "Oyunlarda gizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide while playing games"
           }
         }
       }
@@ -1091,6 +1141,16 @@
         }
       }
     },
+    "Yüzen kart (menü çubuğunun altında)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Floating card (below the menu bar)"
+          }
+        }
+      }
+    },
     "adaptör %lld koduyla kapandı": {
       "localizations": {
         "en": {
@@ -1167,6 +1227,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Working name; the product name is not decided yet."
+          }
+        }
+      }
+    },
+    "Çentik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch"
           }
         }
       }

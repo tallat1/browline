@@ -45,7 +45,7 @@ public struct NotchShape: Shape {
     }
 }
 
-/// Çentikli ekranda NotchShape, çentiksiz ekranda hap; durumlar arasında yarıçaplar akar.
+/// Çentikli ekranda NotchShape, hap ve yüzen kartta yuvarlak dikdörtgen; durumlar arasında yarıçaplar akar.
 public struct SurfaceShape: Shape {
     var isPill: Bool
     var topRadius: CGFloat
@@ -73,7 +73,7 @@ public struct SurfaceShape: Shape {
             return SurfaceShape(isPill: false,
                                 topRadius: open ? NotchLayout.openTopRadius : NotchLayout.closedTopRadius,
                                 bottomRadius: open ? NotchLayout.openBottomRadius : NotchLayout.closedBottomRadius)
-        case .pill:
+        case .pill, .floating:
             let height = layout.size(for: presentation).height
             return SurfaceShape(isPill: true, topRadius: 0,
                                 bottomRadius: open ? NotchLayout.pillOpenCornerRadius : height / 2)

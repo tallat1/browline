@@ -116,11 +116,30 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
 | v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
+| v1: ekran başına mod (otomatik: çentik/hap · yüzen kart · kapalı), Mission Control'de ve oyunlarda gizleme | ✓ mod çözümü, yüzen yerleşim ve oyun kategorisi birim testli; yüzen kart yerleşik ekranda debug komutuyla görsel doğrulandı; dış ekran, Mission Control ve oyun elle denenmedi |
 | v1: TR/EN yerelleştirme (String Catalog) | ✓ 111 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
 | v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
+
+## Ekranlar
+
+Her ekranın modu ayrı seçilir ve ekranın kalıcı kimliğiyle (CoreGraphics UUID) saklanır; çıkarıp takınca korunur.
+
+- **Otomatik**: çentik varsa çentik, yoksa menü çubuğunda hap.
+- **Yüzen kart**: menü çubuğunun 8 pt altında, köşeleri yuvarlak kart. Uygulama içeriğinin üstünde durduğu için
+  boştayken hep gizli; yalnız etkinlik varken, açıkken ya da dosya sürüklenince belirir. Gölge yok (yarı saydam
+  piksel tıklamayı yutar), ince bir kenar çizgisi var.
+- **Kapalı**.
+
+Seçim yapılmamış ekran eski politikadan varsayılan alır: "yalnız yerleşik ekran" (kapak kapalıysa ilk ekran) ya da
+"tüm ekranlar". Böylece önceki ayarla çalışan kurulum değişmeden açılır.
+
+Gizleme seçenekleri: tam ekran (öndeki uygulamanın ekranı kaplayan penceresi), **Mission Control** (pencere
+`transient` olur, macOS Exposé'de kendisi gizler; kapalıyken Faz 0'da ölçülen `stationary`) ve **oyunlar** (öndeki
+uygulamanın Info.plist kategorisi `public.app-category.*games`; uygulama başına bir kez okunur, yoklama yok).
+Debug derlemesinde `display:floating|off|reset` birinci ekranın modunu dener.
 
 ## Kilit ekranı
 
@@ -146,7 +165,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (136 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (143 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

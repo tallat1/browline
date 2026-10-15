@@ -74,6 +74,11 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
         }
         .frame(width: size.width, height: size.height, alignment: .top)
         .clipShape(shape)
+        .overlay {
+            // Yüzen kart uygulama içeriğinin üstünde durur; ince kenar onu koyu pencerelerden ayırır.
+            // Gölge yok: yarı saydam piksel tıklamayı yutar (şeffaf piksel geçişi).
+            if layout.style == .floating { shape.stroke(Color.white.opacity(0.14), lineWidth: 1) }
+        }
         .contentShape(shape)
         .onHover { model.hoverChanged($0) }
         .onTapGesture { model.tapped() }

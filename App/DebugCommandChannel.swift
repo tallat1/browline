@@ -1,12 +1,14 @@
 #if DEBUG
 import AppKit
+import NotchShell
 import os
 
 private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: "debug")
 
 /// Yalnız debug derlemesi: test betikleri notch'u imleci ele geçirmeden yönetebilsin.
 /// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
-/// flash:power, hud:preview, state, lock:on|lock:off (kilit benzetimi, SkyLight kullanmaz).
+/// flash:power, hud:preview, state, lock:on|lock:off (kilit benzetimi, SkyLight kullanmaz),
+/// display:floating|off|reset (birinci ekranın modu).
 @MainActor
 final class DebugCommandChannel {
     static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
@@ -43,6 +45,12 @@ final class DebugCommandChannel {
         case "lock:on", "lock:off":
             let accepted = coordinator.lockScreen.simulateLock(command == "lock:on")
             debugLog.info("kilit benzetimi \(command, privacy: .public): \(accepted ? "uygulandı" : "reddedildi (özellik açık)", privacy: .public)")
+        case "display:floating", "display:off", "display:reset":
+            // Birinci ekranın (yerleşik) modunu dener; reset seçimi siler, önceki duruma döner.
+            guard let display = PanelManager.displaySummaries(for: coordinator.settings.panelOptions).first else { break }
+            let mode = PanelManager.DisplayMode(rawValue: String(command.dropFirst("display:".count)))
+            coordinator.settings.displayModes[display.persistentID] = mode
+            debugLog.info("ekran modu \(command, privacy: .public): \(display.name, privacy: .public)")
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "

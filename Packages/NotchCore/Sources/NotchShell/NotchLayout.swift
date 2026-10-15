@@ -35,8 +35,15 @@ public enum NotchPresentation: Equatable, Sendable {
 public struct NotchLayout: Equatable, Sendable {
     public enum Style: String, Sendable {
         case notch
+        /// Çentiksiz ekranda menü çubuğu bandında asılı hap.
         case pill
+        /// Menü çubuğunun altında, içerikten ayrık kart; yalnız gösterecek bir şey varken görünür.
+        case floating
     }
+
+    /// Yüzen kartın menü çubuğundan uzaklığı.
+    public static let floatingGap: CGFloat = 8
+    public static let floatingClosedHeight: CGFloat = 30
 
     public static let closedTopRadius: CGFloat = 6
     public static let closedBottomRadius: CGFloat = 14
@@ -67,8 +74,21 @@ public struct NotchLayout: Equatable, Sendable {
         (style == .notch ? Self.openTopRadius : 0) + config.contentMargin
     }
 
-    public static func make(metrics: ScreenMetrics, config: NotchLayoutConfig = .init()) -> NotchLayout {
+    /// `floating`: true ise ekranın çentiği olsa da yüzen kart.
+    public static func make(metrics: ScreenMetrics, config: NotchLayoutConfig = .init(),
+                            floating: Bool = false) -> NotchLayout {
         let screen = metrics.frame
+        if floating {
+            // Menü çubuğu otomatik gizliyse 0; kart o zaman ekranın üst kenarından aralıklı durur.
+            let inset = metrics.menuBarHeight + floatingGap
+            let closed = CGSize(width: config.pillClosedWidth, height: floatingClosedHeight)
+            let open = CGSize(width: min(config.openWidth, screen.width - 2 * floatingGap),
+                              height: config.openContentHeight + closed.height)
+            return NotchLayout(style: .floating, notchRect: nil, closedSize: closed, openSize: open,
+                               topInset: inset,
+                               panelFrame: panelFrame(midX: screen.midX, size: open, topInset: inset, in: screen),
+                               config: config)
+        }
         if let notch = metrics.notchRect {
             // Kulaklar gövdenin iki yanına taşar; gövde genişliği = gerçek çentik genişliği.
             let closed = CGSize(width: notch.width + 2 * closedTopRadius, height: notch.height)

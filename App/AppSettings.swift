@@ -16,6 +16,12 @@ final class AppSettings {
     var hapticsEnabled: Bool { didSet { store(hapticsEnabled, "hapticsEnabled") } }
     var hideInFullScreen: Bool { didSet { store(hideInFullScreen, "hideInFullScreen") } }
     var hideFromScreenCapture: Bool { didSet { store(hideFromScreenCapture, "hideFromScreenCapture") } }
+    /// Kalıcı ekran kimliği → mod; seçim yapılmamış ekran `screenPolicy`'den varsayılan alır.
+    var displayModes: [String: PanelManager.DisplayMode] {
+        didSet { store(displayModes.mapValues(\.rawValue), "displayModes") }
+    }
+    var hideInMissionControl: Bool { didSet { store(hideInMissionControl, "hideInMissionControl") } }
+    var hideInGames: Bool { didSet { store(hideInGames, "hideInGames") } }
     var nowPlayingEnabled: Bool { didSet { store(nowPlayingEnabled, "nowPlayingEnabled") } }
     var batteryEnabled: Bool { didSet { store(batteryEnabled, "batteryEnabled") } }
     var calendarEnabled: Bool { didSet { store(calendarEnabled, "calendarEnabled") } }
@@ -56,6 +62,10 @@ final class AppSettings {
         hapticsEnabled = defaults.object(forKey: "hapticsEnabled") as? Bool ?? true
         hideInFullScreen = defaults.bool(forKey: "hideInFullScreen")
         hideFromScreenCapture = defaults.bool(forKey: "hideFromScreenCapture")
+        displayModes = (defaults.dictionary(forKey: "displayModes") as? [String: String] ?? [:])
+            .compactMapValues(PanelManager.DisplayMode.init(rawValue:))
+        hideInMissionControl = defaults.bool(forKey: "hideInMissionControl")
+        hideInGames = defaults.bool(forKey: "hideInGames")
         nowPlayingEnabled = defaults.object(forKey: "nowPlayingEnabled") as? Bool ?? true
         batteryEnabled = defaults.object(forKey: "batteryEnabled") as? Bool ?? true
         calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? true
@@ -94,6 +104,9 @@ final class AppSettings {
         options.hapticsEnabled = hapticsEnabled
         options.hideInFullScreen = hideInFullScreen
         options.hideFromScreenCapture = hideFromScreenCapture
+        options.displayModes = displayModes
+        options.hideInMissionControl = hideInMissionControl
+        options.hideInGames = hideInGames
         options.detectsFileDrags = shelfEnabled
         return options
     }
@@ -135,6 +148,16 @@ extension HUDController.Mode {
         case .off: String(localized: "Kapalı")
         case .overlay: String(localized: "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)")
         case .replace: String(localized: "Sistem göstergesinin yerine geç (Erişilebilirlik izni)")
+        }
+    }
+}
+
+extension PanelManager.DisplayMode {
+    func title(hasNotch: Bool) -> String {
+        switch self {
+        case .automatic: hasNotch ? String(localized: "Çentik") : String(localized: "Hap (menü çubuğunda)")
+        case .floating: String(localized: "Yüzen kart (menü çubuğunun altında)")
+        case .off: String(localized: "Kapalı")
         }
     }
 }
