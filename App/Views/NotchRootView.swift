@@ -49,8 +49,9 @@ struct CompactLeadingView: View {
                         Image(systemName: activity.symbolName).foregroundStyle(activity.tintColor)
                         Text(activity.title).lineLimit(1)
                     }
+                    // Boşluk çerçeveden önce: kanat sabit genişlikte, boşluk onun içinde kalmalı.
+                    .padding(.leading, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 4)
                 }
             }
         }
@@ -84,7 +85,6 @@ struct CompactTrailingView: View {
             default:
                 if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
                     HStack(spacing: 6) {
-                        Spacer(minLength: 0)
                         if let progress = activity.progress {
                             Text("%\(Int((progress * 100).rounded()))").monospacedDigit()
                             ProgressRing(progress: progress, tint: activity.tintColor)
@@ -93,7 +93,8 @@ struct CompactTrailingView: View {
                             Text(subtitle).lineLimit(1).foregroundStyle(.secondary)
                         }
                     }
-                    .padding(.trailing, 4)
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
         }

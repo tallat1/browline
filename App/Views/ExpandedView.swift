@@ -8,12 +8,10 @@ struct ExpandedView: View {
     let model: NotchSurfaceModel
     let coordinator: AppCoordinator
 
-    private static let horizontalPadding: CGFloat = 18
-
     var body: some View {
         let ui = coordinator.ui
         let tabs = coordinator.availableTabs
-        let sideWidth = max(0, (context.size.width - context.notchGapWidth) / 2 - Self.horizontalPadding)
+        let sideWidth = max(0, (context.size.width - context.notchGapWidth) / 2 - context.horizontalInset)
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 tabBar(tabs, selected: ui.selectedTab)
@@ -40,11 +38,11 @@ struct ExpandedView: View {
                     }
                 }
             }
-            .padding(.top, 8)
-            .padding(.bottom, 12)
+            .padding(.top, 10)
+            .padding(.bottom, context.bottomInset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .padding(.horizontal, Self.horizontalPadding)
+        .padding(.horizontal, context.horizontalInset)
         .foregroundStyle(.white)
         .onChange(of: model.isFileDragActive, initial: true) { _, dragging in
             if dragging, tabs.contains(.shelf) { ui.selectedTab = .shelf }

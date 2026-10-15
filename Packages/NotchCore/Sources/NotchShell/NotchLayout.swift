@@ -7,11 +7,14 @@ public struct NotchLayoutConfig: Equatable, Sendable {
     /// Açık durumda çentik bandının altındaki içerik yüksekliği.
     public var openContentHeight: CGFloat = 136
     /// Kompakt durumda çentiğin iki yanına eklenen kanat genişliği.
-    public var compactWingWidth: CGFloat = 38
+    public var compactWingWidth: CGFloat = 44
     /// Hover ipucunda (peek) şeklin büyümesi.
     public var peekGrowth = CGSize(width: 8, height: 4)
     /// Çentiksiz ekrandaki hap, içerik yokken.
     public var pillClosedWidth: CGFloat = 140
+    /// Açık içeriğin görünen kenardan (kulak eğrisinin bittiği yerden) uzaklığı.
+    public var contentMargin: CGFloat = 20
+    public var contentBottomMargin: CGFloat = 16
 
     public init() {}
 }
@@ -57,6 +60,12 @@ public struct NotchLayout: Equatable, Sendable {
 
     /// Çentiğin kapladığı genişlik (açık durumda içerik bu boşluğa yazılmaz).
     public var notchGapWidth: CGFloat { notchRect?.width ?? 0 }
+
+    /// Açık içeriğin çerçeveden yatay boşluğu. Çentikte görünen gövde, üst kulak yarıçapı kadar
+    /// içeride başlar; boşluk o noktadan ölçülür, yoksa içerik görünen kenara yapışır.
+    public var openHorizontalInset: CGFloat {
+        (style == .notch ? Self.openTopRadius : 0) + config.contentMargin
+    }
 
     public static func make(metrics: ScreenMetrics, config: NotchLayoutConfig = .init()) -> NotchLayout {
         let screen = metrics.frame

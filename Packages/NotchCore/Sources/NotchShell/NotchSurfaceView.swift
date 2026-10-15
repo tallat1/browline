@@ -8,6 +8,9 @@ public struct NotchContext: Equatable, Sendable {
     /// Ortadaki çentiğin genişliği; bu aralığa içerik yazılmamalı (çentiksiz ekranda 0).
     public let notchGapWidth: CGFloat
     public let size: CGSize
+    /// Çerçeveden yatay boşluk; kulak eğrisini hesaba katar.
+    public let horizontalInset: CGFloat
+    public let bottomInset: CGFloat
 }
 
 /// Notch yüzeyinin kökü: siyah şekil, durumlar arası yay animasyonu ve içerik yuvaları.
@@ -91,7 +94,9 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
             .transition(.opacity)
         case .open:
             expanded(NotchContext(style: layout.style, bandHeight: layout.bandHeight,
-                                  notchGapWidth: layout.notchGapWidth, size: size))
+                                  notchGapWidth: layout.notchGapWidth, size: size,
+                                  horizontalInset: layout.openHorizontalInset,
+                                  bottomInset: layout.config.contentBottomMargin))
                 .frame(width: size.width, height: size.height, alignment: .top)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
         case .closed, .peek(compact: false):

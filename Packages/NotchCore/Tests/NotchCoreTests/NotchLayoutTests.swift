@@ -52,6 +52,15 @@ struct NotchLayoutTests {
         #expect(layout.size(for: .compact).width == layout.closedSize.width + wings)
     }
 
+    /// Görünen gövde kulak yarıçapı kadar içeride başlar; içerik boşluğu oradan ölçülür.
+    @Test func openInsetAccountsForEarRadius() {
+        let notch = NotchLayout.make(metrics: Self.builtInDefault)
+        #expect(notch.openHorizontalInset == NotchLayout.openTopRadius + notch.config.contentMargin)
+        var metrics = Self.builtInDefault
+        metrics.safeAreaTop = 0
+        #expect(NotchLayout.make(metrics: metrics).openHorizontalInset == notch.config.contentMargin)
+    }
+
     /// Geniş kanat açık genişliği aşamaz; panel karesi hiç değişmez.
     @Test func wideWingIsClampedInsidePanel() {
         let layout = NotchLayout.make(metrics: Self.builtInDefault)

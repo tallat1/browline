@@ -26,7 +26,7 @@ struct ShelfTab: View {
                             ShelfTile(item: item, shelf: shelf)
                         }
                     }
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, 4)
                 }
                 HStack {
                     Text("\(shelf.items.count) öğe")
@@ -37,10 +37,10 @@ struct ShelfTab: View {
                 }
                 .font(.system(size: 11))
                 .buttonStyle(.plain)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, 4)
             }
         }
-        .padding(6)
+        .padding(10)
         .background {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))

@@ -55,7 +55,7 @@ final class AppCoordinator {
     }
 
     /// Başlık taşıyan dış etkinlikler için kompakt kanat genişliği.
-    static let wideWingWidth: CGFloat = 128
+    static let wideWingWidth: CGFloat = 136
 
     let settings = AppSettings()
     let activities = ActivityCenter()
