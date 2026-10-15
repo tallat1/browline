@@ -42,8 +42,7 @@ while index < arguments.count {
 @MainActor
 func number(_ key: String) -> Double? {
     guard let raw = options[key] else { return nil }
-    if raw.hasSuffix("%"), let percent = Double(raw.dropLast()) { return percent / 100 }
-    guard let value = Double(raw) else { fail("--\(key) sayı olmalı: \(raw)", code: 2) }
+    guard let value = ActivityRequest.number(from: raw) else { fail("--\(key) sayı olmalı: \(raw)", code: 2) }
     return value
 }
 

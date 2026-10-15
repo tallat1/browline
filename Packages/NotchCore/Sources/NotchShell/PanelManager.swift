@@ -253,6 +253,7 @@ private final class PanelController {
         let hidden = fullScreenHidden || idlePill
         guard hidden != isHidden else { return }
         isHidden = hidden
+        Log.shell.notice("panel \(hidden ? "gizlendi" : "gösterildi", privacy: .public) (tam ekran: \(self.fullScreenHidden), boşta hap: \(idlePill)) (\(self.model.screenName, privacy: .public))")
         if hidden {
             if fullScreenHidden { model.dismiss() }
             panel.orderOut(nil)

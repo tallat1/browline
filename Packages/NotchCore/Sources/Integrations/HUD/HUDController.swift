@@ -74,6 +74,7 @@ public final class HUDController {
                 // kAXTrustedCheckOptionPrompt'un değeri; global değişken Swift 6'da eşzamanlılık açısından güvensiz.
                 _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
             }
+            Log.integrations.notice("HUD: Erişilebilirlik izni bekleniyor")
             // İzin verilince sistem bu dağıtık bildirimi gönderir; tap o zaman kurulur.
             trustObserver = DistributedNotificationCenter.default().addObserver(
                 forName: Notification.Name("com.apple.accessibility.api"), object: nil, queue: .main) { [weak self] _ in
@@ -82,11 +83,13 @@ public final class HUDController {
                     try? await Task.sleep(for: .milliseconds(500))
                     guard let self, self.mode == .replace, !self.isTapActive else { return }
                     self.isTapActive = Self.isAccessibilityTrusted && self.tap.start()
+                    Log.integrations.notice("HUD: izin geldi, tap \(self.isTapActive ? "kuruldu" : "kurulamadı", privacy: .public)")
                 }
             }
             return
         }
         isTapActive = tap.start()
+        Log.integrations.notice("HUD: medya tuşu tap'i \(self.isTapActive ? "kuruldu" : "kurulamadı", privacy: .public)")
     }
 
     private func handle(_ key: MediaKey, fine: Bool) -> Bool {
@@ -113,6 +116,7 @@ public final class HUDController {
             return true
         case .illuminationUp, .illuminationDown:
             // Klavye ışığı private CoreBrightness ister; şimdilik sisteme bırakılır.
+            Log.integrations.notice("HUD: klavye ışığı tuşu sisteme bırakıldı")
             return false
         }
     }
@@ -176,6 +180,7 @@ public final class HUDController {
     // MARK: - Ortak
 
     private func show(_ kind: Kind, level: Double, muted: Bool) {
+        Log.integrations.notice("HUD: \(kind == .volume ? "ses" : "parlaklık", privacy: .public) %\(Int((level * 100).rounded()), privacy: .public)\(muted ? " sessiz" : "", privacy: .public)")
         self.kind = kind
         self.level = level
         isMuted = muted

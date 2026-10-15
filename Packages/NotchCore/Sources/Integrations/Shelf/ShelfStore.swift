@@ -35,6 +35,8 @@ public final class ShelfStore {
         }
         guard !new.isEmpty else { return }
         items = Array((new.reversed() + items).prefix(Self.maximumItems))
+        // Dosya adı kişisel; yalnız sayı.
+        Log.integrations.notice("Raf: \(new.count) öğe eklendi, toplam \(self.items.count)")
         save()
     }
 
@@ -75,8 +77,12 @@ public final class ShelfStore {
     @discardableResult
     public static func shareViaAirDrop(_ urls: [URL]) -> Bool {
         guard !urls.isEmpty, let service = NSSharingService(named: .sendViaAirDrop),
-              service.canPerform(withItems: urls) else { return false }
+              service.canPerform(withItems: urls) else {
+            Log.integrations.notice("AirDrop: servis kullanılamıyor (\(urls.count) öğe)")
+            return false
+        }
         service.perform(withItems: urls)
+        Log.integrations.notice("AirDrop: paylaşım açıldı (\(urls.count) öğe)")
         return true
     }
 

@@ -1,6 +1,36 @@
 {
   "sourceLanguage": "tr",
   "strings": {
+    "#RRGGBB": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "#RRGGBB"
+          }
+        }
+      }
+    },
+    "#RRGGBB, örnek #FF9F0A": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "#RRGGBB, for example #FF9F0A"
+          }
+        }
+      }
+    },
+    "${identifier} etkinliğini bitir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End activity ${identifier}"
+          }
+        }
+      }
+    },
     "%%%lld": {
       "localizations": {
         "en": {
@@ -61,6 +91,16 @@
         }
       }
     },
+    "0–50; çalan müzik 30, toplantı 40.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "0–50; playing music is 30, meetings are 40."
+          }
+        }
+      }
+    },
     "AirDrop": {
       "localizations": {
         "en": {
@@ -77,6 +117,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Send with AirDrop"
+          }
+        }
+      }
+    },
+    "Alt başlık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subtitle"
           }
         }
       }
@@ -111,6 +161,16 @@
         }
       }
     },
+    "Başlık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        }
+      }
+    },
     "Başlıksız etkinlik": {
       "localizations": {
         "en": {
@@ -127,6 +187,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scripts, AI agents and Shortcuts (Run Shell Script) can send activities to the notch: notch push --id build --title Build --progress 40%. Only your user account can connect."
+          }
+        }
+      }
+    },
+    "Birkaç saniyelik bildirim; diğer etkinliklerin önüne geçer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A notification for a few seconds; it goes in front of other activities."
           }
         }
       }
@@ -251,6 +321,16 @@
         }
       }
     },
+    "Etkinlik API'si kapalı; Ayarlar › Modüller'den açın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Activity API is off; turn it on in Settings › Modules."
+          }
+        }
+      }
+    },
     "Etkinlikler": {
       "localizations": {
         "en": {
@@ -321,12 +401,32 @@
         }
       }
     },
+    "Güncellenmezse bu sürenin sonunda kendiliğinden düşer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If not updated, it is removed automatically after this time."
+          }
+        }
+      }
+    },
     "Hakkında": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "About"
+          }
+        }
+      }
+    },
+    "Harf, rakam, nokta, tire; en çok 64 karakter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letters, digits, dots, hyphens; at most 64 characters."
           }
         }
       }
@@ -431,6 +531,26 @@
         }
       }
     },
+    "Kimlik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Identifier"
+          }
+        }
+      }
+    },
+    "Kimliği verilen etkinliği notch'tan kaldırır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removes the activity with the given identifier from the notch."
+          }
+        }
+      }
+    },
     "Lisans metni bulunamadı.": {
       "localizations": {
         "en": {
@@ -501,6 +621,66 @@
         }
       }
     },
+    "Notch etkinliğini bitir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End Notch Activity"
+          }
+        }
+      }
+    },
+    "Notch'ta ${title} bildir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notify ${title} in the notch"
+          }
+        }
+      }
+    },
+    "Notch'ta ${title} göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show ${title} in the notch"
+          }
+        }
+      }
+    },
+    "Notch'ta bir etkinlik gösterir; aynı kimlikle yeniden çalıştırmak onu günceller.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shows an activity in the notch; running it again with the same identifier updates it."
+          }
+        }
+      }
+    },
+    "Notch'ta etkinlik göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Activity in Notch"
+          }
+        }
+      }
+    },
+    "Notch'ta kısa bildirim göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Brief Notification in Notch"
+          }
+        }
+      }
+    },
     "NotchMVP %@": {
       "localizations": {
         "en": {
@@ -517,6 +697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "NotchMVP Settings"
+          }
+        }
+      }
+    },
+    "NotchMVP henüz hazır değil; birazdan yeniden deneyin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "NotchMVP is not ready yet; try again in a moment."
           }
         }
       }
@@ -651,6 +841,26 @@
         }
       }
     },
+    "Renk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color"
+          }
+        }
+      }
+    },
+    "SF Symbol adı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Symbol name"
+          }
+        }
+      }
+    },
     "Ses": {
       "localizations": {
         "en": {
@@ -727,6 +937,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next"
+          }
+        }
+      }
+    },
+    "Süre (saniye)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duration (seconds)"
           }
         }
       }
@@ -991,12 +1211,32 @@
         }
       }
     },
+    "Öncelik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Priority"
+          }
+        }
+      }
+    },
     "Önümüzdeki 24 saatte etkinlik yok": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No events in the next 24 hours"
+          }
+        }
+      }
+    },
+    "Örnek: hammer, checkmark.circle.fill": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For example: hammer, checkmark.circle.fill"
           }
         }
       }
@@ -1017,6 +1257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Third-party software"
+          }
+        }
+      }
+    },
+    "İlerleme (%)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress (%)"
           }
         }
       }

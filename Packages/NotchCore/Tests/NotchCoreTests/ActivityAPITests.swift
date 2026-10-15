@@ -104,3 +104,36 @@ struct ActivitySocketTests {
         }
     }
 }
+
+struct ActivityURLTests {
+    @Test func parsesPushWithPercentProgress() throws {
+        let url = try #require(URL(string: "notchmvp://push?id=build&title=Derleme%20%C3%A7al%C4%B1%C5%9F%C4%B1yor&progress=40%25&symbol=hammer&tint=%23FF9F0A&priority=35&ttl=120"))
+        let request = try ActivityURL.request(from: url)
+        #expect(request == ActivityRequest(op: .push, id: "build", title: "Derleme çalışıyor", progress: 0.4,
+                                           symbol: "hammer", tint: "#FF9F0A", priority: 35, ttl: 120))
+    }
+
+    @Test func parsesEndAndFlash() throws {
+        #expect(try ActivityURL.request(from: #require(URL(string: "notchmvp://end?id=build")))
+            == ActivityRequest(op: .end, id: "build"))
+        #expect(try ActivityURL.request(from: #require(URL(string: "notchmvp:flash?title=Bitti&duration=2")))
+            == ActivityRequest(op: .flash, title: "Bitti", duration: 2))
+    }
+
+    @Test(arguments: [
+        ("https://push?id=a", ActivityURL.ParseError.scheme),
+        ("notchmvp://list", .operation("list")),
+        ("notchmvp://push?id=a&title=b&color=red", .unknownParameter("color")),
+        ("notchmvp://push?id=a&title=b&progress=yarım", .number("progress")),
+    ])
+    func rejectsMalformed(_ raw: String, _ expected: ActivityURL.ParseError) throws {
+        let url = try #require(URL(string: raw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? raw))
+        #expect(throws: expected) { try ActivityURL.request(from: url) }
+    }
+
+    @Test func numberAcceptsFractionAndPercent() {
+        #expect(ActivityRequest.number(from: "0.25") == 0.25)
+        #expect(ActivityRequest.number(from: "25%") == 0.25)
+        #expect(ActivityRequest.number(from: "çeyrek") == nil)
+    }
+}

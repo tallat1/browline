@@ -68,6 +68,37 @@ notch list
 - Dış etkinlik öne çıkınca kompakt kanatlar genişler (128 pt): solda sembol ve başlık, sağda ilerleme ya da alt başlık.
 - Ham protokol: `echo '{"op":"ping"}' | nc -U "$HOME/Library/Application Support/com.talatozcoban.notchmvp/activity.sock"`
 
+Aynı etkinlik iki kapıdan daha gelir; ikisi de soketi dolaşmadan aynı işleyiciye girer, aynı sınırlar ve aynı
+"Etkinlik API'si" ayarı geçerlidir:
+
+- **URL şeması** (Raycast, Alfred, Kestirmeler "URL'yi Aç", betikler). Yalnız `push`, `end`, `flash`; parametreler
+  `notch` aracıyla aynı, `%` URL'de `%25` yazılır. Betikten çağırırken `open -g` kullanın: `-g` olmadan macOS
+  uygulamayı öne alır (uygulama odağı önceki uygulamaya geri verir, ama bir an kayar).
+
+  ```sh
+  open -g "notchmvp://push?id=build&title=Derleme&progress=40%25&symbol=hammer&tint=%23FF9F0A"
+  open -g "notchmvp://end?id=build"
+  open -g "notchmvp://flash?title=Bitti&symbol=checkmark.circle.fill&duration=3"
+  ```
+
+  ⚠️ Bir web sayfası da bu bağlantıyı açabilir (tarayıcı önce sorar); en kötü durumda notch'ta yabancı bir metin
+  görünür. Kilit ekranında dış etkinlikler zaten gösterilmez.
+- **Kestirmeler eylemleri** (App Intents): "Notch'ta etkinlik göster", "Notch etkinliğini bitir", "Notch'ta kısa
+  bildirim göster". Uygulamayı öne almaz; hata mesajı Kestirmeler'de görünür.
+
+### AI ajanları
+
+`Examples/` altında hazır örnekler; ikisi de bağımlılıksız (JSON `plutil` ile okunur) ve ajanı hiçbir koşulda
+engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Applications/NotchMVP.app/Contents/Helpers/notch`).
+
+- **Claude Code** (`Examples/claude-code/notch-hook.sh`): istem gönderilince ve her araçtan sonra "Claude
+  çalışıyor" (proje adıyla), izin istenince turuncu "Claude onay bekliyor", yanıt bitince "Claude bitti". Oturum
+  başına ayrı etkinlik (`claude.<oturum>`). Kurulum: `Examples/claude-code/settings-hooks.json` içindeki
+  `NOTCH_HOOK_PATH`'i betiğin yoluyla değiştirip `~/.claude/settings.json` içindeki `hooks` ile birleştirin.
+- **Codex CLI** (`Examples/codex/notch-notify.sh`): tur bitince "Codex bitti". `~/.codex/config.toml`:
+  `notify = ["/bin/bash", "/YOL/notch-notify.sh"]`. Codex bildirim alanları sürüme göre değişebilir; betik yalnız
+  tür ve klasörü okur.
+
 ## Durum (2026-10-15)
 
 | MVP maddesi | Durum |
@@ -79,6 +110,7 @@ notch list
 | Tam ekranda / ekran yakalamada gizleme, ayarlar, giriş öğesi | ✓ yazıldı; elle denenmedi |
 | Boşta enerji (kapalı notch, müzik duraklatılmış) | ✓ CPU %0,079, 0,08 uyanma/sn; adaptör süreci ≈ 0 (etkinlik API'si eklenmeden önce) |
 | v1: açık etkinlik API'si + `notch` aracı + Etkinlikler sekmesi | ✓ yazıldı; soket uçtan uca test, çıkış kodları ve görsel doğrulandı; API açıkken temiz boşta ölçüm yok |
+| v1: URL şeması, Kestirmeler eylemleri, Claude Code ve Codex örnekleri | ✓ URL ve iki örnek betik uçtan uca denendi (`open -g` odağı almıyor); Kestirmeler eylemleri pakette (meta veri), Kestirmeler uygulamasında elle denenmedi |
 | v1: kamera/mikrofon göstergesi | ✓ yazıldı; cihaz izleme çalışıyor (3 ses girişi, 4 kamera), gerçek kullanım anı denenmedi |
 | v1: ses/parlaklık HUD'ı (kapalı / ek gösterge / sistemin yerine) | ✓ yazıldı; önizleme görsel doğrulandı; "yerine geç" Erişilebilirlik izni ve tuşla elle denenmedi; klavye ışığı sisteme bırakılıyor |
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
@@ -114,7 +146,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (111 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (136 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

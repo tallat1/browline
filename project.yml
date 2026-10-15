@@ -51,6 +51,10 @@ targets:
         NSHumanReadableCopyright: "Çalışma adı NotchMVP"
         NSAppleEventsUsageDescription: "MediaRemote kullanılamadığında Music ve Spotify'ı oynat/duraklat ve parça geçişi için denetlemek."
         NSCalendarsFullAccessUsageDescription: "Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak."
+        # Etkinlik API'sinin URL kapısı: notchmvp://push?id=…&title=…
+        CFBundleURLTypes:
+          - CFBundleURLName: com.talatozcoban.notchmvp.activity
+            CFBundleURLSchemes: [notchmvp]
     entitlements:
       path: App/NotchMVP.entitlements
       properties:

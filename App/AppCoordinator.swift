@@ -90,6 +90,9 @@ final class AppCoordinator {
     private var activityServer: ActivitySocketServer?
     private var liveExternalIDs: Set<ActivityID> = []
 
+    /// Etkin koordinatör; Kestirmeler eylemleri buradan ulaşır.
+    private(set) static var current: AppCoordinator?
+
     init() {
         panels = PanelManager(options: settings.panelOptions) { [unowned self] model in
             AnyView(NotchRootView(model: model, coordinator: self))
@@ -97,6 +100,7 @@ final class AppCoordinator {
         lockScreen = LockScreenPresenter { [unowned self] model in
             AnyView(LockScreenRootView(model: model, coordinator: self))
         }
+        Self.current = self
     }
 
     /// Kilit panelinde öne çıkan etkinlik.
@@ -112,6 +116,9 @@ final class AppCoordinator {
 
     func start() {
         activities.onActivitiesChanged = { [weak self] in self?.updateCompactState() }
+        activities.onCurrentChanged = { activity in
+            AppLog.coordinator.notice("öne çıkan etkinlik: \(activity?.id.rawValue ?? "yok", privacy: .public)")
+        }
         panels.onModelsChanged = { [weak self] _ in self?.updateCompactState() }
 
         nowPlaying.onInfoChanged = { [weak self] info in
@@ -142,6 +149,7 @@ final class AppCoordinator {
         }
         privacy.onChange = { [weak self] camera, microphone in
             guard let self else { return }
+            AppLog.coordinator.notice("gizlilik: kamera \(camera ? "açık" : "kapalı", privacy: .public), mikrofon \(microphone ? "açık" : "kapalı", privacy: .public)")
             if camera || microphone {
                 activities.setLive(ActivityKind.privacy, priority: 15)
             } else {
@@ -153,6 +161,7 @@ final class AppCoordinator {
         }
         downloads.onActiveChanged = { [weak self] list in
             guard let self else { return }
+            AppLog.coordinator.notice("indirmeler: \(list.count) etkin")
             if list.isEmpty {
                 activities.removeLive(ActivityKind.download)
             } else {
@@ -161,6 +170,7 @@ final class AppCoordinator {
         }
         downloads.onFinished = { [weak self] name in
             guard let self else { return }
+            AppLog.coordinator.notice("indirme bitti")
             ui.lastFinishedDownload = name
             activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
         }
@@ -231,6 +241,26 @@ final class AppCoordinator {
     }
 
     // MARK: - Etkinlik API'si
+
+    /// URL şeması ve Kestirmeler soketi dolaşmadan buradan girer: aynı doğrulama, aynı ayar.
+    func handleExternal(_ request: ActivityRequest, source: String) -> ActivityResponse {
+        guard settings.activityAPIEnabled else {
+            AppLog.coordinator.notice("\(source, privacy: .public) \(request.op.rawValue, privacy: .public): API kapalı")
+            return .failure(String(localized: "Etkinlik API'si kapalı; Ayarlar › Modüller'den açın."))
+        }
+        let response = externalActivities.handle(request)
+        // Başlık kişisel olabilir; günlüğe yalnız işlem ve sonuç.
+        AppLog.coordinator.notice("\(source, privacy: .public) \(request.op.rawValue, privacy: .public): \(response.ok ? "tamam" : response.error ?? "hata", privacy: .public)")
+        return response
+    }
+
+    func handleURL(_ url: URL) {
+        do throws(ActivityURL.ParseError) {
+            _ = handleExternal(try ActivityURL.request(from: url), source: "URL")
+        } catch {
+            AppLog.coordinator.error("URL reddedildi: \(error.description, privacy: .public)")
+        }
+    }
 
     /// Kompakt görünüm için: öne çıkan kimliğe karşılık gelen dış etkinlik ya da kısa bildirim.
     func externalActivity(for id: ActivityID?) -> ExternalActivity? {

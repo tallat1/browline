@@ -71,6 +71,7 @@ public final class CalendarMonitor {
             Log.integrations.error("Takvim izni istenemedi: \(error.localizedDescription, privacy: .public)")
         }
         access = Self.currentAccess()
+        Log.integrations.notice("Takvim izni: \(String(describing: self.access), privacy: .public)")
         if access == .granted, isRunning {
             isRunning = false
             start()
@@ -102,6 +103,8 @@ public final class CalendarMonitor {
             .prefix(6)
             .map(Self.makeEvent)
         upcoming = Array(events)
+        // Başlık kişisel; günlüğe yalnız sayı yazılır.
+        Log.integrations.notice("Takvim: \(self.upcoming.count) yaklaşan etkinlik, bağlantılı \(self.upcoming.filter { $0.meetingURL != nil }.count)")
         refreshImminent()
     }
 
@@ -137,6 +140,7 @@ public final class CalendarMonitor {
     private func setImminent(_ event: Event?) {
         guard event != imminentMeeting else { return }
         imminentMeeting = event
+        Log.integrations.notice("Takvim: yaklaşan toplantı \(event == nil ? "yok" : "var", privacy: .public)")
         onImminentMeetingChanged?(event)
     }
 }

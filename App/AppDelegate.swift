@@ -5,6 +5,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let coordinator = AppCoordinator()
     private lazy var settingsWindow = SettingsWindowController(coordinator: coordinator)
     private var statusItem: NSStatusItem?
+    /// URL olayı uygulamayı öne alır; odak bu uygulamaya geri verilir.
+    private var lastExternalApp: NSRunningApplication?
+    private var lastURLHandledAt: Date?
     #if DEBUG
     private lazy var debugChannel = DebugCommandChannel(coordinator: coordinator)
     #endif
@@ -15,7 +18,44 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         debugChannel.start()
         #endif
         installStatusItem()
+        trackFrontmostApplication()
         if !coordinator.settings.hasCompletedOnboarding { settingsWindow.show() }
+    }
+
+    // MARK: - URL şeması
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        urls.forEach(coordinator.handleURL)
+        lastURLHandledAt = .now
+        returnFocusIfNeeded()
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        // Etkinleşme URL olayından sonra da gelebiliyor.
+        guard let handledAt = lastURLHandledAt, Date.now.timeIntervalSince(handledAt) < 1 else { return }
+        returnFocusIfNeeded()
+    }
+
+    private func trackFrontmostApplication() {
+        let ownPID = ProcessInfo.processInfo.processIdentifier
+        if let app = NSWorkspace.shared.frontmostApplication, app.processIdentifier != ownPID { lastExternalApp = app }
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            MainActor.assumeIsolated {
+                guard let app, app.processIdentifier != ownPID else { return }
+                self?.lastExternalApp = app
+            }
+        }
+    }
+
+    /// `open notchmvp://…` (−g olmadan) ajan uygulamayı etkinleştirir ve kullanıcının odağını alır.
+    /// Açık ayar penceresi yoksa odak önceki uygulamaya geri verilir.
+    private func returnFocusIfNeeded() {
+        guard NSApp.isActive, !NSApp.windows.contains(where: { $0.isVisible && $0.canBecomeKey }),
+              let app = lastExternalApp, !app.isTerminated else { return }
+        NSApp.yieldActivation(to: app)
+        app.activate()
     }
 
     /// Menü çubuğu simgesi taşma (») denetiminin arkasında kalırsa: uygulamayı yeniden açmak
