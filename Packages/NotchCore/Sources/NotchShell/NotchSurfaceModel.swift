@@ -21,6 +21,9 @@ public final class NotchSurfaceModel {
     }
     /// Kompakt kanat genişliği; nil ise dar kanat. Başlık taşıyan etkinlikler için genişletilir.
     public var compactWingWidth: CGFloat?
+    /// İçeriğin istediği açık boyut (sekmeye göre); nil ise yerleşimin varsayılanı. Değişince şekil
+    /// yay animasyonuyla büyür ya da küçülür; panel karesi değişmez.
+    public var preferredOpenSize: CGSize?
     public private(set) var hapticTick = 0
 
     @ObservationIgnored public var openDelay: Duration = .milliseconds(150)
@@ -29,6 +32,13 @@ public final class NotchSurfaceModel {
     @ObservationIgnored var onOpenChanged: ((Bool) -> Void)?
     /// Çentiksiz ekranda "yalnız etkinlik varken" görünürlüğü bu değişikliklere bağlı.
     @ObservationIgnored var onVisibilityInputsChanged: (() -> Void)?
+    /// Açık görünümdeki bir metin alanı yazmaya hazır: panel yalnız bu sürede key olabilir. Ekranda
+    /// görünmesi yetmez, kullanıcı alana tıklayınca key olur (hover klavyeyi çalmasın). Kapanınca düşer.
+    public var wantsKeyboard = false {
+        didSet { if wantsKeyboard != oldValue { onKeyboardChanged?(wantsKeyboard) } }
+    }
+    @ObservationIgnored var onKeyboardChanged: ((Bool) -> Void)?
+
     /// Açıkken yatay kaydırma; true ileri. Uygulama bağlar.
     @ObservationIgnored public var onHorizontalSwipe: ((_ forward: Bool) -> Void)?
 
@@ -50,7 +60,11 @@ public final class NotchSurfaceModel {
 
     /// Şu anki görünür şekil, global koordinatta.
     public var currentShapeRect: CGRect {
-        layout.shapeRect(for: presentation, wingWidth: compactWingWidth)
+        layout.shapeRect(for: presentation, wingWidth: compactWingWidth, openSize: preferredOpenSize)
+    }
+
+    private var openShapeRect: CGRect {
+        layout.shapeRect(for: .open, openSize: preferredOpenSize)
     }
 
     func update(layout: NotchLayout, screenName: String) {
@@ -133,13 +147,13 @@ public final class NotchSurfaceModel {
     /// 106 sn açık kalma gözlendi) kapanmayı bu sağlar.
     func pointerMoved(to point: CGPoint) {
         guard isOpen else { return }
-        let inside = layout.shapeRect(for: .open).insetBy(dx: -10, dy: -10).contains(point)
+        let inside = openShapeRect.insetBy(dx: -10, dy: -10).contains(point)
         if inside != isPointerInside { hoverChanged(inside) }
     }
 
     /// Açıkken şeklin dışına yapılan tıklama.
     func clickedOutside(at point: CGPoint) {
-        guard isOpen, !layout.shapeRect(for: .open).contains(point) else { return }
+        guard isOpen, !openShapeRect.contains(point) else { return }
         dismiss()
     }
 
@@ -158,7 +172,10 @@ public final class NotchSurfaceModel {
 
     private func setOpen(_ open: Bool) {
         if open { isPeeking = false }
-        if !open { isPinned = false }
+        if !open {
+            isPinned = false
+            wantsKeyboard = false
+        }
         guard open != isOpen else { return }
         if open, hapticsEnabled { hapticTick &+= 1 }
         isOpen = open

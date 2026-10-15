@@ -1,5 +1,6 @@
 #if DEBUG
 import AppKit
+import Integrations
 import NotchShell
 import os
 
@@ -9,7 +10,7 @@ private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: 
 /// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
 /// flash:power, hud:preview, state, lock:on|lock:off (kilit benzetimi, SkyLight kullanmaz),
 /// display:floating|off|reset (birinci ekranın modu), timer:<sn>|cancel, audio:preview, track:preview,
-/// awake:on|off, battery:low|full.
+/// awake:on|off, battery:low|full, weather:<şehir>|off, timer:pomodoro.
 @MainActor
 final class DebugCommandChannel {
     static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
@@ -53,7 +54,8 @@ final class DebugCommandChannel {
             coordinator.settings.displayModes[display.persistentID] = mode
             debugLog.info("ekran modu \(command, privacy: .public): \(display.name, privacy: .public)")
         case let timer where timer.hasPrefix("timer:"):
-            if timer == "timer:cancel" { coordinator.timer.cancel() }
+            if timer == "timer:cancel" { coordinator.cancelTimer() }
+            else if timer == "timer:pomodoro" { coordinator.startPomodoro() }
             else if let seconds = Double(timer.dropFirst(6)) { coordinator.timer.start(seconds: seconds) }
         case "audio:preview":
             coordinator.activities.flash(AppCoordinator.ActivityKind.audioOutput, duration: .seconds(3))
@@ -67,6 +69,13 @@ final class DebugCommandChannel {
             coordinator.activities.flash(AppCoordinator.ActivityKind.batteryLow, duration: .seconds(4))
         case "battery:full":
             coordinator.activities.flash(AppCoordinator.ActivityKind.batteryFull, duration: .seconds(4))
+        case let command where command.hasPrefix("weather:"):
+            // Ayarları değiştirmeden dener; ayar kapalıysa sonraki ayar değişikliği durdurur.
+            let city = String(command.dropFirst("weather:".count))
+            if city == "off" { coordinator.weather.stop(); break }
+            Task { @MainActor in
+                if let place = try? await WeatherMonitor.geocode(city) { coordinator.weather.start(place: place) }
+            }
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "

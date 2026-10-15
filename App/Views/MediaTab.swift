@@ -6,42 +6,31 @@ struct MediaTab: View {
     let sourceDescription: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let info = nowPlaying.info {
-                HStack(alignment: .center, spacing: 14) {
-                    artwork
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(info.title)
-                            .font(.system(size: 13, weight: .semibold))
-                            .lineLimit(1)
-                        Text(subtitle(for: info))
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        ProgressRow(info: info, accent: accent, canSeek: nowPlaying.canSeek) { seconds in
-                            nowPlaying.seek(to: seconds)
-                        }
-                        .padding(.top, 4)
+        if let info = nowPlaying.info {
+            HStack(alignment: .center, spacing: 14) {
+                artwork
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(info.title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .lineLimit(1)
+                    Text(subtitle(for: info))
+                        .font(NotchDesign.body)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    ProgressRow(info: info, accent: accent, canSeek: nowPlaying.canSeek) { seconds in
+                        nowPlaying.seek(to: seconds)
                     }
-                    Spacer(minLength: 6)
-                    controls(isPlaying: info.isPlaying)
+                    .padding(.top, 8)
                 }
-            } else {
-                HStack(spacing: 10) {
-                    Image(systemName: "music.note")
-                        .font(.system(size: 20))
-                        .foregroundStyle(.secondary)
-                    (nowPlaying.source == .checking ? Text("Medya kaynağı denetleniyor…") : Text("Şu an bir şey çalmıyor"))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, minHeight: 64)
+                .help(sourceDescription)
+                Spacer(minLength: 8)
+                controls(isPlaying: info.isPlaying)
             }
-            Spacer(minLength: 0)
-            Text(sourceDescription)
-                .font(.system(size: 9.5))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
+            .frame(maxHeight: .infinity)
+        } else {
+            EmptyStateView(symbol: "music.note",
+                           title: nowPlaying.source == .checking ? "Medya kaynağı denetleniyor…" : "Şu an bir şey çalmıyor",
+                           message: LocalizedStringKey(sourceDescription))
         }
     }
 
@@ -55,13 +44,13 @@ struct MediaTab: View {
                 Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
             } else {
                 ZStack {
-                    Color.white.opacity(0.08)
-                    Image(systemName: "music.note").font(.system(size: 22)).foregroundStyle(.secondary)
+                    NotchDesign.cardFill
+                    Image(systemName: "music.note").font(.system(size: 24)).foregroundStyle(.secondary)
                 }
             }
         }
-        .frame(width: 64, height: 64)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .frame(width: 84, height: 84)
+        .clipShape(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous))
     }
 
     private func subtitle(for info: NowPlayingInfo) -> String {
@@ -71,25 +60,22 @@ struct MediaTab: View {
     }
 
     private func controls(isPlaying: Bool) -> some View {
-        HStack(spacing: 6) {
-            controlButton("backward.fill", size: 15, help: "Önceki") { nowPlaying.previousTrack() }
-            controlButton(isPlaying ? "pause.fill" : "play.fill", size: 22,
+        HStack(spacing: 4) {
+            controlButton("backward.fill", size: 15, frame: 34, help: "Önceki") { nowPlaying.previousTrack() }
+            controlButton(isPlaying ? "pause.fill" : "play.fill", size: 22, frame: 42,
                           help: isPlaying ? LocalizedStringKey("Duraklat") : LocalizedStringKey("Oynat")) {
                 nowPlaying.togglePlayPause()
             }
-            controlButton("forward.fill", size: 15, help: "Sonraki") { nowPlaying.nextTrack() }
+            controlButton("forward.fill", size: 15, frame: 34, help: "Sonraki") { nowPlaying.nextTrack() }
         }
     }
 
-    private func controlButton(_ symbol: String, size: CGFloat, help: LocalizedStringKey,
+    private func controlButton(_ symbol: String, size: CGFloat, frame: CGFloat, help: LocalizedStringKey,
                                action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: size))
-                .frame(width: 32, height: 32)
-                .contentShape(Rectangle())
+            Image(systemName: symbol).font(.system(size: size))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(IconButtonStyle(size: frame))
         .help(help)
     }
 
@@ -114,7 +100,7 @@ private struct ProgressRow: View {
                     Text(Self.format(elapsed))
                     GeometryReader { proxy in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(.white.opacity(0.15))
+                            Capsule().fill(NotchDesign.track)
                             Capsule().fill(accent)
                                 .frame(width: proxy.size.width * min(1, elapsed / duration))
                         }
@@ -127,7 +113,7 @@ private struct ProgressRow: View {
                     .frame(height: 4)
                     Text("-" + Self.format(max(0, duration - elapsed)))
                 }
-                .font(.system(size: 9.5).monospacedDigit())
+                .font(NotchDesign.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
             }
         }

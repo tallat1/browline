@@ -11,39 +11,35 @@ struct MirrorTab: View {
     var body: some View {
         switch status {
         case .authorized:
+            // Kare: sekme kendi boyunu kare ister (ExpandedView.bodySize).
             CameraPreview(session: mirror.session)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .frame(width: 300, height: 300)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onAppear { mirror.start() }
                 .onDisappear { mirror.stop() }
         case .notDetermined:
-            prompt(text: "Ayna için kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.",
-                   button: "Kameraya erişim ver") {
-                Task { @MainActor in
-                    _ = await AVCaptureDevice.requestAccess(for: .video)
-                    status = AVCaptureDevice.authorizationStatus(for: .video)
+            EmptyStateView(symbol: "person.crop.square", title: "Ayna",
+                           message: "Kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.") {
+                Button("Kameraya erişim ver") {
+                    Task { @MainActor in
+                        _ = await AVCaptureDevice.requestAccess(for: .video)
+                        status = AVCaptureDevice.authorizationStatus(for: .video)
+                    }
                 }
+                .buttonStyle(CapsuleButtonStyle(prominent: true, tint: .blue))
             }
         default:
-            prompt(text: "Kamera izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.",
-                   button: "Gizlilik ayarlarını aç") {
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
-                    NSWorkspace.shared.open(url)
+            EmptyStateView(symbol: "video.slash", title: "Kamera izni kapalı",
+                           message: "Gizlilik ayarlarından NotchMVP'ye izin verin.") {
+                Button("Gizlilik ayarlarını aç") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                        NSWorkspace.shared.open(url)
+                    }
                 }
+                .buttonStyle(CapsuleButtonStyle())
             }
         }
-    }
-
-    private func prompt(text: LocalizedStringKey, button: LocalizedStringKey,
-                        action: @escaping () -> Void) -> some View {
-        VStack(spacing: 10) {
-            Text(text)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Button(button, action: action).controlSize(.small)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

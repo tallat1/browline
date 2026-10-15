@@ -62,11 +62,12 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
         } else {
             surface(layout, presentation)
                 .animation(model.isOpen ? Self.openSpring : Self.closeSpring, value: presentation)
+                .animation(Self.openSpring, value: model.preferredOpenSize)
         }
     }
 
     private func surface(_ layout: NotchLayout, _ presentation: NotchPresentation) -> some View {
-        let size = layout.size(for: presentation, wingWidth: model.compactWingWidth)
+        let size = layout.size(for: presentation, wingWidth: model.compactWingWidth, openSize: model.preferredOpenSize)
         let shape = SurfaceShape.make(for: layout, presentation: presentation)
         return ZStack(alignment: .top) {
             shape.fill(Color.black)

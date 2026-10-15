@@ -96,11 +96,21 @@ struct CompactLeadingView: View {
             case AppCoordinator.ActivityKind.timer:
                 // Saniyelik çizim yalnız zamanlayıcı çalışıp kanat ekrandayken.
                 TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                    ProgressRing(progress: coordinator.timer.progress(at: timeline.date), tint: .orange)
+                    ProgressRing(progress: coordinator.timer.progress(at: timeline.date),
+                                 tint: coordinator.ui.pomodoroPhase?.tint ?? .orange)
                         .frame(width: 14, height: 14)
                 }
             case AppCoordinator.ActivityKind.timerDone:
-                WideWingLabel(symbol: "timer", tint: .orange, text: String(localized: "Süre doldu"))
+                if let phase = coordinator.ui.pomodoroPhase {
+                    // Pomodoro'da biten değil başlayan evre söylenir.
+                    WideWingLabel(symbol: phase.isBreak ? "cup.and.saucer.fill" : "leaf.fill", tint: phase.tint,
+                                  text: phase.title, truncation: .tail)
+                } else {
+                    WideWingLabel(symbol: "timer", tint: .orange, text: String(localized: "Süre doldu"))
+                }
+            case AppCoordinator.ActivityKind.claudeUsage:
+                WideWingLabel(symbol: "sparkles", tint: Color(red: 0.85, green: 0.47, blue: 0.34),
+                              text: String(localized: "Claude oturumu"), truncation: .tail)
             case AppCoordinator.ActivityKind.batteryLow:
                 WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"), truncation: .tail)
             case AppCoordinator.ActivityKind.batteryFull:
@@ -207,6 +217,14 @@ struct CompactTrailingView: View {
                     .foregroundStyle(.secondary)
                     .padding(.trailing, 12)
                     .frame(maxWidth: .infinity, alignment: .trailing)
+            case AppCoordinator.ActivityKind.claudeUsage:
+                if let percent = coordinator.claudeUsage.usage?.fiveHour?.usedPercentage {
+                    Text(verbatim: "%\(Int(percent.rounded()))")
+                        .monospacedDigit()
+                        .foregroundStyle(percent >= 90 ? .red : .orange)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             case AppCoordinator.ActivityKind.batteryLow, AppCoordinator.ActivityKind.batteryFull:
                 if let state = coordinator.battery.state {
                     Text("%\(state.percent)")

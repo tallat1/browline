@@ -117,3 +117,79 @@ struct SystemStatsTests {
         #expect(SystemStats.cpuUsage(from: first, to: first) == nil)
     }
 }
+
+struct PomodoroTests {
+    @Test func cycleWithLongBreakEveryFourthRound() {
+        var phase = Pomodoro.first
+        var seen: [Pomodoro.Phase] = [phase]
+        for _ in 0..<8 {
+            phase = Pomodoro.next(after: phase)
+            seen.append(phase)
+        }
+        #expect(seen == [.focus(round: 1), .shortBreak(afterRound: 1), .focus(round: 2), .shortBreak(afterRound: 2),
+                         .focus(round: 3), .shortBreak(afterRound: 3), .focus(round: 4), .longBreak(afterRound: 4),
+                         .focus(round: 5)])
+        #expect(Pomodoro.duration(of: .longBreak(afterRound: 4)) == 15 * 60)
+        #expect(Pomodoro.Phase.shortBreak(afterRound: 1).isBreak)
+    }
+}
+
+struct WeatherTests {
+    @Test func parsesForecastAndPlace() throws {
+        let forecast = Data("""
+        {"current":{"time":"2026-10-16T00:30","interval":900,"temperature_2m":12.5,"weather_code":80,"is_day":0},
+         "daily":{"time":["2026-10-16"],"temperature_2m_max":[12.5],"temperature_2m_min":[8.7]}}
+        """.utf8)
+        let conditions = try WeatherMonitor.parseForecast(forecast)
+        #expect(conditions == .init(temperature: 12.5, code: 80, isDay: false, high: 12.5, low: 8.7))
+        let place = Data(#"{"results":[{"name":"Ankara","latitude":39.92,"longitude":32.85,"country":"Türkiye"}]}"#.utf8)
+        #expect(try WeatherMonitor.parsePlace(place) == .init(name: "Ankara", latitude: 39.92, longitude: 32.85, country: "Türkiye"))
+        #expect(try WeatherMonitor.parsePlace(Data(#"{"generationtime_ms":0.1}"#.utf8)) == nil)
+        #expect(throws: WeatherMonitor.WeatherError.badResponse) { try WeatherMonitor.parseForecast(Data("{}".utf8)) }
+    }
+
+    @Test func symbols() {
+        #expect(WeatherMonitor.symbolName(code: 0, isDay: true) == "sun.max.fill")
+        #expect(WeatherMonitor.symbolName(code: 0, isDay: false) == "moon.stars.fill")
+        #expect(WeatherMonitor.symbolName(code: 81, isDay: true) == "cloud.heavyrain.fill")
+        #expect(WeatherMonitor.symbolName(code: 96, isDay: true) == "cloud.bolt.rain.fill")
+    }
+}
+
+@MainActor
+struct NotesStoreTests {
+    @Test func persistsOnFlushAndReloads() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = NotesStore(directory: directory)
+        #expect(store.text.isEmpty)
+        store.text = "süt al\nPR'a bak"
+        store.flush()
+        #expect(NotesStore(directory: directory).text == "süt al\nPR'a bak")
+    }
+}
+
+struct ClaudeUsageTests {
+    @Test func parsesScriptFormatAndStatuslineFormat() throws {
+        let script = Data(#"{"captured_at":1760000000,"five_hour":{"used_percentage":42.4,"resets_at":1760007200},"seven_day":{"used_percentage":18}}"#.utf8)
+        let usage = try #require(ClaudeUsageMonitor.parse(script, fallbackCapturedAt: .distantPast))
+        #expect(usage.fiveHour == .init(usedPercentage: 42.4, resetsAt: Date(timeIntervalSince1970: 1760007200)))
+        #expect(usage.sevenDay == .init(usedPercentage: 18, resetsAt: nil))
+        #expect(usage.capturedAt == Date(timeIntervalSince1970: 1760000000))
+
+        let statusline = Data(#"{"session_id":"x","rate_limits":{"seven_day":{"used_percentage":41.2,"resets_at":1738857600}}}"#.utf8)
+        let fallback = Date(timeIntervalSince1970: 5)
+        let second = try #require(ClaudeUsageMonitor.parse(statusline, fallbackCapturedAt: fallback))
+        #expect(second.fiveHour == nil)
+        #expect(second.sevenDay?.usedPercentage == 41.2)
+        #expect(second.capturedAt == fallback)
+        #expect(ClaudeUsageMonitor.parse(Data(#"{"session_id":"x"}"#.utf8), fallbackCapturedAt: fallback) == nil)
+    }
+
+    @Test func alertsOnlyWhenCrossingUp() {
+        #expect(ClaudeUsageMonitor.crossedThreshold(from: 79, to: 81) == 80)
+        #expect(ClaudeUsageMonitor.crossedThreshold(from: 70, to: 96) == 95)
+        #expect(ClaudeUsageMonitor.crossedThreshold(from: 85, to: 90) == nil)
+        #expect(ClaudeUsageMonitor.crossedThreshold(from: nil, to: 99) == nil)
+    }
+}

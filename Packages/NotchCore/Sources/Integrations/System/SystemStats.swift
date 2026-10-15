@@ -8,8 +8,8 @@ import Observation
 @Observable
 public final class SystemStats {
     public struct Snapshot: Equatable, Sendable {
-        /// 0…1
-        public var cpu: Double
+        /// 0…1; ilk örnekte (iki sayaç okuması gerekir) nil.
+        public var cpu: Double?
         public var memoryUsed: UInt64
         public var memoryTotal: UInt64
         /// Bayt/sn
@@ -70,7 +70,7 @@ public final class SystemStats {
             if bytes.sent < last.sent { upload = 0 }
         }
         if let bytes { lastBytes = (bytes.received, bytes.sent, now) }
-        guard let cpu else { return }
+        // Bellek ilk örnekte de gösterilir; işlemci bir saniye sonra gelir.
         snapshot = Snapshot(cpu: cpu, memoryUsed: Self.readMemoryUsed() ?? 0,
                             memoryTotal: ProcessInfo.processInfo.physicalMemory,
                             download: download, upload: upload)

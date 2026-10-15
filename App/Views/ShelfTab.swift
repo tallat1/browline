@@ -11,14 +11,8 @@ struct ShelfTab: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if shelf.items.isEmpty {
-                VStack(spacing: 6) {
-                    Image(systemName: "tray.and.arrow.down")
-                        .font(.system(size: 20))
-                    Text("Dosyaları buraya sürükleyin")
-                        .font(.system(size: 12))
-                }
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EmptyStateView(symbol: "tray.and.arrow.down", title: "Dosyaları buraya sürükleyin",
+                               message: "Raftan başka yere sürükleyin ya da AirDrop ile gönderin.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
@@ -28,24 +22,28 @@ struct ShelfTab: View {
                     }
                     .padding(.horizontal, 4)
                 }
-                HStack {
+                HStack(spacing: 6) {
                     Text("\(shelf.items.count) öğe")
+                        .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button("AirDrop") { ShelfStore.shareViaAirDrop(shelf.resolvedURLs) }
+                        .buttonStyle(CapsuleButtonStyle())
                     Button("Temizle") { shelf.clear() }
+                        .buttonStyle(CapsuleButtonStyle())
                 }
-                .font(.system(size: 11))
-                .buttonStyle(.plain)
                 .padding(.horizontal, 4)
             }
         }
         .padding(10)
         .background {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
-                .foregroundStyle(.white.opacity(isTargeted ? 0.8 : 0.2))
+            RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous)
+                .fill(isTargeted ? NotchDesign.cardHoverFill : NotchDesign.cardFill)
+            RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous)
+                .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                .foregroundStyle(.white.opacity(isTargeted ? 0.7 : 0.15))
         }
+        .animation(.easeOut(duration: 0.15), value: isTargeted)
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
@@ -63,6 +61,7 @@ struct ShelfTab: View {
 private struct ShelfTile: View {
     let item: ShelfStore.Item
     let shelf: ShelfStore
+    @State private var isHovering = false
 
     var body: some View {
         VStack(spacing: 4) {
@@ -70,11 +69,15 @@ private struct ShelfTile: View {
                 .resizable()
                 .frame(width: 36, height: 36)
             Text(item.name)
-                .font(.system(size: 10))
+                .font(NotchDesign.caption)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
                 .frame(width: 66)
         }
+        .padding(6)
+        .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .fill(isHovering ? NotchDesign.cardHoverFill : .clear))
+        .onHover { isHovering = $0 }
         .contentShape(Rectangle())
         .onDrag {
             NSItemProvider(object: (shelf.resolvedURL(for: item) ?? item.url) as NSURL)

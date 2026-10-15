@@ -41,6 +41,16 @@
         }
       }
     },
+    "%@ sıfırlanır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets %@"
+          }
+        }
+      }
+    },
     "%lld dk": {
       "localizations": {
         "en": {
@@ -61,6 +71,26 @@
         }
       }
     },
+    "%lld dk sonra sıfırlanır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets in %lld min"
+          }
+        }
+      }
+    },
+    "%lld dk önce güncellendi · Claude Code oturumu açıkken tazelenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %lld min ago · refreshes while a Claude Code session is open"
+          }
+        }
+      }
+    },
     "%lld ms": {
       "localizations": {
         "en": {
@@ -77,6 +107,32 @@
           "stringUnit": {
             "state": "translated",
             "value": "in %lld h %lld min"
+          }
+        }
+      }
+    },
+    "%lld sa %lld dk sonra sıfırlanır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resets in %lld h %lld min"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld sa %2$lld dk sonra sıfırlanır"
+          }
+        }
+      }
+    },
+    "%lld sa önce güncellendi · Claude Code oturumu açıkken tazelenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updated %lld h ago · refreshes while a Claude Code session is open"
           }
         }
       }
@@ -127,6 +183,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "2 Hours"
+          }
+        }
+      }
+    },
+    "25 dk odak, 5 dk mola; dört turda bir 15 dk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "25 min focus, 5 min break; 15 min every fourth round"
           }
         }
       }
@@ -251,12 +317,12 @@
         }
       }
     },
-    "Ayna için kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.": {
+    "Az önce güncellendi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The mirror needs camera access. Nothing is recorded or sent anywhere."
+            "value": "Updated just now"
           }
         }
       }
@@ -331,6 +397,16 @@
         }
       }
     },
+    "Betikler, AI ajanları ve Kestirmeler buraya etkinlik gönderebilir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts, AI agents, and Shortcuts can send activities here."
+          }
+        }
+      }
+    },
     "Birkaç saniyelik bildirim; diğer etkinliklerin önüne geçer.": {
       "localizations": {
         "en": {
@@ -357,6 +433,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "No reminders for today"
+          }
+        }
+      }
+    },
+    "Bul": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find"
+          }
+        }
+      }
+    },
+    "Claude Code durum satırı kurulunca 5 saatlik ve haftalık limitler burada görünür.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Once the Claude Code status line is set up, your 5-hour and weekly limits show here."
+          }
+        }
+      }
+    },
+    "Claude limitleri (durum satırından)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude limits (from the status line)"
+          }
+        }
+      }
+    },
+    "Claude oturumu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude session"
           }
         }
       }
@@ -551,6 +667,16 @@
         }
       }
     },
+    "Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow NotchMVP in Privacy settings."
+          }
+        }
+      }
+    },
     "Gizlilik ayarlarını aç": {
       "localizations": {
         "en": {
@@ -577,6 +703,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "If not updated, it is removed automatically after this time."
+          }
+        }
+      }
+    },
+    "Haftalık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly"
           }
         }
       }
@@ -611,12 +747,32 @@
         }
       }
     },
+    "Hava durumu (Open-Meteo)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weather (Open-Meteo)"
+          }
+        }
+      }
+    },
     "Henüz dış etkinlik yok": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No external activities yet"
+          }
+        }
+      }
+    },
+    "Henüz limit verisi yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit data yet"
           }
         }
       }
@@ -641,12 +797,32 @@
         }
       }
     },
-    "Kamera izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+    "Hızlı not": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Camera access is off. Allow NotchMVP in Privacy settings."
+            "value": "Quick note"
+          }
+        }
+      }
+    },
+    "Kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera access is needed. Nothing is recorded or sent anywhere."
+          }
+        }
+      }
+    },
+    "Kamera izni kapalı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera access is off"
           }
         }
       }
@@ -771,6 +947,16 @@
         }
       }
     },
+    "Kısa mola": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short break"
+          }
+        }
+      }
+    },
     "Lisans metni bulunamadı.": {
       "localizations": {
         "en": {
@@ -821,6 +1007,16 @@
         }
       }
     },
+    "Menü çubuğundaki simgeden Ayarlar'ı açın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings from the menu bar icon."
+          }
+        }
+      }
+    },
     "Mikrofon kullanımda": {
       "localizations": {
         "en": {
@@ -841,12 +1037,42 @@
         }
       }
     },
+    "Modül kapalı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Module off"
+          }
+        }
+      }
+    },
     "Modüller": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Modules"
+          }
+        }
+      }
+    },
+    "Not": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Not alın… (tıklayıp yazın; ⌘C, ⌘V çalışır)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take a note… (click to type; ⌘C and ⌘V work)"
           }
         }
       }
@@ -991,6 +1217,26 @@
         }
       }
     },
+    "Odak · %lld. tur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Focus · round %lld"
+          }
+        }
+      }
+    },
+    "Oturum (5 saat)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session (5 hours)"
+          }
+        }
+      }
+    },
     "Oynat": {
       "localizations": {
         "en": {
@@ -1071,6 +1317,16 @@
         }
       }
     },
+    "Pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomodoro"
+          }
+        }
+      }
+    },
     "Raf": {
       "localizations": {
         "en": {
@@ -1087,6 +1343,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld items on the shelf"
+          }
+        }
+      }
+    },
+    "Raftan başka yere sürükleyin ya da AirDrop ile gönderin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag items out of the shelf or send them with AirDrop."
           }
         }
       }
@@ -1117,6 +1383,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "SF Symbol name"
+          }
+        }
+      }
+    },
+    "Sekmeler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tabs"
           }
         }
       }
@@ -1251,6 +1527,16 @@
         }
       }
     },
+    "Sürükleyerek sıralayın. Kapattığınız sekme notch'ta görünmez; modülü kapalı sekme Modüller'den açılır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to reorder. Tabs you turn off are hidden in the notch; turn on a module in Modules."
+          }
+        }
+      }
+    },
     "Takvim": {
       "localizations": {
         "en": {
@@ -1261,12 +1547,12 @@
         }
       }
     },
-    "Takvim izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+    "Takvim izni kapalı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Calendar access is off. Allow NotchMVP in Privacy settings."
+            "value": "Calendar access is off"
           }
         }
       }
@@ -1351,12 +1637,12 @@
         }
       }
     },
-    "Tüm modüller kapalı. Menü çubuğundaki simgeden Ayarlar'ı açın.": {
+    "Tüm modüller kapalı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All modules are off. Open Settings from the menu bar icon."
+            "value": "All modules are off"
           }
         }
       }
@@ -1401,6 +1687,56 @@
         }
       }
     },
+    "Uzun mola": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Long break"
+          }
+        }
+      }
+    },
+    "Varsayılan sıraya dön": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore Default Order"
+          }
+        }
+      }
+    },
+    "Veri yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No data"
+          }
+        }
+      }
+    },
+    "Yaklaşan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming"
+          }
+        }
+      }
+    },
+    "Yaklaşan toplantılar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming meetings"
+          }
+        }
+      }
+    },
     "Yaklaşan toplantıları görmek için takvim izni gerekiyor.": {
       "localizations": {
         "en": {
@@ -1417,6 +1753,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only when there is an activity to show"
+          }
+        }
+      }
+    },
+    "Yalnız seçtiğiniz şehrin koordinatları open-meteo.com'a gönderilir; konum izni istenmez. Yarım saatte bir güncellenir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the coordinates of the city you choose are sent to open-meteo.com; no location permission is asked. Updated every half hour."
           }
         }
       }
@@ -1511,22 +1857,28 @@
         }
       }
     },
+    "en düşük %lld°, en yüksek %lld°": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "low %lld°, high %lld°"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "en düşük %1$lld°, en yüksek %2$lld°"
+          }
+        }
+      }
+    },
     "mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "mediaremote-adapter (ungive), BSD-3-Clause. Used unmodified, as a separate process."
-          }
-        }
-      }
-    },
-    "notch push --id build --title Derleme --progress 40%": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "notch push --id build --title Build --progress 40%"
           }
         }
       }
@@ -1627,6 +1979,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "For example: hammer, checkmark.circle.fill"
+          }
+        }
+      }
+    },
+    "Örnek: İstanbul": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For example: London"
           }
         }
       }
@@ -1757,6 +2119,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Briefly show the new song"
+          }
+        }
+      }
+    },
+    "Şehir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "City"
+          }
+        }
+      }
+    },
+    "Şehir bulunamadı: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "City not found: %@"
           }
         }
       }

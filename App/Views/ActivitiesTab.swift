@@ -7,21 +7,18 @@ struct ActivitiesTab: View {
 
     var body: some View {
         if store.activities.isEmpty {
-            VStack(spacing: 6) {
-                Text("Henüz dış etkinlik yok")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                Text("notch push --id build --title Derleme --progress 40%")
-                    .font(.system(size: 10.5, design: .monospaced))
+            EmptyStateView(symbol: "square.stack.3d.up", title: "Henüz dış etkinlik yok",
+                           message: "Betikler, AI ajanları ve Kestirmeler buraya etkinlik gönderebilir.") {
+                Text(verbatim: "notch push --id build --title Build --progress 40%")
+                    .font(.system(size: 11, design: .monospaced))
                     .foregroundStyle(.tertiary)
                     .textSelection(.enabled)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(store.activities) { activity in
-                        ActivityRow(activity: activity)
+                        ActivityRow(activity: activity).notchCard()
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -42,18 +39,18 @@ private struct ActivityRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
                     Text(activity.title)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(NotchDesign.bodyEmphasized)
                         .lineLimit(1)
                     Spacer(minLength: 6)
                     if let progress = activity.progress {
                         Text("%\(Int((progress * 100).rounded()))")
-                            .font(.system(size: 10.5).monospacedDigit())
+                            .font(NotchDesign.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
                 }
                 if let subtitle = activity.subtitle {
                     Text(subtitle)
-                        .font(.system(size: 10.5))
+                        .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -61,7 +58,7 @@ private struct ActivityRow: View {
                     // macOS doğrulusal ProgressView .tint'i yok sayıyor; renk için elle çizilir.
                     GeometryReader { proxy in
                         ZStack(alignment: .leading) {
-                            Capsule().fill(.white.opacity(0.15))
+                            Capsule().fill(NotchDesign.track)
                             Capsule().fill(activity.tintColor).frame(width: proxy.size.width * progress)
                         }
                     }

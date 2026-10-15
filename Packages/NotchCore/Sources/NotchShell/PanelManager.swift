@@ -301,6 +301,7 @@ private final class PanelController {
         panel.contentView = host
         panel.onScroll = { [weak model] event in model?.scrolled(event) }
         panel.onCancel = { [weak model] in model?.dismiss() }
+        model.onKeyboardChanged = { [weak panel] wants in panel?.setTextInput(wants) }
         panel.orderFrontRegardless()
     }
 
@@ -355,6 +356,7 @@ private final class PanelController {
         model.dismiss()
         panel.onScroll = nil
         panel.onCancel = nil
+        model.onKeyboardChanged = nil
         panel.orderOut(nil)
     }
 }

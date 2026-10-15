@@ -6,14 +6,16 @@ import NotchShell
 import Observation
 import SwiftUI
 
-enum NotchTab: String, CaseIterable, Identifiable {
+enum NotchTab: String, CaseIterable, Identifiable, Sendable {
     case media
     case calendar
     case shelf
     case activities
+    case notes
     case timer
     case system
     case mirror
+    case claude
 
     var id: String { rawValue }
 
@@ -23,9 +25,11 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .calendar: "calendar"
         case .shelf: "tray.full"
         case .activities: "square.stack.3d.up"
+        case .notes: "note.text"
         case .timer: "timer"
         case .system: "cpu"
         case .mirror: "person.crop.square"
+        case .claude: "sparkles"
         }
     }
 
@@ -35,9 +39,11 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .calendar: String(localized: "Takvim")
         case .shelf: String(localized: "Raf")
         case .activities: String(localized: "Etkinlikler")
+        case .notes: String(localized: "Not")
         case .timer: String(localized: "Zamanlayıcı")
         case .system: String(localized: "Sistem")
         case .mirror: String(localized: "Ayna")
+        case .claude: "Claude"
         }
     }
 }
@@ -50,6 +56,8 @@ final class NotchUIState {
     var activityAPIStatus = String(localized: "Kapalı")
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""
+    /// Pomodoro açıksa şu anki evre; düz zamanlayıcıda nil.
+    var pomodoroPhase: Pomodoro.Phase?
 }
 
 /// Modülleri birbirine bağlar: entegrasyonlar etkinlik üretir, etkinlik motoru kompakt içeriği
@@ -74,11 +82,13 @@ final class AppCoordinator {
         static let timerDone: ActivityID = "timerDone"
         static let batteryLow: ActivityID = "batteryLow"
         static let batteryFull: ActivityID = "batteryFull"
+        static let claudeUsage: ActivityID = "claudeUsage"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix)
-                || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull].contains(id)
+                || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull,
+                    claudeUsage].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
@@ -107,6 +117,9 @@ final class AppCoordinator {
     let mirror = CameraMirror()
     let reminders = RemindersMonitor()
     let systemStats = SystemStats()
+    let weather = WeatherMonitor()
+    let notes = NotesStore()
+    let claudeUsage = ClaudeUsageMonitor()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -228,8 +241,18 @@ final class AppCoordinator {
             if running { activities.setLive(ActivityKind.timer, priority: 35) } else { activities.removeLive(ActivityKind.timer) }
         }
         timer.onFinished = { [weak self] in
-            self?.activities.flash(ActivityKind.timerDone, duration: .seconds(5))
+            guard let self else { return }
+            // Pomodoro'da sıradaki evre kendiliğinden başlar; bildirim yeni evreyi söyler.
+            if let phase = ui.pomodoroPhase {
+                let next = Pomodoro.next(after: phase)
+                ui.pomodoroPhase = next
+                timer.start(seconds: Pomodoro.duration(of: next))
+            }
+            activities.flash(ActivityKind.timerDone, duration: .seconds(5))
             NSSound(named: "Glass")?.play()
+        }
+        claudeUsage.onAlert = { [weak self] _ in
+            self?.activities.flash(ActivityKind.claudeUsage, duration: .seconds(5))
         }
         settings.onChange = { [weak self] in self?.applySettings() }
         lockScreen.onLockChanged = { [weak self] locked in
@@ -256,8 +279,11 @@ final class AppCoordinator {
         audioOutput.stop()
         reminders.stop()
         systemStats.stop()
+        weather.stop()
+        claudeUsage.stop()
+        notes.flush()
         keepAwake.stop()
-        timer.cancel()
+        cancelTimer()
         mirror.stop()
         lockScreen.stop()
         settings.setLockSessionOpen(false)
@@ -276,8 +302,10 @@ final class AppCoordinator {
         toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
         if !settings.systemStatsEnabled { systemStats.stop() }
+        toggle(settings.claudeUsageEnabled, start: claudeUsage.start, stop: claudeUsage.stop)
+        if settings.weatherEnabled, let place = settings.weatherPlace { weather.start(place: place) } else { weather.stop() }
         if !settings.keepAwakeEnabled { keepAwake.stop() }
-        if !settings.timerEnabled { timer.cancel() }
+        if !settings.timerEnabled { cancelTimer() }
         if !settings.trackPeekEnabled { activities.cancelFlash(ActivityKind.trackChange) }
         hud.setMode(settings.hudMode)
         lockScreen.setLayoutConfig(settings.panelOptions.layout)
@@ -292,16 +320,23 @@ final class AppCoordinator {
         if enabled { start() } else { stop() }
     }
 
+    /// Kullanıcının sırasıyla; modülü kapalı ya da gizlenmiş sekme yok.
     var availableTabs: [NotchTab] {
-        var tabs: [NotchTab] = []
-        if settings.nowPlayingEnabled { tabs.append(.media) }
-        if settings.calendarEnabled { tabs.append(.calendar) }
-        if settings.shelfEnabled { tabs.append(.shelf) }
-        if settings.activityAPIEnabled { tabs.append(.activities) }
-        if settings.timerEnabled { tabs.append(.timer) }
-        if settings.systemStatsEnabled { tabs.append(.system) }
-        if settings.mirrorEnabled { tabs.append(.mirror) }
-        return tabs
+        settings.orderedTabs.filter { isModuleEnabled(for: $0) && !settings.hiddenTabs.contains($0) }
+    }
+
+    func isModuleEnabled(for tab: NotchTab) -> Bool {
+        switch tab {
+        case .media: settings.nowPlayingEnabled
+        case .calendar: settings.calendarEnabled
+        case .shelf: settings.shelfEnabled
+        case .activities: settings.activityAPIEnabled
+        case .notes: settings.notesEnabled
+        case .timer: settings.timerEnabled
+        case .system: settings.systemStatsEnabled
+        case .mirror: settings.mirrorEnabled
+        case .claude: settings.claudeUsageEnabled
+        }
     }
 
     private func updateCompactState() {
@@ -310,6 +345,17 @@ final class AppCoordinator {
             model.setCompact(for: displayed)
         }
         lockScreen.model?.setCompact(for: lockScreenActivityID)
+    }
+
+    func startPomodoro() {
+        ui.pomodoroPhase = Pomodoro.first
+        timer.start(seconds: Pomodoro.duration(of: Pomodoro.first))
+    }
+
+    /// Zamanlayıcıyı ve varsa Pomodoro döngüsünü durdurur.
+    func cancelTimer() {
+        ui.pomodoroPhase = nil
+        timer.cancel()
     }
 
     /// Açık notch'ta yatay kaydırma: medya sekmesindeyken parça geçişi (Alcove).

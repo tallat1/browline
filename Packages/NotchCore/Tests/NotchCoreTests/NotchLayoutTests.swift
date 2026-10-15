@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Testing
 @testable import NotchShell
@@ -160,5 +161,32 @@ struct HorizontalSwipeTests {
     @Test func verticalOrTinyIsIgnored() {
         #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 8, deltaY: 10, inverted: true) == nil)
         #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 3, deltaY: 0, inverted: true) == nil)
+    }
+}
+
+struct EditShortcutTests {
+    @Test func commandShortcutsMapToEditActions() {
+        #expect(NotchPanel.editAction(for: "c", modifiers: .command) == #selector(NSText.copy(_:)))
+        #expect(NotchPanel.editAction(for: "V", modifiers: .command) == #selector(NSText.paste(_:)))
+        #expect(NotchPanel.editAction(for: "z", modifiers: [.command, .shift]) == Selector(("redo:")))
+        #expect(NotchPanel.editAction(for: "c", modifiers: [.command, .option]) == nil)
+        #expect(NotchPanel.editAction(for: "c", modifiers: []) == nil)
+        #expect(NotchPanel.editAction(for: "q", modifiers: .command) == nil)
+    }
+}
+
+struct PreferredOpenSizeTests {
+    @Test func requestedSizeIsClampedAndFitsPanel() {
+        let layout = NotchLayout.make(metrics: NotchLayoutTests.builtInDefault)
+        #expect(layout.clampedOpenSize(nil) == layout.openSize)
+        let square = layout.clampedOpenSize(CGSize(width: 400, height: 384))
+        #expect(square == CGSize(width: 400, height: 384))
+        let huge = layout.clampedOpenSize(CGSize(width: 5000, height: 5000))
+        #expect(huge == layout.maxOpenSize)
+        let tiny = layout.clampedOpenSize(CGSize(width: 10, height: 10))
+        #expect(tiny.width >= layout.closedSize.width + 2 * layout.config.compactWingWidth)
+        for size in [square, huge, tiny] {
+            #expect(layout.panelFrame.contains(layout.shapeRect(for: .open, openSize: size)))
+        }
     }
 }

@@ -12,6 +12,8 @@ struct SettingsView: View {
                 .tabItem { Label("Genel", systemImage: "gearshape") }
             ModuleSettings(coordinator: coordinator, settings: settings)
                 .tabItem { Label("Modüller", systemImage: "square.grid.2x2") }
+            TabSettings(coordinator: coordinator, settings: settings)
+                .tabItem { Label("Sekmeler", systemImage: "rectangle.split.3x1") }
             AboutSettings()
                 .tabItem { Label("Hakkında", systemImage: "info.circle") }
         }
@@ -192,9 +194,20 @@ private struct ModuleSettings: View {
                 Toggle("Şarkı değişince kısa göster", isOn: $settings.trackPeekEnabled)
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
+                Toggle("Hızlı not", isOn: $settings.notesEnabled)
+                Toggle("Claude limitleri (durum satırından)", isOn: $settings.claudeUsageEnabled)
                 Toggle("Zamanlayıcı", isOn: $settings.timerEnabled)
                 Toggle("Anımsatıcılar (Takvim sekmesinde)", isOn: $settings.remindersEnabled)
                 Toggle("Sistem durumu (işlemci, bellek, ağ)", isOn: $settings.systemStatsEnabled)
+            }
+            Section {
+                Toggle("Hava durumu (Open-Meteo)", isOn: $settings.weatherEnabled)
+                if settings.weatherEnabled {
+                    WeatherPlaceField(settings: settings, weather: coordinator.weather)
+                }
+                Text("Yalnız seçtiğiniz şehrin koordinatları open-meteo.com'a gönderilir; konum izni istenmez. Yarım saatte bir güncellenir.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Toggle("Ayna (kamera izni yalnız ilk kullanımda istenir)", isOn: $settings.mirrorEnabled)
             }
             Section {
@@ -245,5 +258,100 @@ private struct AboutSettings: View {
             .frame(maxHeight: .infinity)
         }
         .padding(20)
+    }
+}
+
+/// Şehir arama: yazılan adın ilk sonucu seçilir.
+private struct WeatherPlaceField: View {
+    @Bindable var settings: AppSettings
+    let weather: WeatherMonitor
+    @State private var query = ""
+    @State private var isSearching = false
+    @State private var error: String?
+
+    var body: some View {
+        HStack {
+            TextField("Şehir", text: $query, prompt: Text(settings.weatherPlace?.name ?? String(localized: "Örnek: İstanbul")))
+                .onSubmit(search)
+            Button("Bul", action: search).disabled(query.trimmingCharacters(in: .whitespaces).isEmpty || isSearching)
+        }
+        if let place = settings.weatherPlace {
+            HStack(spacing: 6) {
+                Text(verbatim: [place.name, place.country].compactMap { $0 }.joined(separator: ", "))
+                if let conditions = weather.conditions {
+                    Image(systemName: WeatherMonitor.symbolName(code: conditions.code, isDay: conditions.isDay))
+                        .symbolRenderingMode(.multicolor)
+                    Text(verbatim: "\(Int(conditions.temperature.rounded()))°")
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        if let error {
+            Text(error).font(.caption).foregroundStyle(.orange)
+        }
+    }
+
+    private func search() {
+        let name = query.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+        isSearching = true
+        Task { @MainActor in
+            defer { isSearching = false }
+            do {
+                settings.weatherPlace = try await WeatherMonitor.geocode(name)
+                error = nil
+                query = ""
+            } catch {
+                self.error = String(localized: "Şehir bulunamadı: \(name)")
+            }
+        }
+    }
+}
+
+/// Sekmelerin sırası ve görünürlüğü. Modülü kapalı sekme listede kalır ama notch'ta görünmez.
+private struct TabSettings: View {
+    let coordinator: AppCoordinator
+    @Bindable var settings: AppSettings
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            List {
+                ForEach(settings.orderedTabs) { tab in
+                    HStack(spacing: 10) {
+                        Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary)
+                        Image(systemName: tab.symbol).frame(width: 20)
+                        Text(tab.title)
+                        Spacer()
+                        if !coordinator.isModuleEnabled(for: tab) {
+                            Text("Modül kapalı").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Toggle(tab.title, isOn: Binding(
+                            get: { !settings.hiddenTabs.contains(tab) },
+                            set: { visible in
+                                if visible { settings.hiddenTabs.remove(tab) } else { settings.hiddenTabs.insert(tab) }
+                            }))
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                            .controlSize(.small)
+                    }
+                    .padding(.vertical, 2)
+                }
+                .onMove { source, destination in
+                    var order = settings.orderedTabs
+                    order.move(fromOffsets: source, toOffset: destination)
+                    settings.tabOrder = order
+                }
+            }
+            .listStyle(.inset(alternatesRowBackgrounds: true))
+            Text("Sürükleyerek sıralayın. Kapattığınız sekme notch'ta görünmez; modülü kapalı sekme Modüller'den açılır.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Button("Varsayılan sıraya dön") {
+                settings.tabOrder = []
+                settings.hiddenTabs = []
+            }
+        }
+        .padding()
     }
 }

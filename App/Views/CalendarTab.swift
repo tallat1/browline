@@ -7,13 +7,14 @@ struct CalendarTab: View {
     let reminders: RemindersMonitor?
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(alignment: .top, spacing: 10) {
             events
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             if let reminders {
-                Divider().overlay(Color.white.opacity(0.12))
                 RemindersColumn(reminders: reminders)
-                    .frame(width: 180, alignment: .topLeading)
+                    .frame(width: 210, alignment: .topLeading)
+                    .frame(maxHeight: .infinity, alignment: .topLeading)
+                    .notchCard()
             }
         }
     }
@@ -22,48 +23,35 @@ struct CalendarTab: View {
     private var events: some View {
         switch calendar.access {
         case .notDetermined:
-            permissionPrompt(
-                text: "Yaklaşan toplantıları görmek için takvim izni gerekiyor.",
-                button: "Takvime erişim ver") {
-                    Task { await calendar.requestAccess() }
-                }
+            EmptyStateView(symbol: "calendar", title: "Yaklaşan toplantılar",
+                           message: "Yaklaşan toplantıları görmek için takvim izni gerekiyor.") {
+                Button("Takvime erişim ver") { Task { await calendar.requestAccess() } }
+                    .buttonStyle(CapsuleButtonStyle(prominent: true, tint: .blue))
+            }
         case .denied:
-            permissionPrompt(
-                text: "Takvim izni kapalı. Gizlilik ayarlarından NotchMVP'ye izin verin.",
-                button: "Gizlilik ayarlarını aç") {
-                    CalendarMonitor.openPrivacySettings()
-                }
+            EmptyStateView(symbol: "calendar.badge.exclamationmark", title: "Takvim izni kapalı",
+                           message: "Gizlilik ayarlarından NotchMVP'ye izin verin.") {
+                Button("Gizlilik ayarlarını aç") { CalendarMonitor.openPrivacySettings() }
+                    .buttonStyle(CapsuleButtonStyle())
+            }
         case .granted:
             if calendar.upcoming.isEmpty {
-                Text("Önümüzdeki 24 saatte etkinlik yok")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                EmptyStateView(symbol: "calendar.badge.checkmark", title: "Önümüzdeki 24 saatte etkinlik yok")
             } else {
                 // Göreli zaman dakikada bir; görünüm yalnız notch açıkken var.
                 TimelineView(.everyMinute) { timeline in
                     VStack(alignment: .leading, spacing: 8) {
+                        CardLabel("Yaklaşan")
                         ForEach(calendar.upcoming.prefix(3)) { event in
                             EventRow(event: event, now: timeline.date)
                         }
+                        Spacer(minLength: 0)
                     }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .notchCard()
                 }
             }
         }
-    }
-
-    private func permissionPrompt(text: LocalizedStringKey, button: LocalizedStringKey,
-                                  action: @escaping () -> Void) -> some View {
-        VStack(spacing: 10) {
-            Text(text)
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Button(button, action: action)
-                .controlSize(.small)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -76,18 +64,17 @@ private struct EventRow: View {
             Circle().fill(event.swiftUIColor).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 1) {
                 (event.title.isEmpty ? Text("Başlıksız etkinlik") : Text(verbatim: event.title))
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(NotchDesign.bodyEmphasized)
                     .lineLimit(1)
                 Text(detail)
-                    .font(.system(size: 10.5))
+                    .font(NotchDesign.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             Spacer(minLength: 6)
             if let url = event.meetingURL {
                 Button("Katıl") { NSWorkspace.shared.open(url) }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
+                    .buttonStyle(CapsuleButtonStyle(prominent: true, tint: .blue))
             }
         }
     }
@@ -115,21 +102,19 @@ private struct RemindersColumn: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Anımsatıcılar")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+            CardLabel("Anımsatıcılar")
                 .onAppear { reminders.refreshAccess() }
             switch reminders.access {
             case .notDetermined:
                 Button("Anımsatıcıları göster") { Task { await reminders.requestAccess() } }
-                    .controlSize(.small)
+                    .buttonStyle(CapsuleButtonStyle())
             case .denied:
                 Button("Gizlilik ayarlarını aç") { RemindersMonitor.openPrivacySettings() }
-                    .controlSize(.small)
+                    .buttonStyle(CapsuleButtonStyle())
             case .granted:
                 if reminders.reminders.isEmpty {
                     Text("Bugün için anımsatıcı yok")
-                        .font(.system(size: 11))
+                        .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(reminders.reminders.prefix(4)) { reminder in
@@ -144,7 +129,7 @@ private struct RemindersColumn: View {
                             .buttonStyle(.plain)
                             .help("Tamamlandı olarak işaretle")
                             (reminder.title.isEmpty ? Text("Başlıksız anımsatıcı") : Text(verbatim: reminder.title))
-                                .font(.system(size: 11))
+                                .font(NotchDesign.body)
                                 .foregroundStyle(reminder.isOverdue ? .red : .white)
                                 .lineLimit(1)
                         }

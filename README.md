@@ -116,6 +116,8 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: indirmeler (varsayılan kapalı, İndirilenler izni) | ✓ yazıldı ve birim testli; gerçek klasörde açılmadı |
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
 | v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
+| Arayüz yenileme: sekme şeridi, sekmeye göre boy, görsel dil, sekme düzenleme, Claude sekmesi | ✓ yazıldı; boy sınırlama ve Claude veri ayrıştırma birim testli; tüm sekmeler görsel doğrulandı (Claude örnek veriyle); durum satırı kurulmadı, ayarlar penceresi görsel denenmedi |
+| v1+: Pomodoro, hava durumu, hızlı not | ✓ yazıldı; Pomodoro döngüsü, hava yanıtı ayrıştırma, not kaydı ve kısayol eşlemesi birim testli; üçü de görsel doğrulandı (hava debug komutuyla, ayar değişmeden); notta gerçek yazma, kopyala/yapıştır ve klavyenin geri dönmesi elle denenmedi |
 | v1+: pil uyarıları, kaydırarak parça geçme, Anımsatıcılar, sistem durumu | ✓ yazıldı; eşik, kaydırma yönü ve işlemci hesabı birim testli; pil kanadı, Anımsatıcılar ve Sistem sekmesi görsel doğrulandı; gerçek kaydırma ve eşik geçişi elle denenmedi. Hızlı not ertelendi (klavye odağı ayrı tasarım ister) |
 | v1+: şarkı değişince önizleme, ses çıkışı (AirPods) uyarısı, uyanık tutma, zamanlayıcı, ayna | ✓ yazıldı ve birim testli (parça değişimi, cihaz simgesi, zamanlayıcı, güç iddiası); hepsi debug komutlarıyla görsel doğrulandı; gerçek AirPods bağlantısı ve kamera görüntüsü elle denenmedi |
 | v1: ekran başına mod (otomatik: çentik/hap · yüzen kart · kapalı), Mission Control'de ve oyunlarda gizleme | ✓ mod çözümü, yüzen yerleşim ve oyun kategorisi birim testli; yüzen kart yerleşik ekranda debug komutuyla görsel doğrulandı; dış ekran, Mission Control ve oyun elle denenmedi |
@@ -124,6 +126,32 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
+
+## Açık notch tasarımı
+
+- **Bant** (çentiğin iki yanı): solda bulunulan sekmenin adı, sağda durum (hava, uyanık tutma, kamera/mikrofon,
+  pil). Dar sekmede durum azalır, pil en son gider.
+- **Sekme şeridi** bandın altında: seçili sekme simge ve adıyla, diğerleri simgeyle; seçim kayan zeminle geçer.
+  Çentiğin altında sekme kalmaz (eskiden bant solunda ~153 pt vardı, 8 sekme sığmıyordu).
+- **Sekmeye göre boy** (`NotchTab.bodySize`): Ayna kare (300×300), Takvim geniş (640), Not yüksek, Zamanlayıcı dar;
+  şekil yay animasyonuyla geçer. Panel karesi en büyük boyu kapsar (`NotchLayoutConfig.maxOpenWidth/ContentHeight`),
+  boş kısım saydam olduğu için tıklama geçer.
+- **Görsel dil** `App/Views/NotchDesign.swift`: tek yazı ölçeği (13/12/11), kart, boş durum, kapsül ve simge
+  düğmeleri; görünümlerde sabit ölçü yazılmaz.
+- **Sekme düzenleme**: Ayarlar › Sekmeler'de sürükleyerek sıralama ve gizleme.
+
+## Claude limitleri
+
+Claude sekmesi 5 saatlik oturum ve haftalık limiti, sıfırlanma zamanıyla gösterir; oturum %80 ve %95'i geçince
+kompakt kanatta uyarı. Tek belgelenmiş kaynak Claude Code durum satırı JSON'undaki `rate_limits` (yalnız
+Pro/Max, oturumun ilk yanıtından sonra). `Examples/claude-code/usage-statusline.sh` iki yüzdeyi ve sıfırlanma
+zamanlarını `~/Library/Application Support/com.talatozcoban.notchmvp/claude-usage.json`'a yazar (başka alan
+yazılmaz) ve "Model · oturum %N · hafta %N" durum satırını basar; uygulama klasörü olay güdümlü izler.
+Kurulum `~/.claude/settings.json`: `"statusLine": {"type": "command", "command": "/YOL/usage-statusline.sh"}`.
+⚠️ Veri yalnız bir Claude Code oturumu çalışırken tazelenir; sekme "son güncelleme" zamanını gösterir.
+⚠️ Claude masaüstü uygulamasının Code sekmesi durum satırını çalıştırmıyor (2026-10-16: yeni oturum bir yanıt
+verdi, betiğin iz dosyası `claude-statusline.seen` oluşmadı); veri yalnız terminaldeki `claude` oturumlarından gelir.
+Belgelenmemiş OAuth kullanım uç noktası (Anahtar Zinciri'ndeki oturum anahtarı) bilerek kullanılmadı.
 
 ## Rakiplerden gelen küçük modüller
 
@@ -139,9 +167,12 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 | Kaydırarak parça geçme | Alcove | Açık notch'ta medya sekmesindeyken yatay iki parmak kaydırma: sola sonraki, sağa önceki | Ek iş yok |
 | Anımsatıcılar | NotchNook, Atoll | Takvim sekmesinde sağ sütun: bugün ve gecikmiş, en çok 4; daireye basınca tamamlanır | İzin "Anımsatıcıları göster"de; değişiklik EKEventStoreChanged ile |
 | Sistem durumu | Atoll | Sistem sekmesi: işlemci, bellek (Etkinlik Monitörü'ne yakın), ağ hızı | Mach + getifaddrs; saniyede bir, yalnız sekme açıkken |
+| Pomodoro | NotchFlow | Zamanlayıcıda: 25 dk odak, 5 dk mola, dört turda bir 15 dk; evreler kendiliğinden geçer, halka odakta kırmızı, molada yeşil | Zamanlayıcıyla aynı |
+| Hava durumu | Atoll, MacNotch | Açık notch'ta sağ üstte simge ve sıcaklık; üzerine gelince en düşük/en yüksek. Şehir ayarlardan, Open-Meteo (anahtarsız) | Varsayılan kapalı; yalnız şehrin koordinatları gönderilir, konum izni yok; yarım saatte bir ve uyanınca |
+| Hızlı not | NotchPad, Islet | Not sekmesi, uygulama klasöründe `notes.txt`; duraksayınca kaydedilir | Klavye: sekme görünürken panel key olabilir, ama yalnız alana tıklayınca alır; yazarken notch sabitlenir; kapanınca klavye öndeki uygulamaya döner. Düzen menüsü olmadığı için ⌘C/V/X/A/Z panelde elle yönlendirilir |
 | Ayna | boring.notch, NotchNook | AVFoundation önizleme, yatay çevrilmiş | Kamera yalnız sekme açıkken; izin ilk "Kameraya erişim ver"de, `com.apple.security.device.camera` |
 
-Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `tab:timer`, `tab:system`, `tab:mirror`.
+Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `timer:pomodoro`, `weather:<şehir>|off`, `tab:notes`, `tab:timer`, `tab:system`, `tab:mirror`.
 
 ## Ekranlar
 
@@ -185,7 +216,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (178 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (215 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

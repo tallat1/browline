@@ -35,12 +35,24 @@ final class AppSettings {
     var audioOutputAlertEnabled: Bool { didSet { store(audioOutputAlertEnabled, "audioOutputAlertEnabled") } }
     var keepAwakeEnabled: Bool { didSet { store(keepAwakeEnabled, "keepAwakeEnabled") } }
     var timerEnabled: Bool { didSet { store(timerEnabled, "timerEnabled") } }
+    var notesEnabled: Bool { didSet { store(notesEnabled, "notesEnabled") } }
+    /// Veri Claude Code durum satırından; betik kurulu değilse sekme boş durum gösterir.
+    var claudeUsageEnabled: Bool { didSet { store(claudeUsageEnabled, "claudeUsageEnabled") } }
     /// Takvim sekmesinde; izin yalnız düğmeye basınca istenir.
     var remindersEnabled: Bool { didSet { store(remindersEnabled, "remindersEnabled") } }
     var systemStatsEnabled: Bool { didSet { store(systemStatsEnabled, "systemStatsEnabled") } }
+    /// Ağ isteği yaptığı için varsayılan kapalı; şehir seçilince çalışır.
+    var weatherEnabled: Bool { didSet { store(weatherEnabled, "weatherEnabled") } }
+    var weatherPlace: WeatherMonitor.Place? {
+        didSet { store((try? JSONEncoder().encode(weatherPlace)) ?? Data(), "weatherPlace") }
+    }
     /// Kamera izni yalnız Ayna sekmesinde düğmeye basınca istenir.
     var mirrorEnabled: Bool { didSet { store(mirrorEnabled, "mirrorEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
+    /// Sekme sırası (kullanıcı sürükleyerek değiştirir).
+    var tabOrder: [NotchTab] { didSet { store(tabOrder.map(\.rawValue), "tabOrder") } }
+    /// Modülü açık olsa da notch'ta gösterilmeyen sekmeler.
+    var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
     var lockScreenEnabled: Bool {
         didSet {
@@ -87,10 +99,16 @@ final class AppSettings {
         audioOutputAlertEnabled = defaults.object(forKey: "audioOutputAlertEnabled") as? Bool ?? true
         keepAwakeEnabled = defaults.object(forKey: "keepAwakeEnabled") as? Bool ?? true
         timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true
+        notesEnabled = defaults.object(forKey: "notesEnabled") as? Bool ?? true
+        claudeUsageEnabled = defaults.object(forKey: "claudeUsageEnabled") as? Bool ?? true
         remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
         systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true
+        weatherEnabled = defaults.bool(forKey: "weatherEnabled")
+        weatherPlace = defaults.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherMonitor.Place.self, from: $0) }
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
+        tabOrder = (defaults.stringArray(forKey: "tabOrder") ?? []).compactMap(NotchTab.init(rawValue:))
+        hiddenTabs = Set((defaults.stringArray(forKey: "hiddenTabs") ?? []).compactMap(NotchTab.init(rawValue:)))
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
             defaults.set(false, forKey: "lockScreenEnabled")
             defaults.set(true, forKey: "lockScreenAutoDisabled")
@@ -110,6 +128,11 @@ final class AppSettings {
         } else {
             UserDefaults.standard.removeObject(forKey: Self.lockSessionKey)
         }
+    }
+
+    /// Kayıtlı sıra; sonradan eklenen sekmeler varsayılan yerleriyle sona eklenir.
+    var orderedTabs: [NotchTab] {
+        tabOrder + NotchTab.allCases.filter { !tabOrder.contains($0) }
     }
 
     var panelOptions: PanelManager.Options {
