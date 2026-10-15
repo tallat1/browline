@@ -181,6 +181,36 @@
         }
       }
     },
+    "Anımsatıcılar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "Anımsatıcılar (Takvim sekmesinde)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders (in the Calendar tab)"
+          }
+        }
+      }
+    },
+    "Anımsatıcıları göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Reminders"
+          }
+        }
+      }
+    },
     "Ayar verilmemiş ekranlar": {
       "localizations": {
         "en": {
@@ -231,6 +261,16 @@
         }
       }
     },
+    "Ağ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network"
+          }
+        }
+      }
+    },
     "Başlatılamadı: %@": {
       "localizations": {
         "en": {
@@ -251,12 +291,32 @@
         }
       }
     },
+    "Başlıksız anımsatıcı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untitled reminder"
+          }
+        }
+      }
+    },
     "Başlıksız etkinlik": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Untitled event"
+          }
+        }
+      }
+    },
+    "Bellek": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memory"
           }
         }
       }
@@ -287,6 +347,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not available on this macOS version (SkyLight symbols missing)."
+          }
+        }
+      }
+    },
+    "Bugün için anımsatıcı yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reminders for today"
           }
         }
       }
@@ -981,6 +1051,16 @@
         }
       }
     },
+    "Pil azaldı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery low"
+          }
+        }
+      }
+    },
     "Pil ve şarj": {
       "localizations": {
         "en": {
@@ -1101,6 +1181,16 @@
         }
       }
     },
+    "Sistem durumu (işlemci, bellek, ağ)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System status (CPU, memory, network)"
+          }
+        }
+      }
+    },
     "Sistem geneli kaynak macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. Çalışmazsa yalnız Music ve Spotify desteklenir.": {
       "localizations": {
         "en": {
@@ -1207,6 +1297,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hide over full-screen apps"
+          }
+        }
+      }
+    },
+    "Tam şarj": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully charged"
+          }
+        }
+      }
+    },
+    "Tamamlandı olarak işaretle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as Completed"
           }
         }
       }
@@ -1627,6 +1737,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Not allowed"
+          }
+        }
+      }
+    },
+    "İşlemci": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU"
           }
         }
       }

@@ -43,5 +43,7 @@
 	<string>Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Çalışma adı NotchMVP</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Bugün vadesi gelen anımsatıcıları Takvim sekmesinde göstermek ve tamamlandı işaretlemek için.</string>
 </dict>
 </plist>

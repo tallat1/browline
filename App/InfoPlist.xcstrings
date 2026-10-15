@@ -40,6 +40,16 @@
           }
         }
       }
+    },
+    "NSRemindersFullAccessUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To show today's reminders in the Calendar tab and mark them as completed."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

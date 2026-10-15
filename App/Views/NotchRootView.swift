@@ -101,6 +101,10 @@ struct CompactLeadingView: View {
                 }
             case AppCoordinator.ActivityKind.timerDone:
                 WideWingLabel(symbol: "timer", tint: .orange, text: String(localized: "Süre doldu"))
+            case AppCoordinator.ActivityKind.batteryLow:
+                WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"), truncation: .tail)
+            case AppCoordinator.ActivityKind.batteryFull:
+                WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"), truncation: .tail)
             default:
                 if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
@@ -203,6 +207,14 @@ struct CompactTrailingView: View {
                     .foregroundStyle(.secondary)
                     .padding(.trailing, 12)
                     .frame(maxWidth: .infinity, alignment: .trailing)
+            case AppCoordinator.ActivityKind.batteryLow, AppCoordinator.ActivityKind.batteryFull:
+                if let state = coordinator.battery.state {
+                    Text("%\(state.percent)")
+                        .monospacedDigit()
+                        .foregroundStyle(activityID == AppCoordinator.ActivityKind.batteryLow ? .red : .secondary)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             case AppCoordinator.ActivityKind.downloadDone:
                 Text(coordinator.ui.lastFinishedDownload)
                     .truncationMode(.middle)
@@ -315,12 +327,13 @@ struct WideWingLabel: View {
 
 struct LevelBar: View {
     let level: Double
+    var tint: Color = .white
 
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule().fill(.white.opacity(0.2))
-                Capsule().fill(.white).frame(width: proxy.size.width * min(max(level, 0), 1))
+                Capsule().fill(tint).frame(width: proxy.size.width * min(max(level, 0), 1))
             }
         }
     }

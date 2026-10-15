@@ -149,3 +149,16 @@ struct FloatingAndDisplayModeTests {
         #expect(!PanelManager.isGameCategory(nil))
     }
 }
+
+struct HorizontalSwipeTests {
+    @Test func directionFollowsFingersWithNaturalScrolling() {
+        #expect(NotchSurfaceModel.horizontalSwipe(deltaX: -12, deltaY: 1, inverted: true) == true)
+        #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 12, deltaY: 1, inverted: true) == false)
+        #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 12, deltaY: 1, inverted: false) == true)
+    }
+
+    @Test func verticalOrTinyIsIgnored() {
+        #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 8, deltaY: 10, inverted: true) == nil)
+        #expect(NotchSurfaceModel.horizontalSwipe(deltaX: 3, deltaY: 0, inverted: true) == nil)
+    }
+}

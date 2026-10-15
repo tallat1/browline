@@ -32,10 +32,12 @@ struct ExpandedView: View {
                     switch ui.selectedTab {
                     case .media: MediaTab(nowPlaying: coordinator.nowPlaying,
                                           sourceDescription: coordinator.nowPlayingSourceDescription)
-                    case .calendar: CalendarTab(calendar: coordinator.calendar)
+                    case .calendar: CalendarTab(calendar: coordinator.calendar,
+                                                reminders: coordinator.settings.remindersEnabled ? coordinator.reminders : nil)
                     case .shelf: ShelfTab(shelf: coordinator.shelf)
                     case .activities: ActivitiesTab(store: coordinator.externalActivities)
                     case .timer: TimerTab(timer: coordinator.timer)
+                    case .system: SystemTab(stats: coordinator.systemStats)
                     case .mirror: MirrorTab(mirror: coordinator.mirror)
                     }
                 }

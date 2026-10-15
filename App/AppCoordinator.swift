@@ -12,6 +12,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
     case shelf
     case activities
     case timer
+    case system
     case mirror
 
     var id: String { rawValue }
@@ -23,6 +24,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .shelf: "tray.full"
         case .activities: "square.stack.3d.up"
         case .timer: "timer"
+        case .system: "cpu"
         case .mirror: "person.crop.square"
         }
     }
@@ -34,6 +36,7 @@ enum NotchTab: String, CaseIterable, Identifiable {
         case .shelf: String(localized: "Raf")
         case .activities: String(localized: "Etkinlikler")
         case .timer: String(localized: "Zamanlayıcı")
+        case .system: String(localized: "Sistem")
         case .mirror: String(localized: "Ayna")
         }
     }
@@ -69,17 +72,19 @@ final class AppCoordinator {
         static let keepAwake: ActivityID = "keepAwake"
         static let timer: ActivityID = "timer"
         static let timerDone: ActivityID = "timerDone"
+        static let batteryLow: ActivityID = "batteryLow"
+        static let batteryFull: ActivityID = "batteryFull"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix)
-                || [hud, download, downloadDone, trackChange, audioOutput, timerDone].contains(id)
+                || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
         /// etkinlik metni bilgisayarın başındaki herkese görünür.
         static func isAllowedOnLockScreen(_ id: ActivityID) -> Bool {
-            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake].contains(id)
+            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake, batteryLow, batteryFull].contains(id)
         }
     }
 
@@ -100,6 +105,8 @@ final class AppCoordinator {
     let keepAwake = KeepAwake()
     let timer = CountdownTimer()
     let mirror = CameraMirror()
+    let reminders = RemindersMonitor()
+    let systemStats = SystemStats()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -137,7 +144,13 @@ final class AppCoordinator {
         activities.onCurrentChanged = { activity in
             AppLog.coordinator.notice("öne çıkan etkinlik: \(activity?.id.rawValue ?? "yok", privacy: .public)")
         }
-        panels.onModelsChanged = { [weak self] _ in self?.updateCompactState() }
+        panels.onModelsChanged = { [weak self] models in
+            guard let self else { return }
+            for model in models {
+                model.onHorizontalSwipe = { [weak self] forward in self?.horizontalSwipe(forward: forward) }
+            }
+            updateCompactState()
+        }
 
         nowPlaying.onInfoChanged = { [weak self] info in
             guard let self else { return }
@@ -158,6 +171,13 @@ final class AppCoordinator {
                 activities.setLive(ActivityKind.meeting, priority: 40)
             } else {
                 activities.removeLive(ActivityKind.meeting)
+            }
+        }
+        battery.onAlert = { [weak self] alert in
+            guard let self else { return }
+            switch alert {
+            case .low: activities.flash(ActivityKind.batteryLow, duration: .seconds(4))
+            case .full: activities.flash(ActivityKind.batteryFull, duration: .seconds(4))
             }
         }
         battery.onPowerSourceChanged = { [weak self] old, _ in
@@ -234,6 +254,8 @@ final class AppCoordinator {
         battery.stop()
         calendar.stop()
         audioOutput.stop()
+        reminders.stop()
+        systemStats.stop()
         keepAwake.stop()
         timer.cancel()
         mirror.stop()
@@ -252,6 +274,8 @@ final class AppCoordinator {
         toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
         toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
         toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
+        toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
+        if !settings.systemStatsEnabled { systemStats.stop() }
         if !settings.keepAwakeEnabled { keepAwake.stop() }
         if !settings.timerEnabled { timer.cancel() }
         if !settings.trackPeekEnabled { activities.cancelFlash(ActivityKind.trackChange) }
@@ -275,6 +299,7 @@ final class AppCoordinator {
         if settings.shelfEnabled { tabs.append(.shelf) }
         if settings.activityAPIEnabled { tabs.append(.activities) }
         if settings.timerEnabled { tabs.append(.timer) }
+        if settings.systemStatsEnabled { tabs.append(.system) }
         if settings.mirrorEnabled { tabs.append(.mirror) }
         return tabs
     }
@@ -285,6 +310,13 @@ final class AppCoordinator {
             model.setCompact(for: displayed)
         }
         lockScreen.model?.setCompact(for: lockScreenActivityID)
+    }
+
+    /// Açık notch'ta yatay kaydırma: medya sekmesindeyken parça geçişi (Alcove).
+    private func horizontalSwipe(forward: Bool) {
+        guard ui.selectedTab == .media, nowPlaying.info != nil else { return }
+        if forward { nowPlaying.nextTrack() } else { nowPlaying.previousTrack() }
+        AppLog.coordinator.notice("kaydırma: \(forward ? "sonraki" : "önceki", privacy: .public) parça")
     }
 
     // MARK: - Etkinlik API'si

@@ -29,6 +29,8 @@ public final class NotchSurfaceModel {
     @ObservationIgnored var onOpenChanged: ((Bool) -> Void)?
     /// Çentiksiz ekranda "yalnız etkinlik varken" görünürlüğü bu değişikliklere bağlı.
     @ObservationIgnored var onVisibilityInputsChanged: (() -> Void)?
+    /// Açıkken yatay kaydırma; true ileri. Uygulama bağlar.
+    @ObservationIgnored public var onHorizontalSwipe: ((_ forward: Bool) -> Void)?
 
     @ObservationIgnored private var hoverTask: Task<Void, Never>?
     @ObservationIgnored private var isPointerInside = false
@@ -104,11 +106,27 @@ public final class NotchSurfaceModel {
     func scrolled(_ event: NSEvent) {
         if event.phase == .began || event.phase == .mayBegin { scrollHandledInGesture = false }
         if event.phase == .ended || event.phase == .cancelled { scrollHandledInGesture = false; return }
-        guard !scrollHandledInGesture, abs(event.scrollingDeltaY) > 4 else { return }
+        guard !scrollHandledInGesture else { return }
+        // Açıkken yatay kaydırma: uygulama karar verir (medya sekmesinde parça geçişi).
+        if isOpen, let forward = Self.horizontalSwipe(deltaX: event.scrollingDeltaX, deltaY: event.scrollingDeltaY,
+                                                       inverted: event.isDirectionInvertedFromDevice) {
+            scrollHandledInGesture = true
+            onHorizontalSwipe?(forward)
+            return
+        }
+        guard abs(event.scrollingDeltaY) > 4 else { return }
         // Doğal kaydırmada içerik parmakla aynı yöne gider; deltaY işareti buna göre çevrilir.
         let fingersDown = event.isDirectionInvertedFromDevice ? event.scrollingDeltaY > 0 : event.scrollingDeltaY < 0
         scrollHandledInGesture = true
         if fingersDown { tapped() } else if isOpen { dismiss() }
+    }
+
+    /// Yatay ağırlıklı iki parmak kaydırması: parmaklar sola → ileri (true), sağa → geri.
+    /// Dikey ağırlıklıysa ya da eşik altındaysa nil. Doğal kaydırmada işaret ters gelir.
+    public nonisolated static func horizontalSwipe(deltaX: CGFloat, deltaY: CGFloat, inverted: Bool) -> Bool? {
+        guard abs(deltaX) > 6, abs(deltaX) > abs(deltaY) * 1.5 else { return nil }
+        let fingersLeft = inverted ? deltaX < 0 : deltaX > 0
+        return fingersLeft
     }
 
     /// Açıkken global/local imleç izleyicisi. SwiftUI hover çıkışı kaçarsa (Faz 0'da bir kez

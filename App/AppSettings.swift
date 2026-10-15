@@ -35,6 +35,9 @@ final class AppSettings {
     var audioOutputAlertEnabled: Bool { didSet { store(audioOutputAlertEnabled, "audioOutputAlertEnabled") } }
     var keepAwakeEnabled: Bool { didSet { store(keepAwakeEnabled, "keepAwakeEnabled") } }
     var timerEnabled: Bool { didSet { store(timerEnabled, "timerEnabled") } }
+    /// Takvim sekmesinde; izin yalnız düğmeye basınca istenir.
+    var remindersEnabled: Bool { didSet { store(remindersEnabled, "remindersEnabled") } }
+    var systemStatsEnabled: Bool { didSet { store(systemStatsEnabled, "systemStatsEnabled") } }
     /// Kamera izni yalnız Ayna sekmesinde düğmeye basınca istenir.
     var mirrorEnabled: Bool { didSet { store(mirrorEnabled, "mirrorEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
@@ -84,6 +87,8 @@ final class AppSettings {
         audioOutputAlertEnabled = defaults.object(forKey: "audioOutputAlertEnabled") as? Bool ?? true
         keepAwakeEnabled = defaults.object(forKey: "keepAwakeEnabled") as? Bool ?? true
         timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true
+        remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
+        systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {

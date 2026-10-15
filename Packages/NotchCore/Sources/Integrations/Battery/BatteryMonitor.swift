@@ -18,6 +18,25 @@ public final class BatteryMonitor {
     public private(set) var state: State?
     /// Fiş takılıp çıkarıldığında; uygulama geçici bir etkinlik gösterir.
     @ObservationIgnored public var onPowerSourceChanged: ((_ old: State?, _ new: State) -> Void)?
+    /// Eşik geçişleri: pil azaldı (%20, %10), tam şarj.
+    @ObservationIgnored public var onAlert: ((Alert) -> Void)?
+
+    public enum Alert: Equatable, Sendable {
+        case low(percent: Int)
+        case full
+    }
+
+    public nonisolated static let lowThresholds = [20, 10]
+
+    /// Yalnız eşiği aşağı doğru geçerken (fişteyken uyarı yok); tam şarj fişteyken %100'e ulaşınca.
+    /// İlk okuma (önceki yok) uyarı üretmez.
+    public nonisolated static func alert(from old: State?, to new: State) -> Alert? {
+        guard let old else { return nil }
+        if new.isPluggedIn {
+            return old.percent < 100 && new.percent >= 100 ? .full : nil
+        }
+        return lowThresholds.first { old.percent > $0 && new.percent <= $0 }.map { _ in Alert.low(percent: new.percent) }
+    }
     @ObservationIgnored private var runLoopSource: CFRunLoopSource?
 
     public init() {}
@@ -49,6 +68,10 @@ public final class BatteryMonitor {
         let old = state
         state = new
         if let new, old?.isPluggedIn != new.isPluggedIn { onPowerSourceChanged?(old, new) }
+        if let new, let alert = Self.alert(from: old, to: new) {
+            Log.integrations.notice("Pil uyarısı: \(String(describing: alert), privacy: .public)")
+            onAlert?(alert)
+        }
     }
 
     /// Dahili pil yoksa (masaüstü Mac) nil.

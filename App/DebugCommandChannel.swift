@@ -9,7 +9,7 @@ private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: 
 /// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
 /// flash:power, hud:preview, state, lock:on|lock:off (kilit benzetimi, SkyLight kullanmaz),
 /// display:floating|off|reset (birinci ekranın modu), timer:<sn>|cancel, audio:preview, track:preview,
-/// awake:on|off.
+/// awake:on|off, battery:low|full.
 @MainActor
 final class DebugCommandChannel {
     static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
@@ -63,6 +63,10 @@ final class DebugCommandChannel {
             coordinator.keepAwake.start(for: .seconds(90), reason: "NotchMVP debug")
         case "awake:off":
             coordinator.keepAwake.stop()
+        case "battery:low":
+            coordinator.activities.flash(AppCoordinator.ActivityKind.batteryLow, duration: .seconds(4))
+        case "battery:full":
+            coordinator.activities.flash(AppCoordinator.ActivityKind.batteryFull, duration: .seconds(4))
         case "state":
             let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
                 + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı"), "

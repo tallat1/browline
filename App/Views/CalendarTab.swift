@@ -3,8 +3,23 @@ import SwiftUI
 
 struct CalendarTab: View {
     let calendar: CalendarMonitor
+    /// Ayarlarda kapalıysa nil.
+    let reminders: RemindersMonitor?
 
     var body: some View {
+        HStack(alignment: .top, spacing: 14) {
+            events
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            if let reminders {
+                Divider().overlay(Color.white.opacity(0.12))
+                RemindersColumn(reminders: reminders)
+                    .frame(width: 180, alignment: .topLeading)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var events: some View {
         switch calendar.access {
         case .notDetermined:
             permissionPrompt(
@@ -91,5 +106,51 @@ private struct EventRow: View {
         if minutes < 60 { return String(localized: "\(minutes) dk sonra") }
         let hours = minutes / 60
         return String(localized: "\(hours) sa \(minutes % 60) dk sonra")
+    }
+}
+
+/// Bugün ve gecikmiş anımsatıcılar; daireye basınca tamamlanır.
+private struct RemindersColumn: View {
+    let reminders: RemindersMonitor
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Anımsatıcılar")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .onAppear { reminders.refreshAccess() }
+            switch reminders.access {
+            case .notDetermined:
+                Button("Anımsatıcıları göster") { Task { await reminders.requestAccess() } }
+                    .controlSize(.small)
+            case .denied:
+                Button("Gizlilik ayarlarını aç") { RemindersMonitor.openPrivacySettings() }
+                    .controlSize(.small)
+            case .granted:
+                if reminders.reminders.isEmpty {
+                    Text("Bugün için anımsatıcı yok")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(reminders.reminders.prefix(4)) { reminder in
+                        HStack(spacing: 6) {
+                            Button { reminders.complete(reminder) } label: {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(Color(.sRGB, red: reminder.color[safe: 0] ?? 0.6,
+                                                           green: reminder.color[safe: 1] ?? 0.6,
+                                                           blue: reminder.color[safe: 2] ?? 0.6))
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .help("Tamamlandı olarak işaretle")
+                            (reminder.title.isEmpty ? Text("Başlıksız anımsatıcı") : Text(verbatim: reminder.title))
+                                .font(.system(size: 11))
+                                .foregroundStyle(reminder.isOverdue ? .red : .white)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

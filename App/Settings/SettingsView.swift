@@ -193,6 +193,8 @@ private struct ModuleSettings: View {
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Zamanlayıcı", isOn: $settings.timerEnabled)
+                Toggle("Anımsatıcılar (Takvim sekmesinde)", isOn: $settings.remindersEnabled)
+                Toggle("Sistem durumu (işlemci, bellek, ağ)", isOn: $settings.systemStatsEnabled)
                 Toggle("Ayna (kamera izni yalnız ilk kullanımda istenir)", isOn: $settings.mirrorEnabled)
             }
             Section {
