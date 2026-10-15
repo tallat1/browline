@@ -1,4 +1,5 @@
 import Integrations
+import NotchShell
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -17,7 +18,7 @@ struct ShelfTab: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(shelf.items) { item in
-                            ShelfTile(item: item, shelf: shelf)
+                            ShelfTile(item: item, shelf: shelf).notchTransition(.swap)
                         }
                     }
                     .padding(.horizontal, 4)
@@ -43,7 +44,9 @@ struct ShelfTab: View {
                 .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
                 .foregroundStyle(.white.opacity(isTargeted ? 0.7 : 0.15))
         }
-        .animation(.easeOut(duration: 0.15), value: isTargeted)
+        .notchAnimation(NotchMotion.hover, value: isTargeted)
+        // Rafa dosya eklenince/kaldırılınca öğeler ve boş durum geçişle.
+        .notchAnimation(value: shelf.items.map(\.id))
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
@@ -78,6 +81,7 @@ private struct ShelfTile: View {
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
             .fill(isHovering ? NotchDesign.cardHoverFill : .clear))
         .onHover { isHovering = $0 }
+        .notchAnimation(NotchMotion.hover, value: isHovering)
         .contentShape(Rectangle())
         .onDrag {
             NSItemProvider(object: (shelf.resolvedURL(for: item) ?? item.url) as NSURL)

@@ -190,3 +190,11 @@ struct PreferredOpenSizeTests {
         }
     }
 }
+
+struct MotionTests {
+    @Test func marqueeCycleCoversScrollAndPauses() {
+        #expect(NotchMotion.marqueeCycle(overflow: 0) == 0)
+        let cycle = NotchMotion.marqueeCycle(overflow: 60)
+        #expect(cycle == NotchMotion.marqueeStartDelay + 60 / NotchMotion.marqueeSpeed + NotchMotion.marqueeEndPause + 0.45)
+    }
+}

@@ -1,4 +1,5 @@
 import Integrations
+import NotchShell
 import SwiftUI
 
 /// İşlemci, bellek, ağ. Örnekleme yalnız sekme ekrandayken (saniyede bir).
@@ -6,6 +7,19 @@ struct SystemTab: View {
     let stats: SystemStats
 
     var body: some View {
+        // İlk örnek gelince bekleme göstergesinden kartlara çapraz geçiş; sayılar akarak değişir.
+        ZStack {
+            cards
+                .id(stats.snapshot == nil)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: stats.snapshot == nil)
+        .onAppear { stats.start() }
+        .onDisappear { stats.stop() }
+    }
+
+    @ViewBuilder
+    private var cards: some View {
         Group {
             if let snapshot = stats.snapshot {
                 HStack(alignment: .top, spacing: 10) {
@@ -29,8 +43,6 @@ struct SystemTab: View {
                 ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .onAppear { stats.start() }
-        .onDisappear { stats.stop() }
     }
 
     private func gauge(title: LocalizedStringKey, value: Double, tint: Color, detail: Text) -> some View {
@@ -40,6 +52,8 @@ struct SystemTab: View {
                 .font(.system(size: 20, weight: .semibold).monospacedDigit())
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
+                .contentTransition(.numericText())
+                .notchAnimation(value: value)
             LevelBar(level: value, tint: tint).frame(height: 5)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

@@ -32,6 +32,51 @@ public final class NotchPanel: NSPanel {
         // kalıcı kapatır (DynamicNotchKit #48). Faz 0'da bu mod ölçüldü ve en az uyanmayı verdi.
     }
 
+    /// Göster/gizle geçişlerinin sırası; yarıda kalan solma, yeni bir göstermeyi bozmasın.
+    private var visibilityGeneration = 0
+
+    /// Saydamlıkla gösterir. Pencere gizliyse saydam olarak öne alınır, sonra belirir.
+    func fadeIn(duration: TimeInterval = NotchMotion.panelFadeDuration) {
+        visibilityGeneration &+= 1
+        if !isVisible {
+            alphaValue = 0
+            orderFrontRegardless()
+        }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            animator().alphaValue = 1
+        }
+    }
+
+    /// Saydamlıkla gizler, bitince sıradan çıkarır. `delay`: önce şeklin kapanma animasyonu bitsin.
+    func fadeOut(after delay: TimeInterval = 0, duration: TimeInterval = NotchMotion.panelFadeDuration) {
+        visibilityGeneration &+= 1
+        let generation = visibilityGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.visibilityGeneration == generation else { return }
+                NSAnimationContext.runAnimationGroup({ context in
+                    context.duration = duration
+                    context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                    self.animator().alphaValue = 0
+                }, completionHandler: { [weak self] in
+                    MainActor.assumeIsolated {
+                        guard let self, self.visibilityGeneration == generation else { return }
+                        self.orderOut(nil)
+                    }
+                })
+            }
+        }
+    }
+
+    /// Doğrudan göster (açılış, uyanma kurtarması): önceki solmadan kalan saydamlık sıfırlanır.
+    func showImmediately() {
+        visibilityGeneration &+= 1
+        alphaValue = 1
+        orderFrontRegardless()
+    }
+
     override public var canBecomeKey: Bool { wantsKeyForTextInput }
     override public var canBecomeMain: Bool { false }
 

@@ -13,18 +13,31 @@ struct MediaTab: View {
     let sourceDescription: String
 
     var body: some View {
+        // Çalan yokken ↔ çalarken: boş durum ile oynatıcı arası çapraz geçiş (şarkı geçişinde
+        // denetleyici bilgiyi 1,5 sn tuttuğu için burada boşalma görülmez).
+        ZStack {
+            player.notchTransition(.swap)
+        }
+        .notchAnimation(value: nowPlaying.info == nil)
+    }
+
+    @ViewBuilder
+    private var player: some View {
         if let info = nowPlaying.info {
             VStack(spacing: 10) {
                 HStack(alignment: .center, spacing: 14) {
                     artwork(bundleIdentifier: info.bundleIdentifier)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(info.title)
-                            .font(.system(size: 14, weight: .semibold))
-                            .lineLimit(1)
-                        Text(subtitle(for: info))
-                            .font(NotchDesign.body)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                        // Şarkı değişince başlık ve sanatçı çapraz geçişle; uzun başlık kayar.
+                        VStack(alignment: .leading, spacing: 3) {
+                            MarqueeText(text: info.title, size: 14, weight: .semibold, loops: true)
+                            Text(subtitle(for: info))
+                                .font(NotchDesign.body)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                        .id(info.title)
+                        .notchTransition(.swap)
                         Spacer(minLength: 4)
                         ScrubBar(info: info, accent: accent, canSeek: nowPlaying.canSeek,
                                  onBegin: { model.tapped() }) { seconds in
@@ -41,6 +54,7 @@ struct MediaTab: View {
                 }
             }
             .frame(maxHeight: .infinity, alignment: .top)
+            .notchAnimation(value: info.title)
         } else {
             EmptyStateView(symbol: "music.note",
                            title: nowPlaying.source == .checking ? "Medya kaynağı denetleniyor…" : "Şu an bir şey çalmıyor",
@@ -57,18 +71,24 @@ struct MediaTab: View {
         Button {
             guard let bundleIdentifier,
                   let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) else { return }
+            AppLog.coordinator.notice("medya: oynatıcı açılıyor (\(bundleIdentifier, privacy: .public))")
             NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
         } label: {
-            Group {
-                if let image = nowPlaying.artwork {
-                    Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
-                } else {
-                    ZStack {
-                        NotchDesign.cardFill
-                        Image(systemName: "music.note").font(.system(size: 24)).foregroundStyle(.secondary)
+            ZStack {
+                Group {
+                    if let image = nowPlaying.artwork {
+                        Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
+                    } else {
+                        ZStack {
+                            NotchDesign.cardFill
+                            Image(systemName: "music.note").font(.system(size: 24)).foregroundStyle(.secondary)
+                        }
                     }
                 }
+                .id(nowPlaying.artworkVersion)
+                .notchTransition(.fade)
             }
+            .notchAnimation(value: nowPlaying.artworkVersion)
             .frame(width: 84, height: 84)
             .clipShape(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous))
         }
@@ -88,7 +108,10 @@ struct MediaTab: View {
             toggle("shuffle", isOn: info.shuffleMode != 1, help: "Karıştır") { nowPlaying.cycleShuffle() }
         }
         if nowPlaying.canSeek {
-            control("gobackward.15", size: 15, frame: 32, help: "15 sn geri") { nowPlaying.skip(by: -15) }
+            control("gobackward.15", size: 15, frame: 32, help: "15 sn geri") {
+                AppLog.coordinator.notice("medya: 15 sn geri")
+                nowPlaying.skip(by: -15)
+            }
         }
         control("backward.fill", size: 15, frame: 34, help: "Önceki") { nowPlaying.previousTrack() }
         control(info.isPlaying ? "pause.fill" : "play.fill", size: 22, frame: 42,
@@ -97,7 +120,10 @@ struct MediaTab: View {
         }
         control("forward.fill", size: 15, frame: 34, help: "Sonraki") { nowPlaying.nextTrack() }
         if nowPlaying.canSeek {
-            control("goforward.15", size: 15, frame: 32, help: "15 sn ileri") { nowPlaying.skip(by: 15) }
+            control("goforward.15", size: 15, frame: 32, help: "15 sn ileri") {
+                AppLog.coordinator.notice("medya: 15 sn ileri")
+                nowPlaying.skip(by: 15)
+            }
         }
         if nowPlaying.supportsShuffleAndRepeat {
             toggle(info.repeatMode == 2 ? "repeat.1" : "repeat", isOn: info.repeatMode != 1, help: "Tekrarla") {
@@ -166,7 +192,10 @@ private struct ScrubBar: View {
                         .gesture(DragGesture(minimumDistance: 0)
                             .onChanged { value in
                                 guard canSeek else { return }
-                                if dragFraction == nil { onBegin() }
+                                if dragFraction == nil {
+                                    AppLog.coordinator.notice("medya: ilerleme sürükleniyor")
+                                    onBegin()
+                                }
                                 dragFraction = min(1, max(0, value.location.x / width))
                             }
                             .onEnded { value in
@@ -175,7 +204,7 @@ private struct ScrubBar: View {
                                 dragFraction = nil
                             })
                         .onHover { isHovering = $0 }
-                        .animation(.easeOut(duration: 0.12), value: active)
+                        .notchAnimation(NotchMotion.hover, value: active)
                     }
                     .frame(height: 18)
                     Text("-" + Self.format(max(0, duration - elapsed)))
@@ -250,12 +279,16 @@ private struct VolumeSlider: View {
             .gesture(DragGesture(minimumDistance: 0)
                 .onChanged { drag in
                     guard isEnabled else { return }
-                    if !isDragging { isDragging = true; onBegin() }
+                    if !isDragging {
+                        isDragging = true
+                        AppLog.coordinator.notice("medya: ses kaydırıcısı sürükleniyor")
+                        onBegin()
+                    }
                     onChange(min(1, max(0, drag.location.x / width)))
                 }
                 .onEnded { _ in isDragging = false })
             .onHover { isHovering = $0 }
-            .animation(.easeOut(duration: 0.12), value: active)
+            .notchAnimation(NotchMotion.hover, value: active)
         }
         .help(isEnabled ? "%\(Int((value * 100).rounded()))" : String(localized: "Bu çıkışın sesi ayarlanamıyor"))
     }
@@ -266,6 +299,7 @@ private struct VolumeSlider: View {
 @MainActor
 private enum OutputMenu {
     static func show(volume: VolumeController) {
+        AppLog.coordinator.notice("medya: çıkış menüsü açıldı (\(volume.devices.count) cihaz)")
         let menu = NSMenu()
         let header = NSMenuItem(title: String(localized: "Ses çıkışı"), action: nil, keyEquivalent: "")
         header.isEnabled = false

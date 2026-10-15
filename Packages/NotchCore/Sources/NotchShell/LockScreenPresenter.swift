@@ -130,7 +130,7 @@ public final class LockScreenPresenter {
 
     private func showPanel() {
         guard let panel, let space else { return }
-        panel.orderFrontRegardless()
+        panel.showImmediately()
         if space.attach(windowNumber: panel.windowNumber) {
             Log.shell.notice("kilit ekranı paneli gösterildi")
         } else {

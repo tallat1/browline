@@ -49,11 +49,50 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
   süreler sürüklenen konumu gösterir); bırakınca `seek`, çubuk akışı beklemeden yeni konuma atlar.
 - ±15 sn: oynatıcının kendi 15 sn komutu değil `seek` (Spotify o desteği bildirmiyor). Yedek kaynakta
   (AppleScript) konum bilinmediği için gizli.
+- ⚠️ Spotify MediaRemote konum komutunu doğru işlemiyor (2026-10-16: 2 sn geri istendi, sonraki şarkıya geçti).
+  Spotify ve Music'te konum AppleScript ile değişir (`set player position`, ayrı `osascript` süreci); ilk
+  kullanımda macOS "NotchMVP, Spotify'ı denetlemek istiyor" diye sorar. Diğer oynatıcılarda MediaRemote.
 - Karıştır ve tekrar yalnız oynatıcı durumunu bildiriyorsa görünür (Music bildirir, Spotify bildirmez).
 - Ses kaydırıcısı, sessize alma ve çıkış cihazı menüsü (`VolumeController`, CoreAudio, izinsiz); dinleyiciler
   yalnız sekme açıkken. Kaydırıcı, ilerleme ya da menü kullanılınca notch sabitlenir, imleç kayınca kapanmaz.
 - Açık notch'ta yatay iki parmak kaydırma parça geçirir.
 - Adaptör komutlarının başarısızlığı artık günlüğe düşer ("Medya komutu başarısız").
+
+## Hareket standardı (ürün geneli)
+
+Tek kaynak `NotchShell/NotchMotion.swift`; görünümlerde süre ya da eğri elle yazılmaz.
+
+| Durum | Ne kullanılır | Not |
+|---|---|---|
+| Notch açılış / kapanış | `NotchMotion.open` / `.close` (kritik sönümlü yay 0,40 / 0,45 sn) | Kabukta |
+| Kanat genişliği, sekme boyu | `NotchMotion.resize` (yay 0,38 sn, çok hafif esnek) | Eskiden kanat genişliği canlı değildi |
+| İçerik değişimi (sekme, durum, şarkı, etkinlik) | `.notchTransition(.swap)` + `.notchAnimation(value:)` | `.id(durum)` ile kimlik değişir, çapraz geçiş |
+| Liste öğesi ekleme/çıkarma | `.notchTransition(.listItem)` | Etkinlikler, raf, takvim, anımsatıcılar |
+| Küçük öğe (durum çipi, kapak) | `.notchTransition(.fade)` | |
+| Sayılar | `.contentTransition(.numericText())` | Geri sayım `countsDown`, yüzdeler, pil |
+| Düzey çubukları, halka | `LevelBar`, `ProgressRing` kendi içinde canlı | |
+| Üzerine gelme | `NotchMotion.hover` (0,12 sn) | Düğme zemini, kalınlaşan çubuk |
+| Panel görünür/gizli | `NotchPanel.fadeIn/fadeOut` (0,2 sn saydamlık) | Boştaki yüzey önce kapanmasını bitirir (0,35 sn) |
+| Uzun metin | `MarqueeText`: kanatta bir kez, açık başlıkta döngü, listede üzerine gelince | Bildirim süresi `readableFlashDuration` ile uzar |
+| Ayarlar penceresi | `.notchAnimation(value: …Reveal)` | Açılan satırlar birden belirmez |
+
+Hareketi azalt açıkken `.notchTransition` yalnız saydamlığa, `.notchAnimation` kısa saydamlık geçişine iner;
+kayan yazı kaymaz. Kökten düzeltilenler: sekme yalnız şerit düğmesinden değişince canlıydı (dosya sürükleme,
+ayar ve debug yolu sıçrıyordu); panel `orderOut/orderFront` ile anında kaybolup beliriyordu; şarkı geçişinde
+oynatıcının anlık "çalan yok" bildirimi notch'u kapatıp açıyordu.
+
+## Hareket ve şarkı geçişleri
+
+- Tek hareket sistemi `NotchShell/NotchMotion.swift`: açılış/kapanış kritik sönümlü yay, kanat genişliği ve
+  sekme boyu hafif esnek yay, içerik değişimi 0,28 sn çapraz geçiş; hepsi aynı yay ailesi, üst üste binince hız
+  korunarak birleşir. Kanat genişliği eskiden canlandırılmıyordu (şarkı önizlemesinde şekil sıçrıyordu).
+- Şarkı geçişi: oynatıcı bir an "çalan yok" ya da "duraklatıldı" bildiriyor. Bilgi 1,5 sn, kanat 1,2 sn
+  bekletilir; yeni bilgi gelirse arayüz hiç boşalmaz. Yeni kapak başlıktan sonra geldiği için eski kapak en çok
+  2 sn korunur (yer tutucu titremez); kapak, başlık ve kanat içeriği çapraz geçişle değişir.
+- Uzun ad (`MarqueeText`): sığmıyorsa 0,9 sn bekler, 30 pt/sn sabit hızla kayar, sonda 1,2 sn durur, yumuşakça
+  başa döner; kenarlarda soluklaşma, alan dışına taşma yok. Kısa adda hareket yok; Hareketi azalt açıksa kaymaz.
+  Şarkı önizlemesinin süresi adın bir tur kayma süresine göre uzar; açık medya sekmesinde döngü, kapalı
+  notch'taki dış etkinlikte tek tur (sürekli animasyon yok).
 
 ## Now Playing katmanları
 

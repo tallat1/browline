@@ -34,6 +34,8 @@ public final class NowPlayingController {
     public private(set) var info: NowPlayingInfo?
     public private(set) var source: Source = .off
     public private(set) var artwork: NSImage?
+    /// Kapak her değiştiğinde artar; görünümler çapraz geçişi buna bağlar.
+    public private(set) var artworkVersion = 0
     /// Kapaktan türetilen vurgu rengi; siyah notch üstünde okunacak kadar parlak.
     public private(set) var accentColor: NSColor?
 
@@ -44,6 +46,14 @@ public final class NowPlayingController {
     @ObservationIgnored private let fallback = PlayerNotificationSource()
     @ObservationIgnored private var artworkSource: Data?
     @ObservationIgnored private var generation = 0
+    /// Şarkı geçişinde oynatıcılar bir an "çalan yok" bildiriyor; bilgi hemen silinmez.
+    @ObservationIgnored private var clearTask: Task<Void, Never>?
+    /// Yeni şarkının kapağı başlıktan sonra geliyor; o arada eski kapak korunur (yer tutucu titremesin).
+    @ObservationIgnored private var artworkHoldTask: Task<Void, Never>?
+
+    /// Geçiş payı: bu süre içinde yeni bilgi gelirse arayüz hiç boşalmaz.
+    static let transitionGrace: Duration = .milliseconds(1500)
+    static let artworkHold: Duration = .seconds(2)
 
     /// Çöken akış için yeniden başlatma aralıkları; sonra yedeğe düşülür.
     private static let restartDelays: [Duration] = [.seconds(2), .seconds(2), .seconds(15), .seconds(60)]
@@ -77,7 +87,7 @@ public final class NowPlayingController {
         stream = nil
         fallback.stop()
         source = .off
-        set(info: nil)
+        set(info: nil, immediately: true)
     }
 
     // MARK: - Komutlar
@@ -92,7 +102,13 @@ public final class NowPlayingController {
     public func seek(to seconds: TimeInterval) {
         guard source == .mediaRemote, let adapter, var current = info else { return }
         let target = min(max(0, seconds), current.duration ?? seconds)
-        adapter.seek(to: target)
+        if let bundle = current.bundleIdentifier, PlayerNotificationSource.supportsScriptedSeek(bundle) {
+            PlayerNotificationSource.seek(to: target, bundleIdentifier: bundle)
+            Log.integrations.notice("Medya: konum \(Int(target)) sn (AppleScript, \(bundle, privacy: .public))")
+        } else {
+            adapter.seek(to: target)
+            Log.integrations.notice("Medya: konum \(Int(target)) sn (MediaRemote)")
+        }
         // İyimser güncelleme: çubuk akıştan gelecek düzeltmeyi beklemeden yeni konuma atlar.
         current.elapsedTime = target
         current.timestamp = .now
@@ -199,16 +215,51 @@ public final class NowPlayingController {
         fallback.start()
     }
 
-    private func set(info newValue: NowPlayingInfo?) {
+    private func set(info newValue: NowPlayingInfo?, immediately: Bool = false) {
+        if newValue == nil, info != nil, !immediately {
+            guard clearTask == nil else { return }
+            clearTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: Self.transitionGrace)
+                guard let self, !Task.isCancelled else { return }
+                self.clearTask = nil
+                self.apply(nil)
+            }
+            return
+        }
+        clearTask?.cancel()
+        clearTask = nil
+        apply(newValue)
+    }
+
+    private func apply(_ newValue: NowPlayingInfo?) {
         guard newValue != info else { return }
+        let titleChanged = newValue?.title != info?.title
         info = newValue
         let data = newValue?.artworkData
         if data != artworkSource {
-            artworkSource = data
-            let image = data.flatMap(NSImage.init(data:))
-            artwork = image
-            accentColor = image.flatMap(ArtworkAccent.color(of:))
+            if data == nil, newValue != nil, artwork != nil, titleChanged || artworkHoldTask != nil {
+                // Yeni şarkı, kapağı henüz yok: eskisi kısa süre kalır, gelmezse temizlenir.
+                artworkHoldTask?.cancel()
+                artworkHoldTask = Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: Self.artworkHold)
+                    guard let self, !Task.isCancelled else { return }
+                    self.artworkHoldTask = nil
+                    self.setArtwork(nil)
+                }
+            } else {
+                setArtwork(data)
+            }
         }
         onInfoChanged?(newValue)
+    }
+
+    private func setArtwork(_ data: Data?) {
+        artworkHoldTask?.cancel()
+        artworkHoldTask = nil
+        artworkSource = data
+        let image = data.flatMap(NSImage.init(data:))
+        artwork = image
+        accentColor = image.flatMap(ArtworkAccent.color(of:))
+        artworkVersion &+= 1
     }
 }

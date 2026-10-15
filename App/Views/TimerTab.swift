@@ -1,4 +1,5 @@
 import Integrations
+import NotchShell
 import SwiftUI
 
 /// Zamanlayıcı: hazır süreler ya da Pomodoro; çalışırken büyük rakam, halka, +1 dk ve iptal.
@@ -9,6 +10,17 @@ struct TimerTab: View {
     private static let presets = [1, 5, 10, 25, 45]
 
     var body: some View {
+        // Seçim ↔ geri sayım arası çapraz geçiş; rakamlar akarak azalır.
+        ZStack {
+            stateContent
+                .id(timer.isRunning)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: timer.isRunning)
+    }
+
+    @ViewBuilder
+    private var stateContent: some View {
         if timer.isRunning {
             // Saniyelik çizim yalnız sekme açıkken; kapanınca TimelineView da durur.
             TimelineView(.periodic(from: .now, by: 1)) { timeline in
@@ -20,7 +32,11 @@ struct TimerTab: View {
                         Text(phase?.title ?? String(localized: "Zamanlayıcı"))
                             .font(NotchDesign.caption)
                             .foregroundStyle(.secondary)
-                        Text(CountdownTimer.format(timer.remaining(at: timeline.date))).font(NotchDesign.figure)
+                        let remaining = timer.remaining(at: timeline.date)
+                        Text(CountdownTimer.format(remaining))
+                            .font(NotchDesign.figure)
+                            .contentTransition(.numericText(countsDown: true))
+                            .notchAnimation(value: Int(remaining.rounded(.up)))
                     }
                     Spacer(minLength: 8)
                     Button("+1 dk") { timer.add(seconds: 60) }

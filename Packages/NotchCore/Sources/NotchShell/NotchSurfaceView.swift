@@ -22,10 +22,6 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
     private let compactTrailing: () -> Trailing
     private let expanded: (NotchContext) -> Expanded
 
-    /// Kritik sönümlü yaylar (bounce 0): boring.notch'ta 0,8 sönümün aşması şikâyet topladı.
-    static var openSpring: Animation { .spring(duration: 0.4, bounce: 0) }
-    static var closeSpring: Animation { .spring(duration: 0.45, bounce: 0) }
-    static var reducedMotionFade: Animation { .easeInOut(duration: 0.18) }
 
     public init(model: NotchSurfaceModel,
                 @ViewBuilder compactLeading: @escaping () -> Leading,
@@ -58,11 +54,15 @@ public struct NotchSurfaceView<Leading: View, Trailing: View, Expanded: View>: V
                 surface(layout, resting).opacity(model.isOpen ? 0 : 1)
                 surface(layout, .open).opacity(model.isOpen ? 1 : 0)
             }
-            .animation(Self.reducedMotionFade, value: model.isOpen)
+            .animation(NotchMotion.reducedMotion, value: model.isOpen)
+            .animation(NotchMotion.reducedMotion, value: model.hasCompactContent)
         } else {
             surface(layout, presentation)
-                .animation(model.isOpen ? Self.openSpring : Self.closeSpring, value: presentation)
-                .animation(Self.openSpring, value: model.preferredOpenSize)
+                .animation(model.isOpen ? NotchMotion.open : NotchMotion.close, value: presentation)
+                // Kanat genişliği (şarkı adı, dış etkinlik) ve sekme boyu da aynı aileden yayla akar;
+                // eskiden kanat genişliği canlandırılmıyor, şarkı değişince şekil sıçrıyordu.
+                .animation(NotchMotion.resize, value: model.compactWingWidth)
+                .animation(NotchMotion.resize, value: model.preferredOpenSize)
         }
     }
 

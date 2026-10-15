@@ -47,18 +47,21 @@ struct CompactLeadingView: View {
     let activityID: ActivityID?
 
     var body: some View {
+        // Etkinlik değişince (çalan → şarkı önizlemesi → çalan) içerik ani değil, çapraz geçişle.
+        ZStack {
+            content
+                .id(activityID)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: activityID)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         Group {
             switch activityID {
             case AppCoordinator.ActivityKind.nowPlaying:
-                if let artwork = coordinator.nowPlaying.artwork {
-                    Image(nsImage: artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 20, height: 20)
-                        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                } else {
-                    Image(systemName: "music.note")
-                }
+                TrackArtwork(image: coordinator.nowPlaying.artwork, version: coordinator.nowPlaying.artworkVersion)
             case AppCoordinator.ActivityKind.meeting:
                 Image(systemName: "video.fill")
                     .foregroundStyle(coordinator.calendar.imminentMeeting.map(\.swiftUIColor) ?? .white)
@@ -80,16 +83,16 @@ struct CompactLeadingView: View {
             case AppCoordinator.ActivityKind.trackChange:
                 if let info = coordinator.nowPlaying.info {
                     HStack(spacing: 6) {
-                        TrackArtwork(image: coordinator.nowPlaying.artwork)
-                        Text(info.title).lineLimit(1)
+                        TrackArtwork(image: coordinator.nowPlaying.artwork, version: coordinator.nowPlaying.artworkVersion)
+                        // Uzun ad kayarak tamamı gösterilir; önizlemenin süresi buna göre uzar.
+                        MarqueeText(text: info.title, size: 13, weight: .semibold)
                     }
                     .padding(.leading, 10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             case AppCoordinator.ActivityKind.audioOutput:
                 if let device = coordinator.audioOutput.current {
-                    WideWingLabel(symbol: AudioOutputMonitor.symbolName(for: device), tint: .white, text: device.name,
-                                  truncation: .tail)
+                    WideWingLabel(symbol: AudioOutputMonitor.symbolName(for: device), tint: .white, text: device.name)
                 }
             case AppCoordinator.ActivityKind.keepAwake:
                 Image(systemName: "cup.and.saucer.fill").foregroundStyle(.orange)
@@ -104,22 +107,23 @@ struct CompactLeadingView: View {
                 if let phase = coordinator.ui.pomodoroPhase {
                     // Pomodoro'da biten değil başlayan evre söylenir.
                     WideWingLabel(symbol: phase.isBreak ? "cup.and.saucer.fill" : "leaf.fill", tint: phase.tint,
-                                  text: phase.title, truncation: .tail)
+                                  text: phase.title)
                 } else {
                     WideWingLabel(symbol: "timer", tint: .orange, text: String(localized: "Süre doldu"))
                 }
             case AppCoordinator.ActivityKind.claudeUsage:
                 WideWingLabel(symbol: "sparkles", tint: Color(red: 0.85, green: 0.47, blue: 0.34),
-                              text: String(localized: "Claude oturumu"), truncation: .tail)
+                              text: String(localized: "Claude oturumu"))
             case AppCoordinator.ActivityKind.batteryLow:
-                WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"), truncation: .tail)
+                WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"))
             case AppCoordinator.ActivityKind.batteryFull:
-                WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"), truncation: .tail)
+                WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"))
             default:
                 if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
                         Image(systemName: activity.symbolName).foregroundStyle(activity.tintColor)
-                        Text(activity.title).lineLimit(1)
+                        // Kanat kapalı notch'ta sürekli görünür: uzun başlık bir kez kayar, döngü yok.
+                        MarqueeText(text: activity.title, size: 13, weight: .semibold)
                     }
                     // Boşluk çerçeveden önce: kanat sabit genişlikte, boşluk onun içinde kalmalı.
                     .padding(.leading, 12)
@@ -138,6 +142,16 @@ struct CompactTrailingView: View {
     let activityID: ActivityID?
 
     var body: some View {
+        ZStack {
+            content
+                .id(activityID)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: activityID)
+    }
+
+    @ViewBuilder
+    private var content: some View {
         Group {
             switch activityID {
             case AppCoordinator.ActivityKind.nowPlaying:
@@ -167,6 +181,8 @@ struct CompactTrailingView: View {
                         .frame(width: 64, height: 5)
                     Text("%\(Int((coordinator.hud.level * 100).rounded()))")
                         .monospacedDigit()
+                        .contentTransition(.numericText())
+                        .notchAnimation(value: coordinator.hud.level)
                         .foregroundStyle(coordinator.hud.isMuted ? .secondary : .primary)
                 }
                 .padding(.trailing, 12)
@@ -289,6 +305,7 @@ struct ProgressRing: View {
                 .stroke(tint, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                 .rotationEffect(.degrees(-90))
         }
+        .notchAnimation(.linear(duration: 0.3), value: progress)
     }
 }
 
@@ -309,34 +326,46 @@ extension ExternalActivity {
 }
 
 /// Geniş kanadın sol tarafı: sembol ve kısa metin, görünen kenardan 12 pt içeride.
-/// Kompakt kanatta küçük kapak; yoksa nota simgesi.
+/// Kompakt kanatta küçük kapak; yoksa nota simgesi. Kapak değişince çapraz geçiş.
 struct TrackArtwork: View {
     let image: NSImage?
+    let version: Int
 
     var body: some View {
-        if let image {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 20, height: 20)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-        } else {
-            Image(systemName: "music.note")
+        ZStack {
+            Group {
+                if let image {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 20, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                } else {
+                    Image(systemName: "music.note")
+                }
+            }
+            .id(version)
+            .notchTransition(.fade)
         }
+        .frame(width: 20, height: 20)
+        .notchAnimation(value: version)
     }
 }
 
+/// Geniş kanatta simge + metin. Metin sığmazsa bir kez kayarak tamamı gösterilir (kesilmez);
+/// kısa bildirimin süresi `AppCoordinator.readableFlashDuration` ile buna göre uzar.
 struct WideWingLabel: View {
     let symbol: String
     let tint: Color
     let text: String
-    /// Dosya adında uzantı görünsün diye ortadan; cihaz ve başlıkta sondan.
-    var truncation: Text.TruncationMode = .middle
+
+    /// Kanatta metne kalan genişlik: kanat − baş boşluk (12) − simge (~16) − aralık (6).
+    static var textWidth: CGFloat { AppCoordinator.wideWingWidth - 34 }
 
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: symbol).foregroundStyle(tint)
-            Text(text).lineLimit(1).truncationMode(truncation)
+            MarqueeText(text: text, size: 13, weight: .semibold)
         }
         .padding(.leading, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -354,6 +383,8 @@ struct LevelBar: View {
                 Capsule().fill(tint).frame(width: proxy.size.width * min(max(level, 0), 1))
             }
         }
+        // Düzey değişince (ses, işlemci, bellek, Claude) çubuk sıçramaz, kayar.
+        .notchAnimation(value: level)
     }
 }
 

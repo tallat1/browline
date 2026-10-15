@@ -128,6 +128,24 @@ final class AppCoordinator {
     private var liveExternalIDs: Set<ActivityID> = []
     /// Parça değişimini anlamak için bir önceki Now Playing bilgisi.
     private var lastTrackInfo: NowPlayingInfo?
+    /// Şarkı geçişinde oynatıcı bir an duraklıyor; kanat hemen kapanmasın.
+    private var nowPlayingRemovalTask: Task<Void, Never>?
+
+    /// Şarkı önizlemesinin süresi: kısa adda 3 sn; uzun ad kayarak sonuna kadar okunabilsin diye
+    /// kayan yazının bir turu kadar.
+    static func trackPeekDuration(for title: String) -> Duration {
+        // Geniş kanatta başlığa kalan genişlik: kanat − baş boşluk (10) − kapak (20) − aralık (6).
+        readableFlashDuration(base: .seconds(3), text: title, available: wideWingWidth - 36)
+    }
+
+    /// Kısa bildirimin süresi: en az `base`; metin geniş kanada sığmıyorsa kayan yazının bir turu
+    /// kadar. Ürün genelinde tek kural: bildirim, metni okunmadan kaybolmaz.
+    static func readableFlashDuration(base: Duration, text: String,
+                                      available: CGFloat = WideWingLabel.textWidth) -> Duration {
+        let overflow = MarqueeText.width(of: text, size: 13, weight: .semibold) - available
+        let needed = Duration.milliseconds(Int((NotchMotion.marqueeCycle(overflow: overflow) + 0.4) * 1000))
+        return max(base, needed)
+    }
 
     /// Etkin koordinatör; Kestirmeler eylemleri buradan ulaşır.
     private(set) static var current: AppCoordinator?
@@ -168,15 +186,24 @@ final class AppCoordinator {
 
         nowPlaying.onInfoChanged = { [weak self] info in
             guard let self else { return }
-            if settings.trackPeekEnabled, NowPlayingInfo.isTrackChange(from: lastTrackInfo, to: info) {
-                activities.flash(ActivityKind.trackChange, duration: .seconds(3))
+            if settings.trackPeekEnabled, let info, NowPlayingInfo.isTrackChange(from: lastTrackInfo, to: info) {
+                activities.flash(ActivityKind.trackChange, duration: Self.trackPeekDuration(for: info.title))
             }
             lastTrackInfo = info
             // Kompakt kanatlar yalnız çalarken; duraklatılmış parça açık notch'ta görünmeye devam eder.
+            // Duraklama hemen değil kısa bir payla kanadı kapatır: şarkı geçişindeki anlık duraklama
+            // notch'u kapatıp yeniden açmasın.
             if info?.isPlaying == true {
+                nowPlayingRemovalTask?.cancel()
+                nowPlayingRemovalTask = nil
                 activities.setLive(ActivityKind.nowPlaying, priority: 30)
-            } else {
-                activities.removeLive(ActivityKind.nowPlaying)
+            } else if activities.isLive(ActivityKind.nowPlaying), nowPlayingRemovalTask == nil {
+                nowPlayingRemovalTask = Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: .milliseconds(1200))
+                    guard let self, !Task.isCancelled else { return }
+                    self.nowPlayingRemovalTask = nil
+                    if self.nowPlaying.info?.isPlaying != true { self.activities.removeLive(ActivityKind.nowPlaying) }
+                }
             }
         }
         calendar.onImminentMeetingChanged = { [weak self] event in
@@ -200,8 +227,10 @@ final class AppCoordinator {
             activities.flash(ActivityKind.power, duration: .seconds(3))
         }
         externalActivities.onActivitiesChanged = { [weak self] list in self?.syncExternal(list) }
-        externalActivities.onFlash = { [weak self] _, duration in
-            self?.activities.flash(ActivityKind.externalFlash, duration: duration)
+        externalActivities.onFlash = { [weak self] activity, duration in
+            // İstenen süre en az; uzun başlık sonuna kadar kayabilsin diye gerekirse uzar.
+            self?.activities.flash(ActivityKind.externalFlash,
+                                   duration: Self.readableFlashDuration(base: duration, text: activity.title))
         }
         privacy.onChange = { [weak self] camera, microphone in
             guard let self else { return }
@@ -230,8 +259,9 @@ final class AppCoordinator {
             ui.lastFinishedDownload = name
             activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
         }
-        audioOutput.onChange = { [weak self] _ in
-            self?.activities.flash(ActivityKind.audioOutput, duration: .seconds(3))
+        audioOutput.onChange = { [weak self] device in
+            self?.activities.flash(ActivityKind.audioOutput,
+                                   duration: Self.readableFlashDuration(base: .seconds(3), text: device.name))
         }
         keepAwake.onChange = { [weak self] active in
             guard let self else { return }

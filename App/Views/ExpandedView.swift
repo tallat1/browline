@@ -31,7 +31,7 @@ struct ExpandedView: View {
             } else {
                 TabStrip(tabs: tabs, selected: ui.selectedTab,
                          availableWidth: context.size.width - 2 * context.horizontalInset) { tab in
-                    withAnimation(NotchDesign.spring) { ui.selectedTab = tab }
+                    ui.selectedTab = tab
                 }
                 .frame(height: NotchDesign.stripHeight)
                 .padding(.top, 4)
@@ -40,10 +40,14 @@ struct ExpandedView: View {
                     .padding(.top, NotchDesign.stripSpacing)
                     .padding(.bottom, context.bottomInset)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .transition(.opacity)
                     .id(ui.selectedTab)
+                    .notchTransition(.swap)
             }
         }
+        // Sekme hangi yoldan değişirse değişsin (şerit, dosya sürükleme, ayar, debug) içerik ve seçim
+        // zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar. Eskiden yalnız şerit düğmesi canlıydı.
+        .notchAnimation(NotchMotion.resize, value: ui.selectedTab)
+        .notchAnimation(value: tabs)
         .padding(.horizontal, context.horizontalInset)
         .foregroundStyle(.white)
         .font(NotchDesign.body)
@@ -129,6 +133,7 @@ private struct StatusArea: View {
 
     private func items(full: Bool) -> some View {
         HStack(spacing: 10) {
+            // Çip belirip kaybolurken (hava gelince, kamera açılınca) ani sıçrama değil solma.
             if full, let conditions = coordinator.weather.conditions, let place = coordinator.weather.place {
                 HStack(spacing: 4) {
                     Image(systemName: WeatherMonitor.symbolName(code: conditions.code, isDay: conditions.isDay))
@@ -136,26 +141,42 @@ private struct StatusArea: View {
                     Text(verbatim: "\(Int(conditions.temperature.rounded()))°").monospacedDigit()
                 }
                 .help(weatherHelp(place, conditions))
+                .notchTransition(.fade)
             }
             if full, coordinator.settings.keepAwakeEnabled {
-                KeepAwakeButton(keepAwake: coordinator.keepAwake)
+                KeepAwakeButton(keepAwake: coordinator.keepAwake).notchTransition(.fade)
             }
             // Kamera yeşil, mikrofon turuncu: macOS menü çubuğu göstergeleriyle aynı renkler.
             if coordinator.privacy.isCameraActive {
-                Circle().fill(.green).frame(width: 6, height: 6).help("Kamera kullanımda")
+                Circle().fill(.green).frame(width: 6, height: 6).help("Kamera kullanımda").notchTransition(.fade)
             }
             if coordinator.privacy.isMicrophoneActive {
-                Circle().fill(.orange).frame(width: 6, height: 6).help("Mikrofon kullanımda")
+                Circle().fill(.orange).frame(width: 6, height: 6).help("Mikrofon kullanımda").notchTransition(.fade)
             }
             if coordinator.settings.batteryEnabled, let state = coordinator.battery.state {
                 HStack(spacing: 4) {
-                    Text("%\(state.percent)").monospacedDigit()
+                    Text("%\(state.percent)").monospacedDigit().contentTransition(.numericText())
                     Image(systemName: state.symbolName)
                         .foregroundStyle(state.isCharging ? .green : (state.percent <= 20 ? .red : .white))
                 }
             }
         }
         .fixedSize()
+        .notchAnimation(value: StatusSignature(coordinator: coordinator))
+    }
+}
+
+/// Durum çiplerinden hangilerinin göründüğü; değişince çipler solarak girip çıkar.
+private struct StatusSignature: Equatable {
+    let weather: Bool, keepAwake: Bool, camera: Bool, microphone: Bool, battery: Int?
+
+    @MainActor
+    init(coordinator: AppCoordinator) {
+        weather = coordinator.weather.conditions != nil
+        keepAwake = coordinator.keepAwake.isActive
+        camera = coordinator.privacy.isCameraActive
+        microphone = coordinator.privacy.isMicrophoneActive
+        battery = coordinator.battery.state?.percent
     }
 }
 
@@ -230,6 +251,7 @@ private struct TabButton: View {
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
+        .notchAnimation(NotchMotion.hover, value: isHovering)
         .help(tab.title)
         .accessibilityLabel(tab.title)
     }

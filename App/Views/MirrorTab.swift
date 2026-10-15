@@ -1,5 +1,6 @@
 import AppKit
 import AVFoundation
+import NotchShell
 import SwiftUI
 
 /// Ayna: kamera yalnız bu sekme ekrandayken açık; notch kapanınca ya da sekme değişince durur.
@@ -9,6 +10,17 @@ struct MirrorTab: View {
     @State private var status = AVCaptureDevice.authorizationStatus(for: .video)
 
     var body: some View {
+        // İzin verilince istemden görüntüye çapraz geçiş.
+        ZStack {
+            stateContent
+                .id(status.rawValue)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: status.rawValue)
+    }
+
+    @ViewBuilder
+    private var stateContent: some View {
         switch status {
         case .authorized:
             // Kare: sekme kendi boyunu kare ister (ExpandedView.bodySize).

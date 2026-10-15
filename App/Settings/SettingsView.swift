@@ -84,6 +84,8 @@ private struct GeneralSettings: View {
             }
         }
         .formStyle(.grouped)
+        // Açılan/kapanan satırlar (hoş geldin, çentiksiz hap seçimi, giriş öğesi onayı) birden değil geçişle.
+        .notchAnimation(value: GeneralReveal(settings: settings))
     }
 }
 
@@ -219,6 +221,8 @@ private struct ModuleSettings: View {
             }
         }
         .formStyle(.grouped)
+        // HUD izin satırları, hava şehri alanı, kilit uyarıları birden değil geçişle.
+        .notchAnimation(value: ModuleReveal(settings: settings, coordinator: coordinator))
     }
 
     private var calendarStatus: String {
@@ -353,5 +357,33 @@ private struct TabSettings: View {
             }
         }
         .padding()
+    }
+}
+
+/// Genel ayarlarda satır gösterip gizleyen durumlar.
+private struct GeneralReveal: Equatable {
+    let onboarding: Bool, policy: PanelManager.ScreenPolicy, modes: [String: PanelManager.DisplayMode], approval: Bool
+
+    @MainActor
+    init(settings: AppSettings) {
+        onboarding = settings.hasCompletedOnboarding
+        policy = settings.screenPolicy
+        modes = settings.displayModes
+        approval = settings.launchAtLoginStatus == .requiresApproval
+    }
+}
+
+/// Modül ayarlarında satır gösterip gizleyen durumlar.
+private struct ModuleReveal: Equatable {
+    let hud: HUDController.Mode, tap: Bool, weather: Bool, place: String?, lockDisabled: Bool, lock: LockScreenPresenter.Status
+
+    @MainActor
+    init(settings: AppSettings, coordinator: AppCoordinator) {
+        hud = settings.hudMode
+        tap = coordinator.hud.isTapActive
+        weather = settings.weatherEnabled
+        place = settings.weatherPlace?.name
+        lockDisabled = settings.lockScreenAutoDisabled
+        lock = coordinator.lockScreen.status
     }
 }

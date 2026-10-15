@@ -302,7 +302,7 @@ private final class PanelController {
         panel.onScroll = { [weak model] event in model?.scrolled(event) }
         panel.onCancel = { [weak model] in model?.dismiss() }
         model.onKeyboardChanged = { [weak panel] wants in panel?.setTextInput(wants) }
-        panel.orderFrontRegardless()
+        panel.showImmediately()
     }
 
     func apply(layout: NotchLayout, screenName: String, options: PanelManager.Options) {
@@ -326,7 +326,7 @@ private final class PanelController {
         if !isHidden, !panel.isVisible {
             // boring.notch #336 senaryosu: uyanmadan sonra pencere kaybolursa geri getir.
             Log.shell.notice("panel görünür değildi, öne getirildi (\(screenName, privacy: .public))")
-            panel.orderFrontRegardless()
+            panel.showImmediately()
         }
     }
 
@@ -344,11 +344,17 @@ private final class PanelController {
         guard hidden != isHidden else { return }
         isHidden = hidden
         Log.shell.notice("panel \(hidden ? "gizlendi" : "gösterildi", privacy: .public) (tam ekran/oyun: \(self.suppressed), boşta: \(idleSurface)) (\(self.model.screenName, privacy: .public))")
+        // Ani belirip kaybolma yerine saydamlık. Boştaki yüzey gizlenirken önce şekil kapanma
+        // animasyonunu bitirir (yoksa küçülme yarıda kesilir); tam ekran/oyunda hemen solar.
         if hidden {
-            if suppressed { model.dismiss() }
-            panel.orderOut(nil)
+            if suppressed {
+                model.dismiss()
+                panel.fadeOut()
+            } else {
+                panel.fadeOut(after: 0.35)
+            }
         } else {
-            panel.orderFrontRegardless()
+            panel.fadeIn()
         }
     }
 

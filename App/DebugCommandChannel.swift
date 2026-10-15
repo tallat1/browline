@@ -60,7 +60,9 @@ final class DebugCommandChannel {
         case "audio:preview":
             coordinator.activities.flash(AppCoordinator.ActivityKind.audioOutput, duration: .seconds(3))
         case "track:preview":
-            coordinator.activities.flash(AppCoordinator.ActivityKind.trackChange, duration: .seconds(3))
+            let title = coordinator.nowPlaying.info?.title ?? ""
+            coordinator.activities.flash(AppCoordinator.ActivityKind.trackChange,
+                                         duration: AppCoordinator.trackPeekDuration(for: title))
         case "awake:on":
             coordinator.keepAwake.start(for: .seconds(90), reason: "NotchMVP debug")
         case "awake:off":

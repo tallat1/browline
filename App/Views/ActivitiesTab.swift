@@ -1,4 +1,5 @@
 import ActivityAPI
+import NotchShell
 import SwiftUI
 
 /// Dış etkinlikler: `notch` komutu, betikler ve Kestirmeler buraya yazar.
@@ -6,6 +7,17 @@ struct ActivitiesTab: View {
     let store: ExternalActivityStore
 
     var body: some View {
+        // Boş ↔ liste geçişi çapraz; listede öğeler kayarak girip çıkar.
+        ZStack {
+            stateContent
+                .id(store.activities.isEmpty)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: store.activities.isEmpty)
+    }
+
+    @ViewBuilder
+    private var stateContent: some View {
         if store.activities.isEmpty {
             EmptyStateView(symbol: "square.stack.3d.up", title: "Henüz dış etkinlik yok",
                            message: "Betikler, AI ajanları ve Kestirmeler buraya etkinlik gönderebilir.") {
@@ -18,10 +30,11 @@ struct ActivitiesTab: View {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(store.activities) { activity in
-                        ActivityRow(activity: activity).notchCard()
+                        ActivityRow(activity: activity).notchCard().notchTransition(.listItem)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .notchAnimation(value: store.activities.map(\.id))
             }
         }
     }
@@ -38,9 +51,7 @@ private struct ActivityRow: View {
                 .frame(width: 22)
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
-                    Text(activity.title)
-                        .font(NotchDesign.bodyEmphasized)
-                        .lineLimit(1)
+                    MarqueeText(text: activity.title, size: 12, weight: .semibold, trigger: .hover)
                     Spacer(minLength: 6)
                     if let progress = activity.progress {
                         Text("%\(Int((progress * 100).rounded()))")
@@ -62,6 +73,7 @@ private struct ActivityRow: View {
                             Capsule().fill(activity.tintColor).frame(width: proxy.size.width * progress)
                         }
                     }
+                    .notchAnimation(value: progress)
                     .frame(height: 4)
                 }
             }

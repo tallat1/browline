@@ -1,3 +1,4 @@
+import NotchShell
 import SwiftUI
 
 /// Açık notch'un görsel dili: tek yazı ölçeği, tek kart, tek düğme ailesi. Yeni ekran buradan
@@ -22,7 +23,6 @@ enum NotchDesign {
     static let stripHeight: CGFloat = 28
     static let stripSpacing: CGFloat = 8
 
-    static let spring = Animation.spring(duration: 0.35, bounce: 0.1)
 }
 
 extension View {
@@ -104,7 +104,7 @@ struct CapsuleButtonStyle: ButtonStyle {
                 .contentShape(Capsule())
                 .scaleEffect(configuration.isPressed ? 0.96 : 1)
                 .onHover { isHovering = $0 }
-                .animation(.easeOut(duration: 0.12), value: isHovering)
+                .notchAnimation(NotchMotion.hover, value: isHovering)
         }
 
         private var fill: Color {
@@ -134,7 +134,7 @@ struct IconButtonStyle: ButtonStyle {
                 .contentShape(Circle())
                 .scaleEffect(configuration.isPressed ? 0.9 : 1)
                 .onHover { isHovering = $0 }
-                .animation(.easeOut(duration: 0.12), value: isHovering)
+                .notchAnimation(NotchMotion.hover, value: isHovering)
         }
     }
 }

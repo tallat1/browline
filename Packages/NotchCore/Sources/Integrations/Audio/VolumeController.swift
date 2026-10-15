@@ -49,11 +49,17 @@ public final class VolumeController {
     public func setVolume(_ value: Double) {
         let clamped = min(max(value, 0), 1)
         if clamped > 0, isMuted { SystemVolume.setMuted(false) }
-        if SystemVolume.setVolume(Float(clamped)) { volume = clamped }
+        if SystemVolume.setVolume(Float(clamped)) {
+            volume = clamped
+            Log.integrations.notice("Ses ayarlandı: %\(Int((clamped * 100).rounded()))")
+        } else {
+            Log.integrations.error("Ses ayarlanamadı")
+        }
     }
 
     public func toggleMute() {
         if SystemVolume.setMuted(!isMuted) { isMuted.toggle() }
+        Log.integrations.notice("Sessiz: \(self.isMuted ? "açık" : "kapalı", privacy: .public)")
     }
 
     /// Varsayılan çıkışı değiştirir (Denetim Merkezi › Ses ile aynı iş).
@@ -65,6 +71,7 @@ public final class VolumeController {
         let status = AudioObjectSetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil,
                                                 UInt32(MemoryLayout<AudioObjectID>.size), &id)
         if status != noErr { Log.integrations.error("Çıkış değiştirilemedi: \(status)") }
+        else { Log.integrations.notice("Çıkış seçildi: \(String(describing: device.transport), privacy: .public)") }
     }
 
     // MARK: - Okuma

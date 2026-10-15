@@ -1,4 +1,5 @@
 import Integrations
+import NotchShell
 import SwiftUI
 
 /// Claude plan limitleri: 5 saatlik oturum ve haftalık pencere. Veri Claude Code durum satırından
@@ -7,6 +8,17 @@ struct ClaudeTab: View {
     let usage: ClaudeUsageMonitor
 
     var body: some View {
+        // Veri gelince boş durumdan kartlara çapraz geçiş; yüzdeler akarak değişir.
+        ZStack {
+            stateContent
+                .id(stateKey)
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: stateKey)
+    }
+
+    @ViewBuilder
+    private var stateContent: some View {
         if let current = usage.usage {
             TimelineView(.everyMinute) { timeline in
                 VStack(alignment: .leading, spacing: 8) {
@@ -31,6 +43,10 @@ struct ClaudeTab: View {
         }
     }
 
+    private var stateKey: Int {
+        usage.usage != nil ? 2 : (usage.statuslineSeenAt != nil ? 1 : 0)
+    }
+
     private func updatedText(_ captured: Date, now: Date) -> String {
         let minutes = Int(now.timeIntervalSince(captured) / 60)
         if minutes < 1 { return String(localized: "Az önce güncellendi") }
@@ -50,7 +66,10 @@ private struct WindowCard: View {
             CardLabel(title)
             if let window {
                 let percent = Int(window.usedPercentage.rounded())
-                Text(verbatim: "%\(percent)").font(.system(size: 22, weight: .semibold).monospacedDigit())
+                Text(verbatim: "%\(percent)")
+                    .font(.system(size: 22, weight: .semibold).monospacedDigit())
+                    .contentTransition(.numericText())
+                    .notchAnimation(value: percent)
                 LevelBar(level: window.usedPercentage / 100, tint: tint(for: window.usedPercentage)).frame(height: 5)
                 if let reset = window.resetsAt, reset > now {
                     Text(resetText(reset)).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(1)

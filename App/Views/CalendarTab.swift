@@ -1,4 +1,5 @@
 import Integrations
+import NotchShell
 import SwiftUI
 
 struct CalendarTab: View {
@@ -19,8 +20,18 @@ struct CalendarTab: View {
         }
     }
 
-    @ViewBuilder
+    /// İzin durumu ve boş/dolu değişince çapraz geçiş.
     private var events: some View {
+        ZStack {
+            eventsContent
+                .id("\(calendar.access)-\(calendar.upcoming.isEmpty)")
+                .notchTransition(.swap)
+        }
+        .notchAnimation(value: "\(calendar.access)-\(calendar.upcoming.isEmpty)")
+    }
+
+    @ViewBuilder
+    private var eventsContent: some View {
         switch calendar.access {
         case .notDetermined:
             EmptyStateView(symbol: "calendar", title: "Yaklaşan toplantılar",
@@ -43,12 +54,13 @@ struct CalendarTab: View {
                     VStack(alignment: .leading, spacing: 8) {
                         CardLabel("Yaklaşan")
                         ForEach(calendar.upcoming.prefix(3)) { event in
-                            EventRow(event: event, now: timeline.date)
+                            EventRow(event: event, now: timeline.date).notchTransition(.listItem)
                         }
                         Spacer(minLength: 0)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .notchCard()
+                    .notchAnimation(value: calendar.upcoming.prefix(3).map(\.id))
                 }
             }
         }
@@ -63,9 +75,8 @@ private struct EventRow: View {
         HStack(spacing: 10) {
             Circle().fill(event.swiftUIColor).frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: 1) {
-                (event.title.isEmpty ? Text("Başlıksız etkinlik") : Text(verbatim: event.title))
-                    .font(NotchDesign.bodyEmphasized)
-                    .lineLimit(1)
+                MarqueeText(text: event.title.isEmpty ? String(localized: "Başlıksız etkinlik") : event.title,
+                            size: 12, weight: .semibold, trigger: .hover)
                 Text(detail)
                     .font(NotchDesign.caption)
                     .foregroundStyle(.secondary)
@@ -118,24 +129,35 @@ private struct RemindersColumn: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(reminders.reminders.prefix(4)) { reminder in
-                        HStack(spacing: 6) {
-                            Button { reminders.complete(reminder) } label: {
-                                Image(systemName: "circle")
-                                    .foregroundStyle(Color(.sRGB, red: reminder.color[safe: 0] ?? 0.6,
-                                                           green: reminder.color[safe: 1] ?? 0.6,
-                                                           blue: reminder.color[safe: 2] ?? 0.6))
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .help("Tamamlandı olarak işaretle")
-                            (reminder.title.isEmpty ? Text("Başlıksız anımsatıcı") : Text(verbatim: reminder.title))
-                                .font(NotchDesign.body)
-                                .foregroundStyle(reminder.isOverdue ? .red : .white)
-                                .lineLimit(1)
-                        }
+                        // Tamamlanan anımsatıcı kayarak çıkar.
+                        ReminderRow(reminder: reminder, reminders: reminders).notchTransition(.listItem)
                     }
                 }
             }
+        }
+        .notchAnimation(value: reminders.reminders.map(\.id))
+        .notchAnimation(value: reminders.access)
+    }
+}
+
+private struct ReminderRow: View {
+    let reminder: RemindersMonitor.Reminder
+    let reminders: RemindersMonitor
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Button { reminders.complete(reminder) } label: {
+                Image(systemName: "circle")
+                    .foregroundStyle(Color(.sRGB, red: reminder.color[safe: 0] ?? 0.6,
+                                           green: reminder.color[safe: 1] ?? 0.6,
+                                           blue: reminder.color[safe: 2] ?? 0.6))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Tamamlandı olarak işaretle")
+            MarqueeText(text: reminder.title.isEmpty ? String(localized: "Başlıksız anımsatıcı") : reminder.title,
+                        size: 12, trigger: .hover)
+                .foregroundStyle(reminder.isOverdue ? .red : .white)
         }
     }
 }

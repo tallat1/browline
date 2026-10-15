@@ -10,7 +10,7 @@ final class PlayerNotificationSource {
         let notification: String
     }
 
-    static let players = [
+    nonisolated static let players = [
         Player(bundleIdentifier: "com.apple.Music", notification: "com.apple.Music.playerInfo"),
         Player(bundleIdentifier: "com.spotify.client", notification: "com.spotify.client.PlaybackStateChanged"),
     ]
@@ -65,6 +65,32 @@ final class PlayerNotificationSource {
             timestamp: position == nil ? nil : .now,
             playbackRate: playing ? 1 : 0,
             isPlaying: playing)
+    }
+
+    /// Music ve Spotify konumu AppleScript ile değiştirir. Spotify MediaRemote konum komutunu doğru
+    /// işlemiyor (2026-10-16: 2 sn geri istendi, sonraki şarkıya geçti); bu ikisinde yol bu.
+    nonisolated static func supportsScriptedSeek(_ bundleIdentifier: String) -> Bool {
+        players.contains { $0.bundleIdentifier == bundleIdentifier }
+    }
+
+    /// Ayrı `osascript` süreciyle: ana iş parçacığını bekletmez (ilk seferde Automation izni sorulur).
+    nonisolated static func seek(to seconds: TimeInterval, bundleIdentifier: String) {
+        guard supportsScriptedSeek(bundleIdentifier),
+              !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty else { return }
+        let position = String(format: "%.2f", max(0, seconds))
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", "tell application id \"\(bundleIdentifier)\" to set player position to \(position)"]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        process.terminationHandler = { finished in
+            if finished.terminationStatus != 0 {
+                Log.integrations.error("AppleScript konum komutu başarısız: \(finished.terminationStatus)")
+            }
+        }
+        do { try process.run() } catch {
+            Log.integrations.error("osascript başlatılamadı: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     /// Oynatıcı açık değilse komut gönderilmez: `tell application` kapalı uygulamayı başlatır.
