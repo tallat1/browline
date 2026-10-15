@@ -81,6 +81,7 @@ struct ExpandedView: View {
         case .system: SystemTab(stats: coordinator.systemStats)
         case .mirror: MirrorTab(mirror: coordinator.mirror)
         case .claude: ClaudeTab(usage: coordinator.claudeUsage)
+        case .terminal: TerminalTab(session: coordinator.terminal, model: model)
         }
     }
 }
@@ -99,6 +100,8 @@ extension NotchTab {
         case .system: CGSize(width: 560, height: 88)
         case .mirror: CGSize(width: 400, height: 300)
         case .claude: CGSize(width: 560, height: 150)
+        // ≈ 85 sütun × 18 satır (12 pt SF Mono).
+        case .terminal: CGSize(width: 660, height: 280)
         }
     }
 }

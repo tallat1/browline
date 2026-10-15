@@ -82,6 +82,38 @@ final class DebugCommandChannel {
             // ÖRNEK veri: 2 sa 13 dk sonra sıfırlanacak 5 saatlik limit.
             coordinator.claudeUsage.previewLimit([ClaudeLimitHit(type: "five_hour",
                                                                  resetsAt: .now.addingTimeInterval(7_980), hitAt: .now)])
+        case "media:drift":
+            // Salt okunur: gösterilen konum ile Spotify/Music'in gerçek konumu.
+            Task { @MainActor in
+                let info = coordinator.nowPlaying.info
+                if let drift = await coordinator.nowPlaying.measureDrift() {
+                    let raw = "örnek konum \(info?.elapsedTime.map { String(format: "%.2f", $0) } ?? "-") @ \(info?.timestamp.map { String(format: "%.1f sn önce", Date.now.timeIntervalSince($0)) } ?? "-"), hız \(info?.playbackRate ?? 0)"
+                    debugLog.info("konum kayması: gösterilen \(String(format: "%.2f", drift.shown), privacy: .public), gerçek \(String(format: "%.2f", drift.actual), privacy: .public), fark \(String(format: "%+.2f", drift.shown - drift.actual), privacy: .public) sn [\(info?.title ?? "", privacy: .public); \(raw, privacy: .public)]")
+                } else {
+                    debugLog.info("konum kayması ölçülemedi (Spotify/Music değil ya da kapalı)")
+                }
+            }
+        case "terminal:state":
+            // Salt okunur: kabuğa bir şey yazmaz.
+            let terminal = coordinator.terminal
+            let grid = terminal.gridSize.map { "\($0.columns)×\($0.rows)" } ?? "-"
+            let window = terminal.view?.window
+            debugLog.info("terminal: çalışıyor \(terminal.isRunning), ızgara \(grid, privacy: .public), pencerede \(window != nil), key \(window?.isKeyWindow ?? false), odak \(window?.firstResponder === terminal.view)")
+        case "terminal:feed-test":
+            // Yalnız ekrana yazar (kabuğa gitmez): pencere dışındayken gelen çıktı geri gelince görünüyor mu.
+            let stamp = Date.now.formatted(date: .omitted, time: .standard)
+            coordinator.terminal.view?.feed(text: "\r\n[NotchMVP deneme] pencere dışındayken yazıldı \(stamp)\r\n")
+            let attached = coordinator.terminal.view?.window != nil
+            debugLog.info("terminal deneme satırı yazıldı (\(stamp, privacy: .public)), pencerede \(attached)")
+        case "terminal:check":
+            // Salt okunur ve içerik yazmadan: deneme satırı tamponda mı, imleç nerede.
+            guard let view = coordinator.terminal.view else { break }
+            let terminal = view.getTerminal()
+            let rows = (0..<terminal.rows).compactMap { terminal.getLine(row: $0)?.translateToString(trimRight: true) }
+            let markerRow = rows.firstIndex { $0.contains("[NotchMVP deneme]") } ?? -1
+            let cursor = terminal.getCursorLocation()
+            let used = rows.filter { !$0.isEmpty }.count
+            debugLog.info("terminal tamponu: deneme satırı \(markerRow), dolu satır \(used), imleç \(cursor.x),\(cursor.y)")
         case "sessions":
             let nowPlaying = coordinator.nowPlaying
             let list = nowPlaying.sessions.map { "\($0.id) \($0.info.isPlaying ? "▶" : "⏸") \($0.info.title)" }

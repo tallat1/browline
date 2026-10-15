@@ -210,3 +210,26 @@ struct MediaSessionsTests {
         #expect(info.processIdentifier == 2828)
     }
 }
+
+struct PositionCorrectionTests {
+    @Test func correctionHoldsUntilSourceReportsNewPosition() throws {
+        let stamp = Date(timeIntervalSince1970: 1_000)
+        let source = NowPlayingInfo(bundleIdentifier: "com.spotify.client", title: "Song", elapsedTime: 0,
+                                    timestamp: stamp, isPlaying: true)
+        let correction = NowPlayingController.PositionCorrection(
+            trackKey: source.trackKey, sourceElapsed: 0, sourceTimestamp: stamp,
+            elapsed: 42, timestamp: stamp.addingTimeInterval(50))
+        let corrected = try #require(correction.applied(to: source))
+        #expect(corrected.elapsed(at: stamp.addingTimeInterval(60)) == 52)
+
+        // Kaynak yeni konum bildirdi: düzeltme uygulanmaz.
+        var updated = source
+        updated.elapsedTime = 30
+        updated.timestamp = stamp.addingTimeInterval(55)
+        #expect(correction.applied(to: updated) == nil)
+        // Başka parça: uygulanmaz.
+        var other = source
+        other.title = "Other"
+        #expect(correction.applied(to: other) == nil)
+    }
+}

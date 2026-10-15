@@ -198,6 +198,7 @@ private struct ModuleSettings: View {
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Hızlı not", isOn: $settings.notesEnabled)
+                Toggle("Terminal (kapatınca açık kabuk sonlanır)", isOn: $settings.terminalEnabled)
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled)
                 if settings.claudeUsageEnabled {
                     Toggle("Yüzdeleri kullanım uç noktasından al (belgelenmemiş)", isOn: $settings.claudeUsageAPIEnabled)
@@ -246,8 +247,11 @@ private struct AboutSettings: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
     }
 
-    private var adapterLicense: String {
-        Bundle.main.url(forResource: "mediaremote-adapter-LICENSE", withExtension: "txt")
+    private var adapterLicense: String { Self.license("mediaremote-adapter-LICENSE") }
+    private var swiftTermLicense: String { Self.license("SwiftTerm-LICENSE") }
+
+    private static func license(_ name: String) -> String {
+        Bundle.main.url(forResource: name, withExtension: "txt")
             .flatMap { try? String(contentsOf: $0, encoding: .utf8) } ?? String(localized: "Lisans metni bulunamadı.")
     }
 
@@ -261,10 +265,15 @@ private struct AboutSettings: View {
             Text("mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.")
                 .font(.callout)
             ScrollView {
-                Text(adapterLicense)
-                    .font(.system(size: 10.5, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(adapterLicense)
+                    Text("SwiftTerm (Miguel de Icaza), MIT. Terminal sekmesi.")
+                        .font(.callout)
+                    Text(swiftTermLicense)
+                }
+                .font(.system(size: 10.5, design: .monospaced))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
             }
             .frame(maxHeight: .infinity)
         }

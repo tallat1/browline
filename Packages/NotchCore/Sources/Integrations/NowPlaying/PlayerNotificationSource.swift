@@ -93,6 +93,27 @@ final class PlayerNotificationSource {
         }
     }
 
+    /// Oynatıcının bildirdiği gerçek konum (sn); MediaRemote'un zaman damgalı tahminiyle karşılaştırmak için.
+    nonisolated static func position(bundleIdentifier: String) async -> TimeInterval? {
+        guard supportsScriptedSeek(bundleIdentifier),
+              !NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).isEmpty else { return nil }
+        return await withCheckedContinuation { continuation in
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+            process.arguments = ["-e", "tell application id \"\(bundleIdentifier)\" to player position"]
+            let output = Pipe()
+            process.standardOutput = output
+            process.standardError = FileHandle.nullDevice
+            process.terminationHandler = { _ in
+                let text = String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .replacingOccurrences(of: ",", with: ".")
+                continuation.resume(returning: Double(text))
+            }
+            do { try process.run() } catch { continuation.resume(returning: nil) }
+        }
+    }
+
     /// Ayrı `osascript` süreciyle komut (sistemin seçmediği Spotify/Music oturumu için): Spotify
     /// doğrudan MediaRemote yolunda sonraki/önceki komutunu reddediyor (2026-10-16).
     nonisolated static func sendScripted(_ command: MediaRemoteAdapterBundle.Command, bundleIdentifier: String) {

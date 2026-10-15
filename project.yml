@@ -9,6 +9,11 @@ options:
 packages:
   NotchCore:
     path: Packages/NotchCore
+  # Terminal sekmesi (MIT). 1.12+ Metal gölgelendiricisi içeriyor (Metal Toolchain gerekir);
+  # 1.11.2 Metal'siz. Derleme eklentisi var: xcodebuild -skipPackagePluginValidation.
+  SwiftTerm:
+    url: https://github.com/migueldeicaza/SwiftTerm
+    exactVersion: 1.11.2
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -38,6 +43,7 @@ targets:
         product: ActivityEngine
       - package: NotchCore
         product: Integrations
+      - package: SwiftTerm
     info:
       path: App/Info.plist
       properties:

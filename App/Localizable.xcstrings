@@ -1065,6 +1065,16 @@
         }
       }
     },
+    "Kabuk kapandı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shell exited"
+          }
+        }
+      }
+    },
     "Kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.": {
       "localizations": {
         "en": {
@@ -1825,6 +1835,16 @@
         }
       }
     },
+    "SwiftTerm (Miguel de Icaza), MIT. Terminal sekmesi.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SwiftTerm (Miguel de Icaza), MIT. Terminal tab."
+          }
+        }
+      }
+    },
     "Süre (saniye)": {
       "localizations": {
         "en": {
@@ -1951,6 +1971,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clear"
+          }
+        }
+      }
+    },
+    "Terminal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal"
+          }
+        }
+      }
+    },
+    "Terminal (kapatınca açık kabuk sonlanır)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal (turning it off ends the open shell)"
           }
         }
       }
@@ -2155,6 +2195,16 @@
         }
       }
     },
+    "Yeniden başlat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restart"
+          }
+        }
+      }
+    },
     "Yolu kopyala": {
       "localizations": {
         "en": {
@@ -2317,6 +2367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quit"
+          }
+        }
+      }
+    },
+    "Çıkış kodu %d": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exit code %d"
           }
         }
       }

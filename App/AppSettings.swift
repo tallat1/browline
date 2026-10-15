@@ -40,6 +40,7 @@ final class AppSettings {
     var notesEnabled: Bool { didSet { store(notesEnabled, "notesEnabled") } }
     /// Veri Claude Code durum satırından; betik kurulu değilse sekme boş durum gösterir.
     var claudeUsageEnabled: Bool { didSet { store(claudeUsageEnabled, "claudeUsageEnabled") } }
+    var terminalEnabled: Bool { didSet { store(terminalEnabled, "terminalEnabled") } }
     /// Belgelenmemiş kullanım uç noktası (Claude Code'un Anahtar Zinciri kaydıyla). Varsayılan kapalı;
     /// kullanıcı riskleri kabul edip açar.
     var claudeUsageAPIEnabled: Bool { didSet { store(claudeUsageAPIEnabled, "claudeUsageAPIEnabled") } }
@@ -107,6 +108,7 @@ final class AppSettings {
         timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true
         notesEnabled = defaults.object(forKey: "notesEnabled") as? Bool ?? true
         claudeUsageEnabled = defaults.object(forKey: "claudeUsageEnabled") as? Bool ?? true
+        terminalEnabled = defaults.object(forKey: "terminalEnabled") as? Bool ?? true
         claudeUsageAPIEnabled = defaults.bool(forKey: "claudeUsageAPIEnabled")
         remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
         systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true

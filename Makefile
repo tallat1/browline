@@ -25,7 +25,7 @@ $(SESSIONS_BUILD)/MediaSessions.dylib: Helpers/MediaSessions/MediaSessions.m
 		-Wall -framework Foundation -framework AppKit -o $@ $<
 
 build: gen adapter sessions
-	xcodebuild -project NotchMVP.xcodeproj -scheme NotchMVP -configuration Debug \
+	xcodebuild -project NotchMVP.xcodeproj -scheme NotchMVP -configuration Debug -skipPackagePluginValidation \
 		-derivedDataPath build -quiet build
 
 run: build

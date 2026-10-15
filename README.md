@@ -16,6 +16,8 @@ swift Scripts/smoke-test.swift   # debug: durumları gezer, yalnız panel pencer
 ```
 
 Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar (`xcodegen generate`).
+SwiftTerm paketinde derleme eklentisi var: komut satırında `xcodebuild -skipPackagePluginValidation` (Makefile
+veriyor); Xcode'da açınca eklentiye bir kez onay istenir.
 İmza "Apple Development" kimliğiyle: ad-hoc imza her derlemede değişir ve Takvim/Automation izinleri sıfırlanır.
 
 ## Yapı
@@ -58,6 +60,10 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
   yalnız sekme açıkken. Kaydırıcı, ilerleme ya da menü kullanılınca notch sabitlenir, imleç kayınca kapanmaz.
 - Açık notch'ta yatay iki parmak kaydırma parça geçirir.
 - Adaptör komutlarının başarısızlığı artık günlüğe düşer ("Medya komutu başarısız").
+- Konum eşitleme: medya sekmesi görünürken ve Spotify/Music çalarken 3 sn'de bir gerçek konum AppleScript'le
+  sorulur; fark 0,75 sn'yi geçerse çubuk düzeltilir ve günlüğe "konum kayması … düzeltildi" yazılır. Düzeltme,
+  kaynak yeni konum bildirene kadar geçerli (`PositionCorrection`). Ölçüm (2026-10-16): sabit durumda fark −0,2 sn.
+  Debug `media:drift` tek ölçüm yazar.
 - Birden çok oynatıcı (ör. Chrome'da video, Spotify'da şarkı): sağ üstte uygulama simgeleriyle oturum seçici,
   çalanın simgesinde nokta. Seçilen oturum gösterilir ve denetimler ona gider; sekme kapanınca seçilen
   çalmıyorsa bırakılır. Oynatıcı sonraki/önceki desteklemiyorsa (Chrome'da tek video) düğmeler soluk.
@@ -223,6 +229,28 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
   düğmeleri; görünümlerde sabit ölçü yazılmaz.
 - **Sekme düzenleme**: Ayarlar › Sekmeler'de sürükleyerek sıralama ve gizleme.
 
+## Terminal sekmesi
+
+Gerçek kabuk, SwiftTerm (MIT) ile: kullanıcının giriş kabuğu (Dizin Hizmetleri'ndeki; bu makinede bash) ev
+dizininde, `argv[0]` "-bash" (profil dosyaları okunur). Ortam: `TERM=xterm-256color`, `COLORTERM=truecolor`,
+sistem dilinin UTF-8 yereli, `SSH_AUTH_SOCK`, `PATH`, `TMPDIR`; bash'in zsh uyarısı susturuldu.
+
+- Oturum tek ve kalıcı: notch kapanınca, sekme değişince kabuk ve tampon yaşar (`TerminalSession`, görünüm tek
+  örnek, açık sekme onu kabına taşır). Kabuk çıkarsa "Yeniden başlat". Modül kapatılınca kabuk sonlanır.
+- Klavye: sekme görünürken panel key olabilir. Üzerine gelerek açıldıysa klavye öndeki uygulamada kalır, yazmak
+  için terminale tıklanır; sekmeye tıklayarak açıldıysa doğrudan yazılır. Odaklanınca notch sabitlenir, dışarı
+  tıklama kapatır. Esc, Ctrl tuşları ve oklar kabuğa gider; ⌘C, ⌘V, ⌘A çalışır.
+- Option Meta değil (`optionAsMetaKey = false`): Türkçe Q'da `@ # [ ] { } | \ ~` Option ile yazılır.
+- Kilitliyken açık notch çizilmez; terminal pencereden tamamen çıkar (debug `lock:on` ile `pencerede false`).
+- ⚠️ Kap ilk anda sıfır boyutlu: terminal ona göre küçülünce kabuk SIGWINCH alıyor, satırlar yeniden akıyor,
+  geri gelince ekran ve imleç bayat kalıyordu (arka planda biten `ping`'in sonu görünmedi). Boyut yalnız kap gerçek
+  boyuta gelince verilir; pencereye her dönüşte tam yeniden çizim.
+- SwiftTerm 1.11.2'ye sabit: 1.12+ Metal gölgelendiricisi içeriyor ve Xcode'un Metal Toolchain bileşeni olmadan
+  derlenmiyor. Kaydırma çubuğu gizli (NSScrollView dışında kendiliğinden gizlenmiyor); geçmişe iki parmakla.
+- Boşta (sekme açık, kabuk beklerken) 0,01 sn / 20 sn işlemci; kapalıyken 0.
+- Debug: `terminal:state` (ızgara, pencere, odak), `terminal:check` (içerik yazmadan tampon özeti),
+  `terminal:feed-test` (yalnız ekrana bir deneme satırı yazar, kabuğa gitmez).
+
 ## Claude limitleri
 
 Claude sekmesi 5 saatlik oturum ve haftalık limiti, sıfırlanma zamanıyla gösterir; oturum %80 ve %95'i geçince
@@ -334,4 +362,4 @@ ve kataloğa girmez. Dili zorlayarak deneme: `open -n …/NotchMVP.app --args -A
 ## Lisans notu
 
 GPL projelerden (boring.notch, Atoll, jackson-storm/DynamicNotch, MewNotch) kod alınmadı; fikirler clean-room yazıldı.
-mediaremote-adapter BSD-3: lisans metni uygulamada Ayarlar › Hakkında'da gösteriliyor.
+mediaremote-adapter BSD-3 ve SwiftTerm MIT: lisans metinleri uygulamada Ayarlar › Hakkında'da gösteriliyor.

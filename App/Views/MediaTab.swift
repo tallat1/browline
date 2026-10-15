@@ -20,8 +20,13 @@ struct MediaTab: View {
             player.notchTransition(.swap)
         }
         .notchAnimation(value: nowPlaying.info == nil)
+        // Konum yalnız sekme görünürken gerçek konumla eşitlenir (Spotify/Music).
+        .onAppear { nowPlaying.beginPositionWatch() }
         // Elle seçilen ama çalmayan oturum bırakılır: kapalı notch çalanı göstersin.
-        .onDisappear { nowPlaying.releaseSelection() }
+        .onDisappear {
+            nowPlaying.endPositionWatch()
+            nowPlaying.releaseSelection()
+        }
     }
 
     @ViewBuilder

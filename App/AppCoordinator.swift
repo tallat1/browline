@@ -16,6 +16,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
     case system
     case mirror
     case claude
+    case terminal
 
     var id: String { rawValue }
 
@@ -30,6 +31,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .system: "cpu"
         case .mirror: "person.crop.square"
         case .claude: "sparkles"
+        case .terminal: "terminal"
         }
     }
 
@@ -44,6 +46,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .system: String(localized: "Sistem")
         case .mirror: String(localized: "Ayna")
         case .claude: "Claude"
+        case .terminal: String(localized: "Terminal")
         }
     }
 }
@@ -121,6 +124,7 @@ final class AppCoordinator {
     let weather = WeatherMonitor()
     let notes = NotesStore()
     let claudeUsage = ClaudeUsageMonitor()
+    let terminal = TerminalSession()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -313,6 +317,7 @@ final class AppCoordinator {
         systemStats.stop()
         weather.stop()
         claudeUsage.stop()
+        terminal.stop()
         notes.flush()
         keepAwake.stop()
         cancelTimer()
@@ -326,6 +331,8 @@ final class AppCoordinator {
     func applySettings() {
         panels.options = settings.panelOptions
         toggle(settings.nowPlayingEnabled, start: nowPlaying.start, stop: nowPlaying.stop)
+        // Terminal sekme açılınca başlar; modül kapatılınca kabuk sonlanır.
+        if !settings.terminalEnabled { terminal.stop() }
         toggle(settings.batteryEnabled, start: battery.start, stop: battery.stop)
         toggle(settings.calendarEnabled, start: calendar.start, stop: calendar.stop)
         setActivityAPI(enabled: settings.activityAPIEnabled)
@@ -369,6 +376,7 @@ final class AppCoordinator {
         case .system: settings.systemStatsEnabled
         case .mirror: settings.mirrorEnabled
         case .claude: settings.claudeUsageEnabled
+        case .terminal: settings.terminalEnabled
         }
     }
 

@@ -68,10 +68,16 @@ public final class NowPlayingController {
     @ObservationIgnored private var playStartedAt: [String: Date] = [:]
     @ObservationIgnored private var sessionOrder: [String: Int] = [:]
     @ObservationIgnored private var nextSessionOrder = 0
+    /// Medya sekmesi görünürken Spotify/Music konumu gerçek konumla karşılaştırılır.
+    @ObservationIgnored private var positionWatchers = 0
+    @ObservationIgnored private var positionTask: Task<Void, Never>?
+    @ObservationIgnored private var positionCorrection: PositionCorrection?
 
     /// Geçiş payı: bu süre içinde yeni bilgi gelirse arayüz hiç boşalmaz.
     static let transitionGrace: Duration = .milliseconds(1500)
     static let artworkHold: Duration = .seconds(2)
+    static let positionCheckInterval: Duration = .seconds(3)
+    static let driftTolerance: TimeInterval = 0.75
 
     /// Çöken akış için yeniden başlatma aralıkları; sonra yedeğe düşülür.
     private static let restartDelays: [Duration] = [.seconds(2), .seconds(2), .seconds(15), .seconds(60)]
@@ -178,6 +184,77 @@ public final class NowPlayingController {
         } else {
             set(info: current)
         }
+    }
+
+    // MARK: - Konum eşitleme
+
+    /// Kaynağın bildirdiği konum düzeltmesi: oynatıcının o andaki konumu, kaynak yeni bir konum
+    /// bildirene kadar (aynı parça, aynı örnek konum ve zaman damgası) geçerli.
+    struct PositionCorrection: Equatable {
+        let trackKey: String
+        let sourceElapsed: TimeInterval?
+        let sourceTimestamp: Date?
+        let elapsed: TimeInterval
+        let timestamp: Date
+
+        func applied(to info: NowPlayingInfo) -> NowPlayingInfo? {
+            guard info.trackKey == trackKey, info.elapsedTime == sourceElapsed,
+                  info.timestamp == sourceTimestamp else { return nil }
+            var corrected = info
+            corrected.elapsedTime = elapsed
+            corrected.timestamp = timestamp
+            return corrected
+        }
+    }
+
+    /// Medya sekmesi görünürken (ekran başına bir çağrı). Spotify, AppleScript ile konum değişince
+    /// MediaRemote'a her zaman doğru konumu bildirmiyor; çubuk kaymasın diye 3 sn'de bir sorulur.
+    public func beginPositionWatch() {
+        positionWatchers += 1
+        guard positionWatchers == 1 else { return }
+        positionTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                await self?.resyncPosition()
+                try? await Task.sleep(for: Self.positionCheckInterval)
+            }
+        }
+    }
+
+    public func endPositionWatch() {
+        positionWatchers = max(0, positionWatchers - 1)
+        guard positionWatchers == 0 else { return }
+        positionTask?.cancel()
+        positionTask = nil
+    }
+
+    private func resyncPosition() async {
+        guard let shown = info, shown.isPlaying, let bundle = shown.bundleIdentifier,
+              PlayerNotificationSource.supportsScriptedSeek(bundle) else { return }
+        let requestedAt = Date.now
+        guard let actual = await PlayerNotificationSource.position(bundleIdentifier: bundle),
+              !Task.isCancelled else { return }
+        // osascript gidiş-dönüşünün ortası ölçüm anı sayılır.
+        let measuredAt = requestedAt.addingTimeInterval(Date.now.timeIntervalSince(requestedAt) / 2)
+        guard let current = info, current.trackKey == shown.trackKey, current.isPlaying,
+              let displayed = current.elapsed(at: measuredAt),
+              let source = sessions.first(where: { $0.id == focusedSessionID })?.info,
+              source.trackKey == current.trackKey else { return }
+        let drift = displayed - actual
+        Log.integrations.debug("Medya: konum denetlendi, fark \(String(format: "%+.2f", drift), privacy: .public) sn")
+        guard abs(drift) > Self.driftTolerance else { return }
+        Log.integrations.notice("Medya: konum kayması \(String(format: "%+.1f", drift), privacy: .public) sn düzeltildi (\(bundle, privacy: .public), \(Int(actual)) sn)")
+        positionCorrection = PositionCorrection(trackKey: source.trackKey, sourceElapsed: source.elapsedTime,
+                                                sourceTimestamp: source.timestamp, elapsed: actual,
+                                                timestamp: measuredAt)
+        recompute()
+    }
+
+    /// Tanı: gösterilen konum ile oynatıcının (Spotify/Music, AppleScript) bildirdiği gerçek konum farkı.
+    public func measureDrift() async -> (shown: TimeInterval, actual: TimeInterval)? {
+        guard let info, let bundle = info.bundleIdentifier,
+              let actual = await PlayerNotificationSource.position(bundleIdentifier: bundle),
+              let shown = self.info?.elapsed(at: .now) else { return nil }
+        return (shown, actual)
     }
 
     /// İleri ya da geri (saniye). Oynatıcının kendi 15 sn komutu yerine seek: Spotify onu bildirmiyor.
@@ -407,7 +484,12 @@ public final class NowPlayingController {
         let focus = MediaSession.focus(in: list, selected: selectedSessionID, system: systemID,
                                        playStartedAt: playStartedAt)
         if focusedSessionID != focus?.id { focusedSessionID = focus?.id }
-        present(focus?.info)
+        var presented = focus?.info
+        if let value = presented, let correction = positionCorrection {
+            // Kaynak yeni konum bildirdiyse (ya da parça değiştiyse) düzeltme düşer.
+            if let corrected = correction.applied(to: value) { presented = corrected } else { positionCorrection = nil }
+        }
+        present(presented)
     }
 
     private func present(_ newValue: NowPlayingInfo?) {
