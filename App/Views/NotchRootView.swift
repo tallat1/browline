@@ -43,6 +43,18 @@ struct CompactLeadingView: View {
             case AppCoordinator.ActivityKind.power:
                 Image(systemName: coordinator.battery.state?.isPluggedIn == true ? "bolt.fill" : "powerplug")
                     .foregroundStyle(coordinator.battery.state?.isPluggedIn == true ? .green : .white)
+            case AppCoordinator.ActivityKind.privacy:
+                let camera = coordinator.privacy.isCameraActive
+                Image(systemName: camera ? "video.fill" : "mic.fill")
+                    .foregroundStyle(camera ? .green : .orange)
+            case AppCoordinator.ActivityKind.hud:
+                WideWingLabel(symbol: coordinator.hud.symbolName, tint: .white, text: coordinator.hud.title)
+            case AppCoordinator.ActivityKind.download:
+                if let download = coordinator.downloads.active.first {
+                    WideWingLabel(symbol: "arrow.down.circle.fill", tint: .blue, text: download.name)
+                }
+            case AppCoordinator.ActivityKind.downloadDone:
+                WideWingLabel(symbol: "checkmark.circle.fill", tint: .green, text: "İndirildi")
             default:
                 if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
                     HStack(spacing: 6) {
@@ -82,6 +94,42 @@ struct CompactTrailingView: View {
                 if let state = coordinator.battery.state {
                     Text("%\(state.percent)").monospacedDigit()
                 }
+            case AppCoordinator.ActivityKind.privacy:
+                if coordinator.privacy.isCameraActive && coordinator.privacy.isMicrophoneActive {
+                    Image(systemName: "mic.fill").foregroundStyle(.orange)
+                } else {
+                    Circle().fill(coordinator.privacy.isCameraActive ? .green : .orange).frame(width: 7, height: 7)
+                }
+            case AppCoordinator.ActivityKind.hud:
+                HStack(spacing: 8) {
+                    LevelBar(level: coordinator.hud.isMuted ? 0 : coordinator.hud.level)
+                        .frame(width: 64, height: 5)
+                    Text("%\(Int((coordinator.hud.level * 100).rounded()))")
+                        .monospacedDigit()
+                        .foregroundStyle(coordinator.hud.isMuted ? .secondary : .primary)
+                }
+                .padding(.trailing, 12)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            case AppCoordinator.ActivityKind.download:
+                if let download = coordinator.downloads.active.first {
+                    HStack(spacing: 6) {
+                        if let fraction = download.fraction {
+                            Text("%\(Int((fraction * 100).rounded()))").monospacedDigit()
+                            ProgressRing(progress: fraction, tint: .blue).frame(width: 14, height: 14)
+                        } else {
+                            Text(ByteCountFormatter.string(fromByteCount: download.bytes, countStyle: .file))
+                                .monospacedDigit()
+                        }
+                    }
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.downloadDone:
+                Text(coordinator.ui.lastFinishedDownload)
+                    .truncationMode(.middle)
+                    .foregroundStyle(.secondary)
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             default:
                 if let activity = coordinator.externalActivity(for: coordinator.activities.current?.id) {
                     HStack(spacing: 6) {
@@ -148,5 +196,55 @@ extension ExternalActivity {
         guard let tint, tint.count == 7, let value = UInt32(tint.dropFirst(), radix: 16) else { return .white }
         return Color(.sRGB, red: Double((value >> 16) & 0xFF) / 255, green: Double((value >> 8) & 0xFF) / 255,
                      blue: Double(value & 0xFF) / 255)
+    }
+}
+
+/// Geniş kanadın sol tarafı: sembol ve kısa metin, görünen kenardan 12 pt içeride.
+struct WideWingLabel: View {
+    let symbol: String
+    let tint: Color
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol).foregroundStyle(tint)
+            Text(text).lineLimit(1).truncationMode(.middle)
+        }
+        .padding(.leading, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct LevelBar: View {
+    let level: Double
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule().fill(.white.opacity(0.2))
+                Capsule().fill(.white).frame(width: proxy.size.width * min(max(level, 0), 1))
+            }
+        }
+    }
+}
+
+extension HUDController {
+    var symbolName: String {
+        switch kind {
+        case .brightness:
+            return "sun.max.fill"
+        case .volume:
+            if isMuted || level == 0 { return "speaker.slash.fill" }
+            if level < 0.34 { return "speaker.wave.1.fill" }
+            if level < 0.67 { return "speaker.wave.2.fill" }
+            return "speaker.wave.3.fill"
+        }
+    }
+
+    var title: String {
+        switch kind {
+        case .brightness: "Parlaklık"
+        case .volume: isMuted ? "Sessiz" : "Ses"
+        }
     }
 }

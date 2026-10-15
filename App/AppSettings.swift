@@ -1,4 +1,5 @@
 import AppKit
+import Integrations
 import NotchShell
 import Observation
 import ServiceManagement
@@ -17,6 +18,10 @@ final class AppSettings {
     var calendarEnabled: Bool { didSet { store(calendarEnabled, "calendarEnabled") } }
     var shelfEnabled: Bool { didSet { store(shelfEnabled, "shelfEnabled") } }
     var activityAPIEnabled: Bool { didSet { store(activityAPIEnabled, "activityAPIEnabled") } }
+    var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
+    var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
+    /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
+    var downloadsEnabled: Bool { didSet { store(downloadsEnabled, "downloadsEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
 
     /// Giriş öğesi durumu sistemde tutulur; burada yalnız yansıtılır.
@@ -39,6 +44,9 @@ final class AppSettings {
         calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? true
         shelfEnabled = defaults.object(forKey: "shelfEnabled") as? Bool ?? true
         activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true
+        hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
+        privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
+        downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
     }
 
@@ -80,6 +88,16 @@ extension PanelManager.ScreenPolicy {
         switch self {
         case .builtInOrMain: "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)"
         case .allScreens: "Tüm ekranlar (çentiksiz ekranda hap)"
+        }
+    }
+}
+
+extension HUDController.Mode {
+    var title: String {
+        switch self {
+        case .off: "Kapalı"
+        case .overlay: "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)"
+        case .replace: "Sistem göstergesinin yerine geç (Erişilebilirlik izni)"
         }
     }
 }

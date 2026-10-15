@@ -1,8 +1,12 @@
 #if DEBUG
 import AppKit
+import os
+
+private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: "debug")
 
 /// Yalnız debug derlemesi: test betikleri notch'u imleci ele geçirmeden yönetebilsin.
-/// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf, flash:power.
+/// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
+/// flash:power, hud:preview, state.
 @MainActor
 final class DebugCommandChannel {
     static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
@@ -32,8 +36,16 @@ final class DebugCommandChannel {
             if let value = NotchTab(rawValue: String(tab.dropFirst(4))) { coordinator.ui.selectedTab = value }
         case "flash:power":
             coordinator.activities.flash(AppCoordinator.ActivityKind.power, duration: .seconds(3))
+        case "hud:preview":
+            coordinator.hud.previewCurrentVolume()
+            let hud = coordinator.hud
+            debugLog.info("HUD önizleme: düzey \(hud.level, privacy: .public), sessiz \(hud.isMuted, privacy: .public)")
+        case "state":
+            let summary = "gizlilik [\(coordinator.privacy.deviceSummary)], HUD \(coordinator.hud.mode.rawValue), "
+                + "indirmeler \(coordinator.downloads.isRunning ? "açık" : "kapalı")"
+            debugLog.info("durum: \(summary, privacy: .public)")
         default:
-            NSLog("Bilinmeyen debug komutu: \(command)")
+            debugLog.error("bilinmeyen debug komutu: \(command, privacy: .public)")
         }
     }
 }

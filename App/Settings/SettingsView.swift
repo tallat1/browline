@@ -123,6 +123,31 @@ private struct ModuleSettings: View {
                     .foregroundStyle(.secondary)
             }
             Section {
+                Picker("Ses ve parlaklık göstergesi", selection: $settings.hudMode) {
+                    ForEach(HUDController.Mode.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                if settings.hudMode == .replace {
+                    HStack {
+                        Text(coordinator.hud.isTapActive
+                             ? "Medya tuşları yakalanıyor"
+                             : "Erişilebilirlik izni bekleniyor; izin verince kendiliğinden başlar")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        if !coordinator.hud.isTapActive {
+                            Button("Erişilebilirlik ayarlarını aç") { HUDController.openAccessibilitySettings() }
+                        }
+                    }
+                    Text(coordinator.hud.isBrightnessAvailable
+                         ? "Parlaklık: yerleşik ekranda ayarlanıyor (private DisplayServices)."
+                         : "Parlaklık: bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Toggle("Kamera ve mikrofon göstergesi", isOn: $settings.privacyIndicatorEnabled)
+                Toggle("İndirmeler (İndirilenler klasörü izni ister)", isOn: $settings.downloadsEnabled)
+            }
+            Section {
                 Toggle("Pil ve şarj", isOn: $settings.batteryEnabled)
                 Toggle("Dosya rafı ve AirDrop", isOn: $settings.shelfEnabled)
                 Text("Rafta \(coordinator.shelf.items.count) öğe")

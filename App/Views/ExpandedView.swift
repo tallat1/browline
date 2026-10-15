@@ -68,17 +68,25 @@ struct ExpandedView: View {
         }
     }
 
-    @ViewBuilder
     private var statusArea: some View {
-        if coordinator.settings.batteryEnabled, let state = coordinator.battery.state {
-            HStack(spacing: 4) {
-                Text("%\(state.percent)").monospacedDigit()
-                Image(systemName: state.symbolName)
-                    .foregroundStyle(state.isCharging ? .green : (state.percent <= 20 ? .red : .white))
+        HStack(spacing: 8) {
+            // Kamera yeşil, mikrofon turuncu: macOS menü çubuğu göstergeleriyle aynı renkler.
+            if coordinator.privacy.isCameraActive {
+                Circle().fill(.green).frame(width: 6, height: 6).help("Kamera kullanımda")
             }
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(.secondary)
+            if coordinator.privacy.isMicrophoneActive {
+                Circle().fill(.orange).frame(width: 6, height: 6).help("Mikrofon kullanımda")
+            }
+            if coordinator.settings.batteryEnabled, let state = coordinator.battery.state {
+                HStack(spacing: 4) {
+                    Text("%\(state.percent)").monospacedDigit()
+                    Image(systemName: state.symbolName)
+                        .foregroundStyle(state.isCharging ? .green : (state.percent <= 20 ? .red : .white))
+                }
+            }
         }
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(.secondary)
     }
 }
 

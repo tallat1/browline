@@ -39,6 +39,8 @@ enum NotchTab: String, CaseIterable, Identifiable {
 final class NotchUIState {
     var selectedTab: NotchTab = .media
     var activityAPIStatus = "Kapalı"
+    /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
+    var lastFinishedDownload = ""
 }
 
 /// Modülleri birbirine bağlar: entegrasyonlar etkinlik üretir, etkinlik motoru kompakt içeriği
@@ -52,6 +54,15 @@ final class AppCoordinator {
         /// Dış etkinlikler "ext." önekiyle; kısa bildirim tek kimlikte.
         static let externalPrefix = "ext."
         static let externalFlash: ActivityID = "ext.flash"
+        static let privacy: ActivityID = "privacy"
+        static let hud: ActivityID = "hud"
+        static let download: ActivityID = "download"
+        static let downloadDone: ActivityID = "downloadDone"
+
+        /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
+        static func wantsWideWing(_ id: ActivityID) -> Bool {
+            id.rawValue.hasPrefix(externalPrefix) || [hud, download, downloadDone].contains(id)
+        }
     }
 
     /// Başlık taşıyan dış etkinlikler için kompakt kanat genişliği.
@@ -64,6 +75,9 @@ final class AppCoordinator {
     let calendar = CalendarMonitor()
     let shelf = ShelfStore()
     let externalActivities = ExternalActivityStore()
+    let privacy = PrivacyIndicatorMonitor()
+    let hud = HUDController()
+    let downloads = DownloadsMonitor()
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private var activityServer: ActivitySocketServer?
@@ -105,6 +119,30 @@ final class AppCoordinator {
         externalActivities.onFlash = { [weak self] _, duration in
             self?.activities.flash(ActivityKind.externalFlash, duration: duration)
         }
+        privacy.onChange = { [weak self] camera, microphone in
+            guard let self else { return }
+            if camera || microphone {
+                activities.setLive(ActivityKind.privacy, priority: 15)
+            } else {
+                activities.removeLive(ActivityKind.privacy)
+            }
+        }
+        hud.onShow = { [weak self] in
+            self?.activities.flash(ActivityKind.hud, priority: 2_000, duration: .milliseconds(1500))
+        }
+        downloads.onActiveChanged = { [weak self] list in
+            guard let self else { return }
+            if list.isEmpty {
+                activities.removeLive(ActivityKind.download)
+            } else {
+                activities.setLive(ActivityKind.download, priority: 25)
+            }
+        }
+        downloads.onFinished = { [weak self] name in
+            guard let self else { return }
+            ui.lastFinishedDownload = name
+            activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
+        }
         settings.onChange = { [weak self] in self?.applySettings() }
 
         panels.start()
@@ -113,6 +151,9 @@ final class AppCoordinator {
 
     func stop() {
         setActivityAPI(enabled: false)
+        hud.setMode(.off)
+        privacy.stop()
+        downloads.stop()
         nowPlaying.stop()
         battery.stop()
         calendar.stop()
@@ -126,6 +167,9 @@ final class AppCoordinator {
         toggle(settings.batteryEnabled, start: battery.start, stop: battery.stop)
         toggle(settings.calendarEnabled, start: calendar.start, stop: calendar.stop)
         setActivityAPI(enabled: settings.activityAPIEnabled)
+        toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
+        toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
+        hud.setMode(settings.hudMode)
         if !settings.nowPlayingEnabled { activities.removeLive(ActivityKind.nowPlaying) }
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
@@ -148,8 +192,7 @@ final class AppCoordinator {
     private func updateCompactState() {
         let current = activities.current
         let hasCompact = current != nil
-        let wing: CGFloat? = current.map { $0.id.rawValue.hasPrefix(ActivityKind.externalPrefix) } == true
-            ? Self.wideWingWidth : nil
+        let wing: CGFloat? = current.map { ActivityKind.wantsWideWing($0.id) } == true ? Self.wideWingWidth : nil
         for model in panels.models {
             if model.hasCompactContent != hasCompact { model.hasCompactContent = hasCompact }
             if model.compactWingWidth != wing { model.compactWingWidth = wing }
