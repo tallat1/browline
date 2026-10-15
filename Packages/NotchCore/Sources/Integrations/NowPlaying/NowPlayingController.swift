@@ -90,8 +90,40 @@ public final class NowPlayingController {
     public var canSeek: Bool { source == .mediaRemote && info?.duration != nil }
 
     public func seek(to seconds: TimeInterval) {
-        guard source == .mediaRemote, let adapter else { return }
-        adapter.seek(to: seconds)
+        guard source == .mediaRemote, let adapter, var current = info else { return }
+        let target = min(max(0, seconds), current.duration ?? seconds)
+        adapter.seek(to: target)
+        // İyimser güncelleme: çubuk akıştan gelecek düzeltmeyi beklemeden yeni konuma atlar.
+        current.elapsedTime = target
+        current.timestamp = .now
+        set(info: current)
+    }
+
+    /// İleri ya da geri (saniye). Oynatıcının kendi 15 sn komutu yerine seek: Spotify onu bildirmiyor.
+    public func skip(by seconds: TimeInterval) {
+        guard let elapsed = info?.elapsed(at: .now) else { return }
+        seek(to: elapsed + seconds)
+    }
+
+    /// Karıştırma ve tekrar yalnız oynatıcı durumunu bildiriyorsa (Music evet, Spotify hayır).
+    public var supportsShuffleAndRepeat: Bool {
+        source == .mediaRemote && info?.shuffleMode != nil && info?.repeatMode != nil
+    }
+
+    /// Kapalı → parça karıştırma → kapalı.
+    public func cycleShuffle() {
+        guard source == .mediaRemote, let adapter, let mode = info?.shuffleMode else { return }
+        adapter.setShuffle(Self.nextShuffleMode(after: mode))
+    }
+
+    nonisolated static func nextShuffleMode(after mode: Int) -> Int { mode == 1 ? 3 : 1 }
+
+    nonisolated static func nextRepeatMode(after mode: Int) -> Int { mode == 1 ? 3 : (mode == 3 ? 2 : 1) }
+
+    /// Kapalı → listeyi tekrarla → parçayı tekrarla → kapalı.
+    public func cycleRepeat() {
+        guard source == .mediaRemote, let adapter, let mode = info?.repeatMode else { return }
+        adapter.setRepeat(Self.nextRepeatMode(after: mode))
     }
 
     private func send(_ command: MediaRemoteAdapterBundle.Command) {

@@ -53,7 +53,9 @@ public struct AdapterStreamParser {
             timestamp: seconds(fromMicros: state["timestampEpochMicros"]).map { Date(timeIntervalSince1970: $0) },
             playbackRate: (state["playbackRate"] as? NSNumber)?.doubleValue ?? (playing ? 1 : 0),
             isPlaying: playing,
-            artworkData: artwork
+            artworkData: artwork,
+            shuffleMode: (state["shuffleMode"] as? NSNumber)?.intValue,
+            repeatMode: (state["repeatMode"] as? NSNumber)?.intValue
         ))
     }
 

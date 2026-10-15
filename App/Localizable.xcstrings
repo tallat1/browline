@@ -51,6 +51,16 @@
         }
       }
     },
+    "%@ uygulamasını aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open %@"
+          }
+        }
+      }
+    },
     "%lld dk": {
       "localizations": {
         "en": {
@@ -173,6 +183,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "1 Hour"
+          }
+        }
+      }
+    },
+    "15 sn geri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back 15 seconds"
+          }
+        }
+      }
+    },
+    "15 sn ileri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forward 15 seconds"
           }
         }
       }
@@ -427,6 +457,16 @@
         }
       }
     },
+    "Bu çıkışın sesi ayarlanamıyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This output's volume can't be changed"
+          }
+        }
+      }
+    },
     "Bugün için anımsatıcı yok": {
       "localizations": {
         "en": {
@@ -477,6 +517,16 @@
         }
       }
     },
+    "Claude yalnız Pro ve Max aboneliklerinde, oturumdaki ilk yanıttan sonra limit bildirir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude reports limits only on Pro and Max plans, after the first response in a session."
+          }
+        }
+      }
+    },
     "Dinliyor: %@": {
       "localizations": {
         "en": {
@@ -523,6 +573,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pause"
+          }
+        }
+      }
+    },
+    "Durum satırı çalışıyor, limit gelmedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The status line runs, but no limits arrived"
           }
         }
       }
@@ -883,6 +943,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Until Turned Off"
+          }
+        }
+      }
+    },
+    "Karıştır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shuffle"
           }
         }
       }
@@ -1417,6 +1487,16 @@
         }
       }
     },
+    "Ses çıkışı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sound output"
+          }
+        }
+      }
+    },
     "Ses çıkışı değişince göster (AirPods, hoparlör)": {
       "localizations": {
         "en": {
@@ -1427,12 +1507,32 @@
         }
       }
     },
+    "Sesi aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmute"
+          }
+        }
+      }
+    },
     "Sessiz": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Muted"
+          }
+        }
+      }
+    },
+    "Sessize al": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute"
           }
         }
       }
@@ -1603,6 +1703,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mark as Completed"
+          }
+        }
+      }
+    },
+    "Tekrarla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat"
           }
         }
       }

@@ -68,7 +68,7 @@ public final class AudioOutputMonitor {
         return Device(id: id, name: name(of: id) ?? "", transport: transport(of: id))
     }
 
-    private static func name(of device: AudioObjectID) -> String? {
+    static func name(of device: AudioObjectID) -> String? {
         var address = AudioObjectPropertyAddress(mSelector: kAudioObjectPropertyName,
                                                  mScope: kAudioObjectPropertyScopeGlobal,
                                                  mElement: kAudioObjectPropertyElementMain)
@@ -78,7 +78,7 @@ public final class AudioOutputMonitor {
         return name?.takeRetainedValue() as String?
     }
 
-    private static func transport(of device: AudioObjectID) -> Transport {
+    static func transport(of device: AudioObjectID) -> Transport {
         var address = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyTransportType,
                                                  mScope: kAudioObjectPropertyScopeGlobal,
                                                  mElement: kAudioObjectPropertyElementMain)

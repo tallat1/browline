@@ -66,7 +66,8 @@ struct ExpandedView: View {
     @ViewBuilder
     private func content(_ tab: NotchTab) -> some View {
         switch tab {
-        case .media: MediaTab(nowPlaying: coordinator.nowPlaying, sourceDescription: coordinator.nowPlayingSourceDescription)
+        case .media: MediaTab(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
+                              sourceDescription: coordinator.nowPlayingSourceDescription)
         case .calendar: CalendarTab(calendar: coordinator.calendar,
                                     reminders: coordinator.settings.remindersEnabled ? coordinator.reminders : nil)
         case .shelf: ShelfTab(shelf: coordinator.shelf)
@@ -85,7 +86,7 @@ extension NotchTab {
     /// zamanlayıcı dar.
     var bodySize: CGSize {
         switch self {
-        case .media: CGSize(width: 560, height: 104)
+        case .media: CGSize(width: 560, height: 132)
         case .calendar: CGSize(width: 640, height: 124)
         case .shelf: CGSize(width: 560, height: 104)
         case .activities: CGSize(width: 560, height: 120)

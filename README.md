@@ -42,6 +42,19 @@ Yeni Swift dosyası eklenince proje yeniden üretilmeli; `make build` bunu yapar
 - Geometri her ekran değişiminde `safeAreaInsets` ve yardımcı alanlardan yeniden okunur (çentik 24,5–38 pt arası değişiyor).
 - Kapalı notch'ta sürekli animasyon ya da zamanlayıcı yok; ilerleme çubuğu yalnız açık ve çalarken saniyede bir çizilir.
 
+## Medya sekmesi
+
+- Kapağa tıklayınca çalan uygulama öne gelir.
+- İlerleme çubuğu tıklanır ya da sürüklenir (18 pt tutma alanı; üzerine gelince kalınlaşır, tutamaç çıkar,
+  süreler sürüklenen konumu gösterir); bırakınca `seek`, çubuk akışı beklemeden yeni konuma atlar.
+- ±15 sn: oynatıcının kendi 15 sn komutu değil `seek` (Spotify o desteği bildirmiyor). Yedek kaynakta
+  (AppleScript) konum bilinmediği için gizli.
+- Karıştır ve tekrar yalnız oynatıcı durumunu bildiriyorsa görünür (Music bildirir, Spotify bildirmez).
+- Ses kaydırıcısı, sessize alma ve çıkış cihazı menüsü (`VolumeController`, CoreAudio, izinsiz); dinleyiciler
+  yalnız sekme açıkken. Kaydırıcı, ilerleme ya da menü kullanılınca notch sabitlenir, imleç kayınca kapanmaz.
+- Açık notch'ta yatay iki parmak kaydırma parça geçirir.
+- Adaptör komutlarının başarısızlığı artık günlüğe düşer ("Medya komutu başarısız").
+
 ## Now Playing katmanları
 
 1. Açılışta `mediaremote-adapter test` (≈0,2 sn). Geçerse `stream --micros` ile sistem geneli kaynak.
@@ -216,7 +229,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (215 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (226 metin) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

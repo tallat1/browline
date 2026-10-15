@@ -98,3 +98,21 @@ struct PlayerNotificationTests {
                                                bundleIdentifier: "com.apple.Music") == nil)
     }
 }
+
+struct MediaControlTests {
+    @Test func parserReadsShuffleAndRepeat() throws {
+        var parser = AdapterStreamParser()
+        let line = #"{"type":"data","diff":false,"payload":{"title":"A","bundleIdentifier":"com.apple.Music","playing":true,"shuffleMode":3,"repeatMode":2}}"#
+        guard case let .playing(info)? = parser.consume(line: line) else { Issue.record("çalan yok"); return }
+        #expect(info.shuffleMode == 3)
+        #expect(info.repeatMode == 2)
+    }
+
+    @Test func modeCycles() {
+        #expect(NowPlayingController.nextShuffleMode(after: 1) == 3)
+        #expect(NowPlayingController.nextShuffleMode(after: 3) == 1)
+        #expect(NowPlayingController.nextRepeatMode(after: 1) == 3)
+        #expect(NowPlayingController.nextRepeatMode(after: 3) == 2)
+        #expect(NowPlayingController.nextRepeatMode(after: 2) == 1)
+    }
+}

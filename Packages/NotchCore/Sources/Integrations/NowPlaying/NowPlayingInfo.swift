@@ -13,10 +13,17 @@ public struct NowPlayingInfo: Equatable, Sendable {
     public var playbackRate: Double
     public var isPlaying: Bool
     public var artworkData: Data?
+    /// MediaRemote karıştırma: 1 kapalı, 2 albüm, 3 parça. Oynatıcı bildirmiyorsa nil (Spotify bildirmiyor).
+    public var shuffleMode: Int?
+    /// MediaRemote tekrar: 1 kapalı, 2 parça, 3 liste. Bildirilmiyorsa nil.
+    public var repeatMode: Int?
 
     public init(bundleIdentifier: String? = nil, title: String, artist: String? = nil, album: String? = nil,
                 duration: TimeInterval? = nil, elapsedTime: TimeInterval? = nil, timestamp: Date? = nil,
-                playbackRate: Double = 1, isPlaying: Bool, artworkData: Data? = nil) {
+                playbackRate: Double = 1, isPlaying: Bool, artworkData: Data? = nil,
+                shuffleMode: Int? = nil, repeatMode: Int? = nil) {
+        self.shuffleMode = shuffleMode
+        self.repeatMode = repeatMode
         self.bundleIdentifier = bundleIdentifier
         self.title = title
         self.artist = artist

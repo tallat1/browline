@@ -34,12 +34,29 @@ public struct MediaRemoteAdapterBundle: Equatable, Sendable {
 
     /// Oynat/duraklat, sonraki, önceki… Kimlikler adaptör belgesindeki tablodan.
     public func send(_ command: Command) {
-        Task.detached { _ = await Self.run(arguments(["send", String(command.rawValue)]), timeout: .seconds(4)) }
+        perform(["send", String(command.rawValue)])
     }
 
     public func seek(to seconds: TimeInterval) {
-        let micros = String(Int64(max(0, seconds) * 1_000_000))
-        Task.detached { _ = await Self.run(arguments(["seek", micros]), timeout: .seconds(4)) }
+        perform(["seek", String(Int64(max(0, seconds) * 1_000_000))])
+    }
+
+    /// 1 kapalı, 2 albüm, 3 parça.
+    public func setShuffle(_ mode: Int) { perform(["shuffle", String(mode)]) }
+
+    /// 1 kapalı, 2 parça, 3 liste.
+    public func setRepeat(_ mode: Int) { perform(["repeat", String(mode)]) }
+
+    /// Komut ayrı süreçte; başarısızlık günlüğe düşer (eskiden sessizce yutuluyordu).
+    private func perform(_ command: [String]) {
+        let arguments = arguments(command)
+        let name = command.joined(separator: " ")
+        Task.detached {
+            let status = await Self.run(arguments, timeout: .seconds(4))
+            if status != 0 {
+                Log.integrations.error("Medya komutu başarısız (\(name, privacy: .public)): \(status.map(String.init) ?? "başlatılamadı", privacy: .public)")
+            }
+        }
     }
 
     public enum Command: Int, Sendable {
