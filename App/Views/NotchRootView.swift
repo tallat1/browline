@@ -11,11 +11,15 @@ struct NotchRootView: View {
 
     var body: some View {
         NotchSurfaceView(model: model) {
-            CompactLeadingView(coordinator: coordinator, activityID: coordinator.activities.current?.id)
+            CompactLeadingView(coordinator: coordinator, activityID: coordinator.displayedActivityID)
         } compactTrailing: {
-            CompactTrailingView(coordinator: coordinator, activityID: coordinator.activities.current?.id)
+            CompactTrailingView(coordinator: coordinator, activityID: coordinator.displayedActivityID)
         } expanded: { context in
-            ExpandedView(context: context, model: model, coordinator: coordinator)
+            // Kilitte panel açılmıyor (2026-10-15 günlüğü: kilit süresince hover yok); yine de
+            // açılırsa raf, takvim ve etkinlikler kilit ekranına düşmesin.
+            if !coordinator.lockScreen.isLocked {
+                ExpandedView(context: context, model: model, coordinator: coordinator)
+            }
         }
     }
 }

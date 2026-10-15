@@ -85,15 +85,20 @@ notch list
 | Boşta enerji, v1 modülleri açıkken (hover yok) | ✓ CPU %0,229, 0,03 uyanma/sn |
 | v1: çentiksiz (dış) ekranda hap: her zaman / yalnız etkinlik varken | ✓ yazıldı ve karar birim testli; dış ekran bağlı değildi, görsel denenmedi |
 | v1: TR/EN yerelleştirme (String Catalog) | ✓ 111 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
-| v1: kilit ekranı (deneysel, varsayılan kapalı) | ✓ yazıldı; semboller macOS 27.0.1'de var; kilitte gerçek deneme kullanıcıda |
+| v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
 
-## Kilit ekranı (deneysel)
+## Kilit ekranı
 
-Public bir yol yok; private SkyLight Space'i (mutlak seviye 400, ekran kilidinin 300 üstü) kullanılır.
-Riskleri azaltmak için:
+macOS 27.0.1'de normal notch paneli (`.mainMenu + 3`, public) kilit ekranında da görünüyor ve kilitliyken imleç
+olayı almıyor (2026-10-15). Bu yüzden kilitliyken ana notch da kilit kuralına uyar: kompakt kanatta yalnız müzik,
+şarj, kamera/mikrofon ve ses göstergesi (`AppCoordinator.displayedActivityID`); açık görünüm boş kalır.
+Debug derlemesinde `lock:on` / `lock:off` komutları kilidi SkyLight'a dokunmadan benzetir.
+
+Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyLight paneli var: private Space
+(mutlak seviye 400, ekran kilidinin 300 üstü). Riskleri azaltmak için:
 
 - Ana panellere dokunulmaz. Kilitlenince ayrı bir panel kurulur; olay almaz (parola alanını örtemez),
   yalnız kompakt durumu gösterir ve yalnız kilit süresince Space'te durur.

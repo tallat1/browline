@@ -77,6 +77,16 @@ public final class LockScreenPresenter {
         layoutConfig = config
     }
 
+    #if DEBUG
+    /// Yalnız debug: kilit durumunu benzetir. Özellik açıkken reddedilir; SkyLight Space'i kilitsiz
+    /// ekranda kurulmasın.
+    public func simulateLock(_ locked: Bool) -> Bool {
+        guard status != .ready else { return false }
+        lockChanged(locked)
+        return true
+    }
+    #endif
+
     private func lockChanged(_ locked: Bool) {
         guard locked != isLocked else { return }
         Log.shell.notice("ekran \(locked ? "kilitlendi" : "kilidi açıldı", privacy: .public)")

@@ -104,6 +104,12 @@ final class AppCoordinator {
         activities.current(allowing: ActivityKind.isAllowedOnLockScreen)?.id
     }
 
+    /// Ana notch'ta öne çıkan etkinlik. macOS 27'de normal panel kilit ekranında da görünüyor
+    /// (2026-10-15, kullanıcı denemesi); kilitliyken o da kilit kuralına uyar.
+    var displayedActivityID: ActivityID? {
+        lockScreen.isLocked ? lockScreenActivityID : activities.current?.id
+    }
+
     func start() {
         activities.onActivitiesChanged = { [weak self] in self?.updateCompactState() }
         panels.onModelsChanged = { [weak self] _ in self?.updateCompactState() }
@@ -217,16 +223,11 @@ final class AppCoordinator {
     }
 
     private func updateCompactState() {
-        let current = activities.current
-        let hasCompact = current != nil
-        let wing: CGFloat? = current.map { ActivityKind.wantsWideWing($0.id) } == true ? Self.wideWingWidth : nil
+        let displayed = displayedActivityID
         for model in panels.models {
-            model.setCompact(hasContent: hasCompact, wingWidth: wing)
+            model.setCompact(for: displayed)
         }
-        if let model = lockScreen.model {
-            let id = lockScreenActivityID
-            model.setCompact(hasContent: id != nil, wingWidth: id.map(ActivityKind.wantsWideWing) == true ? Self.wideWingWidth : nil)
-        }
+        lockScreen.model?.setCompact(for: lockScreenActivityID)
     }
 
     // MARK: - Etkinlik API'si
@@ -294,7 +295,9 @@ extension NowPlayingController.FallbackReason {
 
 private extension NotchSurfaceModel {
     /// Yalnız değişince atar; gözlemciler boşuna tetiklenmesin.
-    func setCompact(hasContent: Bool, wingWidth: CGFloat?) {
+    func setCompact(for id: ActivityID?) {
+        let hasContent = id != nil
+        let wingWidth = id.map(AppCoordinator.ActivityKind.wantsWideWing) == true ? AppCoordinator.wideWingWidth : nil
         if hasCompactContent != hasContent { hasCompactContent = hasContent }
         if compactWingWidth != wingWidth { compactWingWidth = wingWidth }
     }
