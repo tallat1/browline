@@ -135,6 +135,9 @@ public final class ActivitySocketServer: @unchecked Sendable {
         var pendingResponses = 0
         var readClosed = false
         var isSuspended = false
+        /// Yanıt bekleyen istek görevleri; istemci bağlantıyı kapatınca iptal edilir (ask sorusu düşer).
+        var tasks: [Int: Task<Void, Never>] = [:]
+        var nextTaskID = 0
 
         init(fd: Int32) { self.fd = fd }
     }
@@ -161,6 +164,7 @@ public final class ActivitySocketServer: @unchecked Sendable {
             listenSource?.cancel()
             listenSource = nil
             for connection in connections.values {
+                connection.tasks.values.forEach { $0.cancel() }
                 if connection.isSuspended { connection.source?.resume() }
                 connection.source?.cancel()
             }
@@ -233,7 +237,9 @@ public final class ActivitySocketServer: @unchecked Sendable {
                 continue
             }
             if count < 0, errno == EAGAIN || errno == EINTR { break }
-            // 0 = istemci yazmayı bitirdi; bekleyen yanıtlar gönderildikten sonra kapatılır.
+            // 0 = istemci yazmayı bitirdi; bekleyen yanıtlar gönderildikten sonra kapatılır. Yanıt bekleyen
+            // uzun istekler (ask) iptal edilir: istemci gittiyse soru notch'ta kalmasın.
+            connection.tasks.values.forEach { $0.cancel() }
             markReadClosed(connection)
             break
         }
@@ -254,11 +260,14 @@ public final class ActivitySocketServer: @unchecked Sendable {
             connection.pendingResponses += 1
             let handler = handler
             let fd = connection.fd
-            Task { [weak self] in
+            let taskID = connection.nextTaskID
+            connection.nextTaskID += 1
+            connection.tasks[taskID] = Task { [weak self] in
                 let response = await handler(request)
                 guard let server = self else { return }
                 server.queue.async {
                     guard let connection = server.connections[fd] else { return }
+                    connection.tasks.removeValue(forKey: taskID)
                     connection.pendingResponses -= 1
                     server.write(response, to: connection)
                     server.closeIfDone(connection)

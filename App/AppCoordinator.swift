@@ -76,6 +76,8 @@ final class AppCoordinator {
         /// Dış etkinlikler "ext." önekiyle; kısa bildirim tek kimlikte.
         static let externalPrefix = "ext."
         static let externalFlash: ActivityID = "ext.flash"
+        /// Onay sorusu toplantıdan (40) ve Now Playing'den (30) önde.
+        static let questionPriority = 48
         static let privacy: ActivityID = "privacy"
         static let hud: ActivityID = "hud"
         static let download: ActivityID = "download"
@@ -127,6 +129,11 @@ final class AppCoordinator {
     let notes = NotesStore()
     let claudeUsage = ClaudeUsageMonitor()
     let terminal = TerminalSession()
+    /// Dış onay soruları (Claude Code izin istemleri): notch'ta İzin ver / Reddet.
+    let questions = QuestionStore()
+    /// Soru gelince açılan notch'lar; son soru yanıtlanınca yalnız bunlar kapanır.
+    private var questionOpenedModels: [ObjectIdentifier] = []
+    private var shownQuestionIDs: Set<String> = []
     /// Ayar penceresini uygulama temsilcisi açar (notch'taki Diğer menüsünden "Sekmeleri düzenle").
     var openSettings: (() -> Void)?
     let ui = NotchUIState()
@@ -235,6 +242,11 @@ final class AppCoordinator {
             activities.flash(ActivityKind.power, duration: .seconds(3))
         }
         externalActivities.onActivitiesChanged = { [weak self] list in self?.syncExternal(list) }
+        questions.onQuestionsChanged = { [weak self] list in self?.questionsChanged(list) }
+        questions.onResolved = { question, decision, reason in
+            let waited = Int(Date.now.timeIntervalSince(question.askedAt).rounded())
+            AppLog.coordinator.notice("onay sorusu kapandı: \(reason.rawValue, privacy: .public), karar \(decision?.rawValue ?? "yok", privacy: .public), \(waited) sn (\(question.subtitle ?? "", privacy: .public))")
+        }
         externalActivities.onFlash = { [weak self] activity, duration in
             // İstenen süre en az; uzun başlık sonuna kadar kayabilsin diye gerekirse uzar.
             self?.activities.flash(ActivityKind.externalFlash,
@@ -358,6 +370,9 @@ final class AppCoordinator {
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
         if !availableTabs.contains(ui.selectedTab), let first = availableTabs.first { ui.selectedTab = first }
+        questions.isEnabled = settings.questionsEnabled && settings.activityAPIEnabled
+        // Kapatılınca bekleyen sorular "yanıt yok"la çözülür: istemci kendi akışına döner.
+        if !questions.isEnabled { questions.questions.forEach { questions.answer($0.id, with: nil) } }
     }
 
     private func toggle(_ enabled: Bool, start: () -> Void, stop: () -> Void) {
@@ -456,7 +471,10 @@ final class AppCoordinator {
     private func setActivityAPI(enabled: Bool) {
         if enabled, activityServer == nil {
             let store = externalActivities
-            let server = ActivitySocketServer { request in await store.handle(request) }
+            let questions = questions
+            let server = ActivitySocketServer { request in
+                request.op == .ask ? await questions.ask(request) : await store.handle(request)
+            }
             do {
                 try server.start()
                 activityServer = server
@@ -472,6 +490,35 @@ final class AppCoordinator {
             activities.cancelFlash(ActivityKind.externalFlash)
         }
     }
+
+    /// Yeni soru gelince notch açılır ve sabitlenir (pencere etkinleşmez, yazı yazılan uygulama bölünmez);
+    /// kapalı notch'ta "izin istiyor" canlı etkinliği görünür. Son soru yanıtlanınca yalnız soru yüzünden
+    /// açılan notch'lar kapanır.
+    private func questionsChanged(_ list: [ExternalQuestion]) {
+        let ids = Set(list.map(\.id))
+        let arrived = !ids.subtracting(shownQuestionIDs).isEmpty
+        shownQuestionIDs = ids
+        if let first = list.first {
+            _ = externalActivities.handle(ActivityRequest(
+                op: .push, id: Self.questionActivityID, title: first.title, subtitle: first.subtitle,
+                symbol: first.symbol ?? "hand.raised.fill", tint: first.tint ?? "#FF9F0A",
+                priority: ActivityKind.questionPriority, ttl: max(1, first.expiresAt.timeIntervalSinceNow)))
+            if arrived {
+                AppLog.coordinator.notice("onay sorusu geldi (\(list.count) bekliyor): \(first.subtitle ?? first.title, privacy: .public)")
+                for model in panels.models where !model.isOpen {
+                    model.tapped()
+                    questionOpenedModels.append(ObjectIdentifier(model))
+                }
+            }
+        } else {
+            _ = externalActivities.handle(ActivityRequest(op: .end, id: Self.questionActivityID))
+            let opened = Set(questionOpenedModels)
+            for model in panels.models where opened.contains(ObjectIdentifier(model)) { model.dismiss() }
+            questionOpenedModels.removeAll()
+        }
+    }
+
+    static let questionActivityID = "notch.question"
 
     private func syncExternal(_ list: [ExternalActivity]) {
         let wanted = Set(list.map { ActivityID(ActivityKind.externalPrefix + $0.id) })

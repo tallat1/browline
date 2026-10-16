@@ -1,4 +1,5 @@
 import AppKit
+import Integrations
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -101,8 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Uyanık tutma süreleri; notch'taki düğme süresiz açar.
     private func keepAwakeMenu() -> NSMenuItem {
         let awake = coordinator.keepAwake
-        let item = NSMenuItem(title: awake.isActive ? String(localized: "Uyanık tutuluyor") : String(localized: "Uyanık tut"),
-                              action: nil, keyEquivalent: "")
+        let item = NSMenuItem(title: Self.keepAwakeTitle(awake), action: nil, keyEquivalent: "")
         let submenu = NSMenu()
         let reason = String(localized: "NotchMVP: uyanık tut")
         for (title, duration) in [(String(localized: "30 dakika"), Duration.seconds(30 * 60)),
@@ -117,6 +117,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         item.submenu = submenu
         return item
+    }
+
+    /// Açıkken kalan süre de yazılır: menü her açılışta yeniden kurulur.
+    private static func keepAwakeTitle(_ awake: KeepAwake) -> String {
+        guard awake.isActive else { return String(localized: "Uyanık tut") }
+        guard let endsAt = awake.endsAt else { return String(localized: "Uyanık tutuluyor · kapatana kadar") }
+        let minutes = Int((max(0, endsAt.timeIntervalSinceNow) / 60).rounded(.up))
+        return String(localized: "Uyanık tutuluyor · \(minutes) dk kaldı")
     }
 
     private func action(_ title: String, key: String = "", _ handler: @escaping () -> Void) -> NSMenuItem {

@@ -122,6 +122,8 @@ private struct ModuleSettings: View {
             }
             Section {
                 Toggle("Etkinlik API'si (yerel soket ve notch komutu)", isOn: $settings.activityAPIEnabled)
+                Toggle("Onay sorularını notch'ta yanıtla (ör. Claude Code izin istemleri)", isOn: $settings.questionsEnabled)
+                    .disabled(!settings.activityAPIEnabled)
                 Text(coordinator.ui.activityAPIStatus)
                     .font(.caption)
                     .foregroundStyle(.secondary)

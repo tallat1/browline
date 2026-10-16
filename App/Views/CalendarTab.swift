@@ -66,7 +66,7 @@ struct CalendarTab: View {
                     VStack(alignment: .leading, spacing: 8) {
                         CardLabel("Yaklaşan")
                         ForEach(calendar.upcoming.prefix(3)) { event in
-                            EventRow(event: event, now: timeline.date).notchTransition(.listItem)
+                            EventRow(event: event, now: timeline.currentDate).notchTransition(.listItem)
                         }
                         Spacer(minLength: 0)
                     }

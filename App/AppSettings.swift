@@ -27,6 +27,8 @@ final class AppSettings {
     var calendarEnabled: Bool { didSet { store(calendarEnabled, "calendarEnabled") } }
     var shelfEnabled: Bool { didSet { store(shelfEnabled, "shelfEnabled") } }
     var activityAPIEnabled: Bool { didSet { store(activityAPIEnabled, "activityAPIEnabled") } }
+    /// Dış onay soruları (ör. Claude Code izin istemleri) notch'ta yanıtlanır; kapalıysa istemci kendi akışına döner.
+    var questionsEnabled: Bool { didSet { store(questionsEnabled, "questionsEnabled") } }
     var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
     var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
     /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
@@ -100,6 +102,7 @@ final class AppSettings {
         calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? true
         shelfEnabled = defaults.object(forKey: "shelfEnabled") as? Bool ?? true
         activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true
+        questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? true
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")

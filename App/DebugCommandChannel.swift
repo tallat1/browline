@@ -1,4 +1,5 @@
 #if DEBUG
+import ActivityAPI
 import AppKit
 import Integrations
 import NotchShell
@@ -69,6 +70,13 @@ final class DebugCommandChannel {
             coordinator.keepAwake.start(for: .seconds(90), reason: "NotchMVP debug")
         case "awake:off":
             coordinator.keepAwake.stop()
+        case "awake:forever":
+            coordinator.keepAwake.start(reason: "NotchMVP debug")
+        case let command where command.hasPrefix("awake:"):
+            // awake:<saniye>: süre dolumunu kısa sürede sınamak için.
+            if let seconds = Int(command.dropFirst("awake:".count)), seconds > 0 {
+                coordinator.keepAwake.start(for: .seconds(seconds), reason: "NotchMVP debug")
+            }
         case "battery:low":
             coordinator.activities.flash(AppCoordinator.ActivityKind.batteryLow, duration: .seconds(4))
         case "battery:full":
@@ -95,6 +103,16 @@ final class DebugCommandChannel {
                     debugLog.info("konum kayması ölçülemedi (Spotify/Music değil ya da kapalı)")
                 }
             }
+        case let command where command.hasPrefix("question:test-answer:"):
+            // Yalnız deneme soruları (kimliği "notch-test-" ile başlayan): dağıtık bildirimi her süreç
+            // gönderebildiği için gerçek bir onay (Claude izni) buradan asla verilemez.
+            guard let question = coordinator.questions.current, question.id.hasPrefix("notch-test-") else {
+                debugLog.error("deneme yanıtı reddedildi: bekleyen deneme sorusu yok")
+                break
+            }
+            let value = String(command.dropFirst("question:test-answer:".count))
+            coordinator.questions.answer(question.id, with: ActivityResponse.Decision(rawValue: value))
+            debugLog.info("deneme sorusu yanıtlandı: \(value, privacy: .public)")
         case "terminal:state":
             // Salt okunur: kabuğa bir şey yazmaz.
             let terminal = coordinator.terminal

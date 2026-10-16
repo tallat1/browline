@@ -15,14 +15,14 @@ struct NowView: View {
     var body: some View {
         // Toplantı yaklaşınca kart dakikada bir yenilenir; görünüm yalnız notch açıkken var.
         TimelineView(.everyMinute) { timeline in
-            let items = NowItem.current(coordinator: coordinator, now: timeline.date)
+            let items = NowItem.current(coordinator: coordinator, now: timeline.currentDate)
             HStack(alignment: .top, spacing: 10) {
                 if coordinator.settings.nowPlayingEnabled {
                     MediaTab(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
                              sourceDescription: coordinator.nowPlayingSourceDescription)
                 }
                 if !items.isEmpty {
-                    sideColumn(items, now: timeline.date)
+                    sideColumn(items, now: timeline.currentDate)
                         .frame(maxWidth: coordinator.settings.nowPlayingEnabled ? Self.sideWidth : .infinity)
                         .notchTransition(.fade)
                 } else if !coordinator.settings.nowPlayingEnabled {
@@ -165,7 +165,7 @@ private struct TimerCardContent: View {
                         .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 4)
-                    Text(CountdownTimer.format(timer.remaining(at: timeline.date)))
+                    Text(CountdownTimer.format(timer.remaining(at: timeline.currentDate)))
                         .font(NotchDesign.bodyEmphasized.monospacedDigit())
                     Button { coordinator.cancelTimer() } label: {
                         Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
@@ -173,7 +173,7 @@ private struct TimerCardContent: View {
                     .buttonStyle(IconButtonStyle(size: 18))
                     .help("İptal")
                 }
-                ThinBar(fraction: timer.progress(at: timeline.date), tint: phase?.tint ?? .orange)
+                ThinBar(fraction: timer.progress(at: timeline.currentDate), tint: phase?.tint ?? .orange)
             }
         }
     }

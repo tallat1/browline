@@ -1,3 +1,4 @@
+import ActivityAPI
 import AppKit
 import Integrations
 import NotchShell
@@ -28,12 +29,22 @@ struct ExpandedView: View {
             }
             .frame(height: context.bandHeight)
 
-            content(ui.selectedTab)
-                .padding(.top, NotchDesign.headerSpacing)
-                .padding(.bottom, context.bottomInset)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .id(ui.selectedTab)
-                .notchTransition(.swap)
+            // Bekleyen onay sorusu sekmenin önüne geçer; yanıtlanınca sekme geri gelir.
+            Group {
+                if let question = coordinator.questions.current {
+                    QuestionView(question: question, waitingCount: coordinator.questions.questions.count) { decision in
+                        AppLog.coordinator.notice("onay sorusu yanıtlandı: \(decision?.rawValue ?? "uygulamaya bırakıldı", privacy: .public)")
+                        coordinator.questions.answer(question.id, with: decision)
+                    }
+                } else {
+                    content(ui.selectedTab)
+                }
+            }
+            .padding(.top, NotchDesign.headerSpacing)
+            .padding(.bottom, context.bottomInset)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .id(coordinator.questions.current?.id ?? ui.selectedTab.rawValue)
+            .notchTransition(.swap)
         }
         // Sekme hangi yoldan değişirse değişsin (şerit, Diğer menüsü, dosya sürükleme, ayar, debug)
         // içerik ve seçim zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar.
@@ -48,12 +59,17 @@ struct ExpandedView: View {
         .onChange(of: ui.selectedTab, initial: true) { _, tab in
             model.preferredOpenSize = openSize(for: tab)
         }
+        .onChange(of: coordinator.questions.current?.id) { _, _ in
+            model.preferredOpenSize = openSize(for: ui.selectedTab)
+        }
+        .notchAnimation(NotchMotion.resize, value: coordinator.questions.current?.id)
     }
 
-    /// Sekmenin istediği tüm açık boyut: bant + boşluk + içerik + alt boşluk; genişlik sabit.
+    /// İstenen tüm açık boyut: bant + boşluk + içerik (soru varsa soru) + alt boşluk; genişlik sabit.
     private func openSize(for tab: NotchTab) -> CGSize {
-        CGSize(width: NotchDesign.openWidth,
-               height: context.bandHeight + NotchDesign.headerSpacing + tab.bodyHeight + context.bottomInset)
+        let body = coordinator.questions.current != nil ? QuestionView.height : tab.bodyHeight
+        return CGSize(width: NotchDesign.openWidth,
+                      height: context.bandHeight + NotchDesign.headerSpacing + body + context.bottomInset)
     }
 
     @ViewBuilder
@@ -306,10 +322,20 @@ private struct KeepAwakeButton: View {
         Button {
             if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "NotchMVP: uyanık tut")) }
         } label: {
-            Image(systemName: keepAwake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
-                .foregroundStyle(keepAwake.isActive ? .orange : .secondary)
+            HStack(spacing: 3) {
+                Image(systemName: keepAwake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
+                // Süreli açıksa kalan süre (menü çubuğundan 30 dk / 1 sa / 2 sa); başka yerde görünmüyordu.
+                if let endsAt = keepAwake.endsAt {
+                    TimelineView(.everyMinute) { timeline in
+                        Text("\(Int((max(0, endsAt.timeIntervalSince(timeline.currentDate)) / 60).rounded(.up))) dk")
+                            .monospacedDigit()
+                    }
+                }
+            }
+            .foregroundStyle(keepAwake.isActive ? .orange : .secondary)
+            .padding(.horizontal, keepAwake.endsAt == nil ? 0 : 4)
         }
-        .buttonStyle(IconButtonStyle(size: 22))
+        .buttonStyle(.plain)
         .help(keepAwake.isActive ? String(localized: "Uyanık tutmayı kapat") : String(localized: "Ekranı uyanık tut"))
     }
 }

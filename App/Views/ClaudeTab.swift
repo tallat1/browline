@@ -31,10 +31,10 @@ struct ClaudeTab: View {
             TimelineView(.everyMinute) { timeline in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) {
-                        WindowCard(title: "Oturum (5 saat)", window: current.fiveHour, now: timeline.date, relative: true)
-                        WindowCard(title: "Haftalık", window: current.sevenDay, now: timeline.date, relative: false)
+                        WindowCard(title: "Oturum (5 saat)", window: current.fiveHour, now: timeline.currentDate, relative: true)
+                        WindowCard(title: "Haftalık", window: current.sevenDay, now: timeline.currentDate, relative: false)
                     }
-                    Text(updatedText(current.capturedAt, now: timeline.date))
+                    Text(updatedText(current.capturedAt, now: timeline.currentDate))
                         .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -45,8 +45,8 @@ struct ClaudeTab: View {
             // Oturum kayıtlarından: limit doldu, ne zaman sıfırlanacak (yüzde yok).
             TimelineView(.everyMinute) { timeline in
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(usage.activeLimits.filter { $0.resetsAt > timeline.date }.prefix(2), id: \.type) { hit in
-                        LimitHitCard(hit: hit, now: timeline.date).notchTransition(.listItem)
+                    ForEach(usage.activeLimits.filter { $0.resetsAt > timeline.currentDate }.prefix(2), id: \.type) { hit in
+                        LimitHitCard(hit: hit, now: timeline.currentDate).notchTransition(.listItem)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)

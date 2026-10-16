@@ -163,7 +163,7 @@ struct CompactTrailingView: View {
                 if let event = coordinator.calendar.imminentMeeting {
                     // Dakikada bir güncellenir; yalnız toplantı yaklaşırken görünür.
                     TimelineView(.everyMinute) { timeline in
-                        Text(event.compactCountdown(at: timeline.date))
+                        Text(event.compactCountdown(at: timeline.currentDate))
                     }
                 }
             case AppCoordinator.ActivityKind.power:
@@ -220,7 +220,7 @@ struct CompactTrailingView: View {
             case AppCoordinator.ActivityKind.keepAwake:
                 if let endsAt = coordinator.keepAwake.endsAt {
                     TimelineView(.everyMinute) { timeline in
-                        let minutes = Int((max(0, endsAt.timeIntervalSince(timeline.date)) / 60).rounded(.up))
+                        let minutes = Int((max(0, endsAt.timeIntervalSince(timeline.currentDate)) / 60).rounded(.up))
                         Text("\(minutes) dk").monospacedDigit()
                     }
                 }

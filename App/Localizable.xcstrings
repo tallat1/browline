@@ -411,6 +411,16 @@
         }
       }
     },
+    "Atla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
     "Ayar verilmemiş ekranlar": {
       "localizations": {
         "en": {
@@ -527,6 +537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Untitled event"
+          }
+        }
+      }
+    },
+    "Bekleyen diğer sorular": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other pending questions"
           }
         }
       }
@@ -737,6 +757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude said too many requests"
+          }
+        }
+      }
+    },
+    "Claude'da yanıtla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer in Claude"
           }
         }
       }
@@ -1581,6 +1611,16 @@
         }
       }
     },
+    "Onay sorularını notch'ta yanıtla (ör. Claude Code izin istemleri)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer approval questions in the notch (e.g. Claude Code permission prompts)"
+          }
+        }
+      }
+    },
     "Oturum (5 saat)": {
       "localizations": {
         "en": {
@@ -1727,6 +1767,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Remove from Shelf"
+          }
+        }
+      }
+    },
+    "Reddet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deny"
           }
         }
       }
@@ -1897,6 +1947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next"
+          }
+        }
+      }
+    },
+    "Soruyu bırakır; karar uygulamanın kendi penceresinde verilir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaves the question; decide in the app's own window"
           }
         }
       }
@@ -2131,12 +2191,22 @@
         }
       }
     },
-    "Uyanık tutuluyor": {
+    "Uyanık tutuluyor · %lld dk kaldı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Keeping Awake"
+            "value": "Keeping awake · %lld min left"
+          }
+        }
+      }
+    },
+    "Uyanık tutuluyor · kapatana kadar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping awake · until turned off"
           }
         }
       }
@@ -2197,6 +2267,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendar access is needed to show upcoming meetings."
+          }
+        }
+      }
+    },
+    "Yalnız bu istek için": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For this request only"
           }
         }
       }

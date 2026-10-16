@@ -42,6 +42,9 @@ public final class ExternalActivityStore {
                 activities.removeAll { $0.id == id }
                 changed()
                 return .success
+            case .ask:
+                // Yanıt beklemek bağlantı ister; soket sunucusu bunu QuestionStore'a yönlendirir.
+                return .failure("ask yalnız soket üzerinden ve soru deposuyla")
             case .flash:
                 let activity = try ExternalActivity.validated(from: request, now: now, requireID: false)
                 let seconds = request.duration ?? 3

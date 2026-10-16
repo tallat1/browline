@@ -29,6 +29,13 @@ enum NotchDesign {
 
 }
 
+extension TimelineView.Context {
+    /// Hesaplarda kullanılacak an. `.everyMinute` ilk kaydı dakikanın başına (geçmişe) tarihliyor:
+    /// notch her açılışta görünüm yeniden kurulduğu için kalan/geçen dakikalar bir fazla çıkıyordu
+    /// (2026-10-16: 30 dk uyanık tutma "31 dk").
+    var currentDate: Date { max(date, .now) }
+}
+
 extension View {
     /// İçerik kartı: yumuşak dolgu, 12 pt köşe.
     func notchCard(padding: EdgeInsets = NotchDesign.cardPadding) -> some View {

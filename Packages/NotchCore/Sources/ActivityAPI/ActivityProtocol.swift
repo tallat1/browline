@@ -26,6 +26,9 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
         case flash
         case list
         case ping
+        /// Onay sorusu: bağlantı açık kalır, kullanıcı notch'tan yanıtlayınca `decision` döner.
+        /// Bağlantı kapanırsa soru iptal edilir. Yalnız soket üzerinden (URL şemasında yanıt kanalı yok).
+        case ask
     }
 
     public var op: Operation
@@ -44,10 +47,13 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
     public var ttl: Double?
     /// flash için saniye.
     public var duration: Double?
+    /// ask için uzun metin (ör. çalıştırılacak komut); en çok `ExternalQuestion.maximumDetailLength`.
+    public var detail: String?
 
     public init(op: Operation, id: String? = nil, title: String? = nil, subtitle: String? = nil,
                 progress: Double? = nil, symbol: String? = nil, tint: String? = nil, priority: Int? = nil,
-                ttl: Double? = nil, duration: Double? = nil) {
+                ttl: Double? = nil, duration: Double? = nil, detail: String? = nil) {
+        self.detail = detail
         self.op = op
         self.id = id
         self.title = title
@@ -62,16 +68,24 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
 }
 
 public struct ActivityResponse: Codable, Equatable, Sendable {
+    /// ask yanıtı: yalnız kullanıcının tıklamasıyla. Süre dolarsa ya da "Claude'da yanıtla" seçilirse nil.
+    public enum Decision: String, Codable, Sendable {
+        case allow
+        case deny
+    }
+
     public var ok: Bool
     public var error: String?
     public var activities: [ExternalActivity]?
+    public var decision: Decision?
 
     public static let success = ActivityResponse(ok: true)
 
-    public init(ok: Bool, error: String? = nil, activities: [ExternalActivity]? = nil) {
+    public init(ok: Bool, error: String? = nil, activities: [ExternalActivity]? = nil, decision: Decision? = nil) {
         self.ok = ok
         self.error = error
         self.activities = activities
+        self.decision = decision
     }
 
     public static func failure(_ message: String) -> ActivityResponse { ActivityResponse(ok: false, error: message) }

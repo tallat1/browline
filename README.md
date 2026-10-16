@@ -184,6 +184,19 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
   çalışıyor" (proje adıyla), izin istenince turuncu "Claude onay bekliyor", yanıt bitince "Claude bitti". Oturum
   başına ayrı etkinlik (`claude.<oturum>`). Kurulum: `Examples/claude-code/settings-hooks.json` içindeki
   `NOTCH_HOOK_PATH`'i betiğin yoluyla değiştirip `~/.claude/settings.json` içindeki `hooks` ile birleştirin.
+- **Claude Code izin istemleri notch'tan** (`notch claude-permission`, `PermissionRequest` kancası): Claude izin
+  sormak üzereyken notch açılır; araç, proje ve tam komut görünür, "Reddet" / "İzin ver" (yalnız bu istek) ya da
+  "Claude'da yanıtla". Kurulum: `settings-hooks.json` içindeki `PermissionRequest` girdisi (`NOTCH_CLI_PATH` =
+  `notch` aracının yolu). Kurallar:
+  - Karar yalnız kullanıcının tıklamasıyla; kalıcı izin kuralı (`updatedPermissions`) hiç yazılmaz.
+  - Yanıt yoksa (süre dolar, "Claude'da yanıtla", uygulama kapalı, hata) kanca hiçbir şey yazmaz ve 0 ile çıkar:
+    Claude kendi izin penceresiyle devam eder. Soru 110 sn'de düşer, kanca zaman aşımı 120 sn.
+  - Masaüstü uygulamasında kanca uygulamanın kendi onay penceresiyle yarışır, önce karar veren geçerli (belge).
+    Orada yanıtlanırsa kanca süreci kapanır, soket bağlantısı kopar, soru notch'tan düşer.
+  - Notch soru gelince kendiliğinden açılır; karar düğmeleri ilk 0,8 sn pasif (yanlışlıkla tıklama).
+  - Genel API: `notch ask --id ID --title … [--detail …] [--timeout SN]` yanıtı yazar (`allow` | `deny`), yanıt
+    yoksa çıkış 4. Ayarlar › Modüller › "Onay sorularını notch'ta yanıtla" kapalıysa hemen yanıtsız döner.
+  - ⚠️ Terminal CLI'de Claude'un kendi penceresinin kanca beklerken görünüp görünmediği belgelenmemiş; denenmedi.
 - **Codex CLI** (`Examples/codex/notch-notify.sh`): tur bitince "Codex bitti". `~/.codex/config.toml`:
   `notify = ["/bin/bash", "/YOL/notch-notify.sh"]`. Codex bildirim alanları sürüme göre değişebilir; betik yalnız
   tür ve klasörü okur.
@@ -297,7 +310,7 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 |---|---|---|---|
 | Şarkı değişince kısa göster | MediaMate, DynamicLake "Sneak Peek" | Başlık ya da sanatçı değişince 3 sn geniş kanat: kapak, şarkı, sanatçı | Ek iş yok |
 | Ses çıkışı değişince göster | Alcove, DynamicLake | CoreAudio varsayılan çıkış dinleyicisi; AirPods türünü addan seçer, yanında ses düzeyi | İzin yok; AirPods pili public değil, gösterilmez |
-| Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut" |
+| Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
 | Zamanlayıcı | NotchFlow, Atoll | Hazır süreler, +1 dk, iptal; bitince "Süre doldu" ve ses. Kilit ekranında da görünür | Tek uyuyan Task; saniyelik çizim yalnız kanat ya da sekme ekrandayken |
 | Pil uyarıları | Alcove, boring.notch | Fişte değilken %20 ve %10 eşiği aşağı geçilince, fişteyken %100 olunca 4 sn; kilit ekranında da | Ek iş yok |
 | Kaydırarak parça geçme | Alcove | Açık notch'ta medya sekmesindeyken yatay iki parmak kaydırma: sola sonraki, sağa önceki | Ek iş yok |
