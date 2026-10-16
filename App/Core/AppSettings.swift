@@ -185,28 +185,6 @@ final class AppSettings {
         lockScreenAutoDisabled = defaults.bool(forKey: "lockScreenAutoDisabled")
     }
 
-    /// 0.9.0'da açık gelen geliştirici ve toplantı özellikleri karşılamanın varsayılan profiline (medya + dosyalar)
-    /// çekildi: karşılama bitmeden ya da "Atla" ile hiçbiri arka planda çalışmasın. Karşılamayı geçmiş kurulumda
-    /// hiç yazılmamış anahtar eski varsayılanıyla (açık) yazılır; mevcut kullanıcının gördüğü değişmez.
-    static let defaultsVersion = 2
-    static let previouslyOnByDefault = ["calendarEnabled", "remindersEnabled", "meetingControlsEnabled", "privacyIndicatorEnabled", "screenRecordingIndicatorEnabled", "terminalEnabled", "ciEnabled", "claudeUsageEnabled", "activityAPIEnabled", "questionsEnabled", "systemStatsEnabled"]
-
-    static func migrateDefaults(_ defaults: UserDefaults) {
-        guard defaults.integer(forKey: "settingsDefaultsVersion") < defaultsVersion else { return }
-        if defaults.bool(forKey: "hasCompletedOnboarding") {
-            // URL şeması eskiden etkinlik API'siyle birlikte açıktı.
-            if defaults.object(forKey: "urlSchemeEnabled") == nil {
-                defaults.set(defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true, forKey: "urlSchemeEnabled")
-            }
-            for key in previouslyOnByDefault where defaults.object(forKey: key) == nil {
-                defaults.set(true, forKey: key)
-            }
-        }
-        // 0.9.0: Claude oturum anahtarıyla kullanım sorgusu kaldırıldı (Anthropic kuralları); ayarı kalmasın.
-        defaults.removeObject(forKey: "claudeUsageAPIEnabled")
-        defaults.set(defaultsVersion, forKey: "settingsDefaultsVersion")
-    }
-
     private static let lockSessionKey = "lockScreenSessionOpen"
 
     /// Kilit paneli SkyLight Space'indeyken true. Kilit açılınca ya da düzgün çıkışta silinir;
@@ -253,44 +231,5 @@ final class AppSettings {
     private func store(_ value: Any, _ key: String) {
         UserDefaults.standard.set(value, forKey: key)
         onChange?()
-    }
-}
-
-extension PanelManager.ScreenPolicy {
-    var title: String {
-        switch self {
-        // Kısa seçenek adları (ayar satırında kesilmesin); ayrıntı bölümün açıklamasında.
-        case .builtInOrMain: String(localized: "Yalnız yerleşik ekran")
-        case .allScreens: String(localized: "Tüm ekranlar")
-        }
-    }
-}
-
-extension HUDController.Mode {
-    var title: String {
-        switch self {
-        case .off: String(localized: "Kapalı")
-        case .overlay: String(localized: "Sistem göstergesine ek")
-        case .replace: String(localized: "Sistem göstergesinin yerine")
-        }
-    }
-}
-
-extension PanelManager.DisplayMode {
-    func title(hasNotch: Bool) -> String {
-        switch self {
-        case .automatic: hasNotch ? String(localized: "Çentik") : String(localized: "Hap (menü çubuğunda)")
-        case .floating: String(localized: "Yüzen kart (menü çubuğunun altında)")
-        case .off: String(localized: "Kapalı")
-        }
-    }
-}
-
-extension PanelManager.NotchlessVisibility {
-    var title: String {
-        switch self {
-        case .always: String(localized: "Her zaman")
-        case .whenActive: String(localized: "Yalnız gösterecek bir etkinlik varken")
-        }
     }
 }
