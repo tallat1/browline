@@ -7,7 +7,7 @@ import SwiftUI
 /// (±15 sn, önceki/oynat/sonraki, oynatıcı bildirirse karıştır/tekrar) ve ses + çıkış seçici.
 /// Birden çok oynatıcı varken sağ üstte oturum seçici. Kaydırıcı ya da menü kullanılırken notch
 /// sabitlenir; imleç dışarı kayınca kapanmaz.
-struct MediaTab: View {
+struct MediaPage: View {
     let nowPlaying: NowPlayingController
     let volume: VolumeController
     let model: NotchSurfaceModel
@@ -220,7 +220,7 @@ private struct SessionSwitcher: View {
     }
 
     static func help(for session: MediaSession) -> String {
-        let app = session.appBundleIdentifier.flatMap(MediaTab.appName(for:)) ?? session.displayName ?? ""
+        let app = session.appBundleIdentifier.flatMap(MediaPage.appName(for:)) ?? session.displayName ?? ""
         let title = session.info.title
         return session.info.isPlaying ? String(localized: "\(app) — \(title)")
             : String(localized: "\(app) — \(title) (duraklatıldı)")

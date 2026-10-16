@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 /// Dosya rafı: notch'a sürüklenen dosyalar burada durur, buradan başka yere sürüklenir, paylaşılır,
 /// sıkıştırılır, dönüştürülür ya da önizlenir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
-struct ShelfTab: View {
+struct ShelfPage: View {
     let shelf: ShelfStore
     /// Bırakılabilir bir şey notch'un üstünde. Bırakma AppKit katmanında (`FileDropView`): dosya sözleri
     /// (ekran görüntüsü küçük resmi) SwiftUI `onDrop` ile alınamıyordu.

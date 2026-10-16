@@ -145,9 +145,9 @@ final class AppCoordinator {
     }
 
     /// Menüden: notch'u imlecin olduğu ekranda belirli sayfada açar (gizliyse önce gösterir).
-    func openNotch(at tab: NotchTab) {
+    func openNotch(at page: NotchPage) {
         if isNotchHidden { showNotch() }
-        if availableTabs.contains(tab) { ui.selectedTab = tab }
+        if availablePages.contains(page) { ui.selectedPage = page }
         let mouse = NSEvent.mouseLocation
         let screenID = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) }
             .flatMap { $0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID }
@@ -533,7 +533,7 @@ final class AppCoordinator {
         if !settings.nowPlayingEnabled { activities.removeLive(ActivityKind.nowPlaying) }
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
-        if !availableTabs.contains(ui.selectedTab), let first = availableTabs.first { ui.selectedTab = first }
+        if !availablePages.contains(ui.selectedPage), let first = availablePages.first { ui.selectedPage = first }
         questions.isEnabled = settings.questionsEnabled && settings.activityAPIEnabled
         // Kapatılınca bekleyen sorular "yanıt yok"la çözülür: istemci kendi akışına döner.
         if !questions.isEnabled { questions.questions.forEach { questions.answer($0.id, with: nil) } }
@@ -544,13 +544,13 @@ final class AppCoordinator {
     }
 
     /// Açılabilen sayfalar: modülü açık ve ayarlardan gizlenmemiş. Şimdi hep var.
-    var availableTabs: [NotchTab] {
-        NotchTab.allCases.filter { $0 == .now || (isModuleEnabled(for: $0) && !settings.hiddenTabs.contains($0)) }
+    var availablePages: [NotchPage] {
+        NotchPage.allCases.filter { $0 == .now || (isModuleEnabled(for: $0) && !settings.hiddenPages.contains($0)) }
     }
 
     /// Bölümün seçicideki açık sayfaları.
-    func pages(in section: NotchSection) -> [NotchTab] {
-        let available = availableTabs
+    func pages(in section: NotchSection) -> [NotchPage] {
+        let available = availablePages
         return section.pages.filter(available.contains)
     }
 
@@ -564,19 +564,19 @@ final class AppCoordinator {
     func select(_ section: NotchSection) {
         let pages = pages(in: section)
         guard let first = pages.first else { return }
-        if ui.selectedTab.section == section {
-            if ui.selectedTab.isDetailPage { ui.selectedTab = first }
+        if ui.selectedPage.section == section {
+            if ui.selectedPage.isDetailPage { ui.selectedPage = first }
             return
         }
         if let last = ui.lastPage[section], pages.contains(last) {
-            ui.selectedTab = last
+            ui.selectedPage = last
         } else {
-            ui.selectedTab = first
+            ui.selectedPage = first
         }
     }
 
-    func isModuleEnabled(for tab: NotchTab) -> Bool {
-        switch tab {
+    func isModuleEnabled(for page: NotchPage) -> Bool {
+        switch page {
         // Şimdi her zaman var: müzik kapalıysa da toplantı, etkinlik ve zamanlayıcı orada.
         case .now: true
         case .calendar: settings.calendarEnabled
@@ -619,14 +619,14 @@ final class AppCoordinator {
             guard let self, !urls.isEmpty else { return }
             AppLog.coordinator.notice("rafa bırakıldı: \(urls.count) dosya")
             shelf.add(urls)
-            ui.selectedTab = .shelf
+            ui.selectedPage = .shelf
         }
         return true
     }
 
     /// Açık notch'ta yatay kaydırma: medya sekmesindeyken parça geçişi (Alcove).
     private func horizontalSwipe(forward: Bool) {
-        guard ui.selectedTab == .now, nowPlaying.info != nil else { return }
+        guard ui.selectedPage == .now, nowPlaying.info != nil else { return }
         if forward { nowPlaying.nextTrack() } else { nowPlaying.previousTrack() }
         AppLog.coordinator.notice("kaydırma: \(forward ? "sonraki" : "önceki", privacy: .public) parça")
     }

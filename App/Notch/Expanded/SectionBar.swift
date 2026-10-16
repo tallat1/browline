@@ -14,9 +14,9 @@ struct SectionBar: View {
     @Namespace private var selection
 
     var body: some View {
-        HStack(spacing: NotchDesign.tabIconSpacing) {
+        HStack(spacing: NotchDesign.sectionIconSpacing) {
             ForEach(sections) { section in
-                TabIconButton(symbol: section.symbol, title: section.title, isSelected: section == selected,
+                SectionIconButton(symbol: section.symbol, title: section.title, isSelected: section == selected,
                               namespace: selection, onHoverEnter: onHoverIcon) { select(section) }
                     .notchTransition(.fade)
             }
@@ -25,7 +25,7 @@ struct SectionBar: View {
     }
 }
 
-private struct TabIconButton: View {
+private struct SectionIconButton: View {
     let symbol: String
     let title: String
     let isSelected: Bool
@@ -40,7 +40,7 @@ private struct TabIconButton: View {
         Button(action: action) {
             Image(systemName: symbol)
                 .font(.system(size: NotchDesign.Icon.regular, weight: NotchDesign.Icon.weight))
-                .frame(width: NotchDesign.tabIconSize, height: NotchDesign.Control.small)
+                .frame(width: NotchDesign.sectionIconSize, height: NotchDesign.Control.small)
                 .foregroundStyle(Color.white.opacity(isSelected ? 1
                                                      : (isHovering ? NotchDesign.hoverIconOpacity : NotchDesign.inactiveIconOpacity)))
                 .background { background }

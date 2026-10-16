@@ -159,7 +159,7 @@ final class DebugCommandChannel {
         case let tab where tab.hasPrefix("tab:"):
             // "media" eski ad: Şimdi.
             let name = String(tab.dropFirst(4))
-            if let value = NotchTab(rawValue: name == "media" ? "now" : name) { coordinator.ui.selectedTab = value }
+            if let value = NotchPage(rawValue: name == "media" ? "now" : name) { coordinator.ui.selectedPage = value }
         case "flash:power":
             coordinator.activities.flash(AppCoordinator.ActivityKind.power, duration: .seconds(3))
         case "hud:preview":

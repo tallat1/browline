@@ -167,14 +167,14 @@ extension View {
 /// Özellik açık olsa da notch'un bölüm seçicisinde gösterilsin mi (eski "Bölümler" sekmesi).
 struct ShowInNotchToggle: View {
     @Bindable var settings: AppSettings
-    let tab: NotchTab
+    let page: NotchPage
     let isFeatureEnabled: Bool
 
     var body: some View {
         Toggle(isOn: Binding(
-            get: { !settings.hiddenTabs.contains(tab) },
+            get: { !settings.hiddenPages.contains(page) },
             set: { visible in
-                if visible { settings.hiddenTabs.remove(tab) } else { settings.hiddenTabs.insert(tab) }
+                if visible { settings.hiddenPages.remove(page) } else { settings.hiddenPages.insert(page) }
             })) {
             Text("Notch'ta göster")
         }

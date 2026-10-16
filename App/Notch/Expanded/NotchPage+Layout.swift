@@ -4,7 +4,7 @@ import Integrations
 import NotchShell
 import SwiftUI
 
-extension NotchTab {
+extension NotchPage {
     /// Üç sabit boy (2026-10-16 denetimi: dokuz farklı boy vardı, bölüm içinde sayfa değişince notch
     /// zıplıyordu). Raf ile Pano aynı boyda; Araçlar'da içerik gereği farklı.
     static let shortHeight: CGFloat = 132

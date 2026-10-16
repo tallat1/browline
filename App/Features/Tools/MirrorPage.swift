@@ -5,7 +5,7 @@ import SwiftUI
 
 /// Ayna: kamera yalnız bu sekme ekrandayken açık; notch kapanınca ya da sekme değişince durur.
 /// Görüntü kaydedilmez, hiçbir yere gönderilmez.
-struct MirrorTab: View {
+struct MirrorPage: View {
     let mirror: CameraMirror
     @State private var status = AVCaptureDevice.authorizationStatus(for: .video)
 

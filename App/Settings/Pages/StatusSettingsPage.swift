@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Durum
 
-struct StatusPage: View {
+struct StatusSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 
@@ -12,7 +12,7 @@ struct StatusPage: View {
         SettingsForm(page: .status) {
             Section("Sistem") {
                 Toggle("İşlemci, bellek ve ağ", isOn: $settings.systemStatsEnabled).settingsAnchor("system")
-                ShowInNotchToggle(settings: settings, tab: .system, isFeatureEnabled: settings.systemStatsEnabled)
+                ShowInNotchToggle(settings: settings, page: .system, isFeatureEnabled: settings.systemStatsEnabled)
             }
             Section("Bluetooth") {
                 Toggle("Bluetooth aygıtları", isOn: $settings.bluetoothEnabled).settingsAnchor("bluetooth")
@@ -20,12 +20,12 @@ struct StatusPage: View {
             }
             Section("Claude") {
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled).settingsAnchor("claude")
-                ShowInNotchToggle(settings: settings, tab: .claude, isFeatureEnabled: settings.claudeUsageEnabled)
+                ShowInNotchToggle(settings: settings, page: .claude, isFeatureEnabled: settings.claudeUsageEnabled)
                 SettingsNote("Yüzdeler Claude Code'un durum satırı betiğinden gelir (Examples/claude-code/usage-statusline.sh); Browline Claude oturumunuza hiç dokunmaz.")
             }
             Section("CI") {
                 Toggle("GitHub Actions durumu", isOn: $settings.ciEnabled).settingsAnchor("ci")
-                ShowInNotchToggle(settings: settings, tab: .ci, isFeatureEnabled: settings.ciEnabled)
+                ShowInNotchToggle(settings: settings, page: .ci, isFeatureEnabled: settings.ciEnabled)
                 if settings.ciEnabled {
                     CIRepositorySettings(settings: settings, ci: coordinator.ci)
                 }

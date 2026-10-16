@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Gelişmiş
 
-struct AdvancedPage: View {
+struct AdvancedSettingsPage: View {
     let coordinator: AppCoordinator
 
     var body: some View {

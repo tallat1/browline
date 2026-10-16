@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - İzinler
 
-struct PermissionsPage: View {
+struct PermissionsSettingsPage: View {
     let center: PermissionCenter
 
     var body: some View {

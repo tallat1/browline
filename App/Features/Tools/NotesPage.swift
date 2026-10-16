@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Hızlı not (NotchPad, Islet). Sekme görünürken panel key olabilir; klavye yalnız alana tıklayınca
 /// alınır. Yazmaya başlayınca notch sabitlenir, imleç çıkınca kapanmaz; Esc ya da dışarı tıklama kapatır.
-struct NotesTab: View {
+struct NotesPage: View {
     let notes: NotesStore
     let model: NotchSurfaceModel
     @FocusState private var isFocused: Bool

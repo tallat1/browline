@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Notch
 
-struct NotchPage: View {
+struct NotchSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 

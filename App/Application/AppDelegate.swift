@@ -159,7 +159,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         var items: [NSMenuItem] = []
         let settings = coordinator.settings
         if settings.nowPlayingEnabled, let info = coordinator.nowPlaying.info {
-            let detail = [info.artist, info.bundleIdentifier.flatMap(MediaTab.appName(for:))].compactMap { $0 }.filter { !$0.isEmpty }
+            let detail = [info.artist, info.bundleIdentifier.flatMap(MediaPage.appName(for:))].compactMap { $0 }.filter { !$0.isEmpty }
             items.append(statusItem(title: info.title, subtitle: detail.joined(separator: " · "),
                                     symbol: info.isPlaying ? "play.fill" : "pause.fill") { [weak self] in
                 self?.coordinator.openNotch(at: .now)
@@ -198,7 +198,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let item = NSMenuItem(title: String(localized: "Notch'u aç"), action: nil, keyEquivalent: "")
         item.image = NSImage(systemSymbolName: "rectangle.topthird.inset.filled", accessibilityDescription: nil)
         let submenu = NSMenu()
-        let destinations: [(String, String, NotchTab)] = [
+        let destinations: [(String, String, NotchPage)] = [
             (String(localized: "Şimdi"), "house", .now),
             (String(localized: "Raf"), "tray.full", .shelf),
             (String(localized: "Pano"), "doc.on.clipboard", .clipboard),
@@ -206,9 +206,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             (String(localized: "Araçlar"), "wrench.and.screwdriver", coordinator.ui.lastPage[.tools] ?? .notes),
             (String(localized: "Durum"), "gauge.with.dots.needle.33percent", coordinator.ui.lastPage[.status] ?? .system),
         ]
-        let available = coordinator.availableTabs
-        for (title, symbol, tab) in destinations where available.contains(tab) {
-            submenu.addItem(action(title, symbol: symbol) { [weak self] in self?.coordinator.openNotch(at: tab) })
+        let available = coordinator.availablePages
+        for (title, symbol, page) in destinations where available.contains(page) {
+            submenu.addItem(action(title, symbol: symbol) { [weak self] in self?.coordinator.openNotch(at: page) })
         }
         item.submenu = submenu
         return item

@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Genel
 
-struct GeneralPage: View {
+struct GeneralSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 

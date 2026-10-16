@@ -117,18 +117,18 @@ struct SettingsView: View {
     @ViewBuilder
     private func page(_ page: SettingsPage) -> some View {
         switch page {
-        case .general: GeneralPage(coordinator: coordinator, settings: settings)
-        case .notch: NotchPage(coordinator: coordinator, settings: settings)
-        case .permissions: PermissionsPage(center: coordinator.permissions)
-        case .now: NowPage(coordinator: coordinator, settings: settings)
-        case .shelf: ShelfPage(coordinator: coordinator, settings: settings)
-        case .calendar: CalendarPage(coordinator: coordinator, settings: settings)
-        case .tools: ToolsPage(coordinator: coordinator, settings: settings)
-        case .status: StatusPage(coordinator: coordinator, settings: settings)
-        case .indicators: IndicatorsPage(coordinator: coordinator, settings: settings)
-        case .lockScreen: LockScreenPage(coordinator: coordinator, settings: settings)
-        case .advanced: AdvancedPage(coordinator: coordinator)
-        case .about: AboutPage(coordinator: coordinator)
+        case .general: GeneralSettingsPage(coordinator: coordinator, settings: settings)
+        case .notch: NotchSettingsPage(coordinator: coordinator, settings: settings)
+        case .permissions: PermissionsSettingsPage(center: coordinator.permissions)
+        case .now: NowSettingsPage(coordinator: coordinator, settings: settings)
+        case .shelf: ShelfSettingsPage(coordinator: coordinator, settings: settings)
+        case .calendar: CalendarSettingsPage(coordinator: coordinator, settings: settings)
+        case .tools: ToolsSettingsPage(coordinator: coordinator, settings: settings)
+        case .status: StatusSettingsPage(coordinator: coordinator, settings: settings)
+        case .indicators: IndicatorsSettingsPage(coordinator: coordinator, settings: settings)
+        case .lockScreen: LockScreenSettingsPage(coordinator: coordinator, settings: settings)
+        case .advanced: AdvancedSettingsPage(coordinator: coordinator)
+        case .about: AboutSettingsPage(coordinator: coordinator)
         }
     }
 }

@@ -7,10 +7,10 @@ import SwiftUI
 /// Bölümün sayfa seçicisi: ince bir yuva içinde simge + ad bölütleri, seçili olanın zemini kayar.
 /// Yalnız birden çok sayfası olan bölümde görünür.
 struct PagePicker: View {
-    let pages: [NotchTab]
-    let selected: NotchTab
+    let pages: [NotchPage]
+    let selected: NotchPage
     let onHoverSegment: () -> Void
-    let select: (NotchTab) -> Void
+    let select: (NotchPage) -> Void
     @Namespace private var selection
 
     var body: some View {
@@ -30,7 +30,7 @@ struct PagePicker: View {
 }
 
 private struct PageSegment: View {
-    let page: NotchTab
+    let page: NotchPage
     let isSelected: Bool
     let namespace: Namespace.ID
     let onHoverEnter: () -> Void

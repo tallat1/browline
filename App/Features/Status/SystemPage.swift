@@ -5,7 +5,7 @@ import SwiftUI
 
 /// İşlemci, bellek, ağ: son 10 dakikanın grafiği (modül açıkken arka planda 5 sn'de bir, sayfa açıkken
 /// saniyede bir örneklenir). Grafiğin üzerine gelince o anın değeri ve saati başlıkta görünür.
-struct SystemTab: View {
+struct SystemPage: View {
     let stats: SystemStats
     /// Modül kapalıysa nil; bağlı aygıt yoksa kart yok.
     let bluetooth: BluetoothMonitor?
@@ -216,8 +216,8 @@ private struct MemoryCard: View {
     var body: some View {
         let total = Double(snapshot.memoryTotal)
         let used = hovered.map { UInt64($0.memory * total) } ?? snapshot.memoryUsed
-        ChartCard(title: "Bellek", value: SystemTab.gigabytes(used),
-                  unit: "/ " + SystemTab.gigabytes(snapshot.memoryTotal) + " GB", hoverTime: hovered?.date) {
+        ChartCard(title: "Bellek", value: SystemPage.gigabytes(used),
+                  unit: "/ " + SystemPage.gigabytes(snapshot.memoryTotal) + " GB", hoverTime: hovered?.date) {
             MemoryChart(history: history, hoveredDate: hovered?.date) { hovered = $0 }.equatable()
         } footer: {
             if let memory = snapshot.memory {
@@ -273,7 +273,7 @@ private struct MemoryBreakdownBar: View {
         }
         .frame(height: 5)
         .padding(.vertical, 4)
-        .help(String(localized: "Uygulama \(SystemTab.gigabytes(memory.app)) GB · Kablolu \(SystemTab.gigabytes(memory.wired)) GB · Sıkıştırılmış \(SystemTab.gigabytes(memory.compressed)) GB"))
+        .help(String(localized: "Uygulama \(SystemPage.gigabytes(memory.app)) GB · Kablolu \(SystemPage.gigabytes(memory.wired)) GB · Sıkıştırılmış \(SystemPage.gigabytes(memory.compressed)) GB"))
     }
 }
 

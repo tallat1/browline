@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Göstergeler
 
-struct IndicatorsPage: View {
+struct IndicatorsSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 

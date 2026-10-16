@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Claude plan limitleri: 5 saatlik oturum ve haftalık pencere. Veri Claude Code durum satırından
 /// gelir; yalnız bir oturum çalışırken tazelendiği için son güncelleme zamanı da gösterilir.
-struct ClaudeTab: View {
+struct ClaudePage: View {
     let usage: ClaudeUsageMonitor
 
     var body: some View {

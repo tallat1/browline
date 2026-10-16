@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Hakkında
 
-struct AboutPage: View {
+struct AboutSettingsPage: View {
     let coordinator: AppCoordinator
 
     private var version: String {

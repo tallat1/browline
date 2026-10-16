@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Kilit ekranı
 
-struct LockScreenPage: View {
+struct LockScreenSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 

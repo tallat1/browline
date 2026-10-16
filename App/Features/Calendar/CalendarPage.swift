@@ -2,7 +2,7 @@ import Integrations
 import NotchShell
 import SwiftUI
 
-struct CalendarTab: View {
+struct CalendarPage: View {
     let calendar: CalendarMonitor
     /// Ayarlarda kapalıysa nil.
     let reminders: RemindersMonitor?

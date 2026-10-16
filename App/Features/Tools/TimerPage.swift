@@ -3,7 +3,7 @@ import NotchShell
 import SwiftUI
 
 /// Zamanlayıcı: hazır süreler ya da Pomodoro; çalışırken büyük rakam, halka, +1 dk ve iptal.
-struct TimerTab: View {
+struct TimerPage: View {
     let coordinator: AppCoordinator
     private var timer: CountdownTimer { coordinator.timer }
 

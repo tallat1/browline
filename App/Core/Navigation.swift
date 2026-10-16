@@ -20,7 +20,7 @@ enum NotchSection: String, CaseIterable, Identifiable, Sendable {
 
     /// Seçicide görünen sayfalar, sırasıyla. Etkinlikler Şimdi'nin ayrıntı sayfası: seçicide yok,
     /// Şimdi'deki etkinlik kartından açılır.
-    var pages: [NotchTab] {
+    var pages: [NotchPage] {
         switch self {
         case .now: [.now]
         case .shelf: [.shelf, .clipboard]
@@ -52,7 +52,7 @@ enum NotchSection: String, CaseIterable, Identifiable, Sendable {
 }
 
 /// Açık notch'un sayfaları; her biri bir bölümde (`section`).
-enum NotchTab: String, CaseIterable, Identifiable, Sendable {
+enum NotchPage: String, CaseIterable, Identifiable, Sendable {
     case now
     case calendar
     case shelf
@@ -120,11 +120,11 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
 @MainActor
 @Observable
 final class NotchUIState {
-    var selectedTab: NotchTab = .now {
-        didSet { if !selectedTab.isDetailPage { lastPage[selectedTab.section] = selectedTab } }
+    var selectedPage: NotchPage = .now {
+        didSet { if !selectedPage.isDetailPage { lastPage[selectedPage.section] = selectedPage } }
     }
     /// Bölüm başına son açılan sayfa: bölüme dönünce oradan devam edilir.
-    var lastPage: [NotchSection: NotchTab] = [:]
+    var lastPage: [NotchSection: NotchPage] = [:]
     var activityAPIStatus = String(localized: "Kapalı")
     #if DEBUG
     /// README görüntüleri: Şimdi'de gerçek toplantı, mikrofon, Claude ve dış etkinlik kartları gizlenir;

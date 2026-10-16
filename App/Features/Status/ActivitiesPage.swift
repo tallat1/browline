@@ -3,7 +3,7 @@ import NotchShell
 import SwiftUI
 
 /// Dış etkinlikler: `notch` komutu, betikler ve Kestirmeler buraya yazar.
-struct ActivitiesTab: View {
+struct ActivitiesPage: View {
     let store: ExternalActivityStore
 
     var body: some View {

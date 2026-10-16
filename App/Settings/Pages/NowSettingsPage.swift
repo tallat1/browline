@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Şimdi
 
-struct NowPage: View {
+struct NowSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 

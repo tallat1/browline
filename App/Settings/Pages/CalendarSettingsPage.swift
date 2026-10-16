@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Takvim
 
-struct CalendarPage: View {
+struct CalendarSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 
@@ -13,7 +13,7 @@ struct CalendarPage: View {
             Section("Takvim") {
                 Toggle("Takvim ve toplantılar", isOn: $settings.calendarEnabled)
                     .settingsAnchor("calendar")
-                ShowInNotchToggle(settings: settings, tab: .calendar, isFeatureEnabled: settings.calendarEnabled)
+                ShowInNotchToggle(settings: settings, page: .calendar, isFeatureEnabled: settings.calendarEnabled)
                 if settings.calendarEnabled {
                     PermissionRow(kind: .calendar, center: coordinator.permissions)
                 }

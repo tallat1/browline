@@ -79,7 +79,7 @@ final class AppSettings {
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
     /// Modülü açık olsa da bölüm seçicisinde gösterilmeyen sayfalar. (Eski "pinnedTabs" anahtarı
     /// beş bölüme geçişte kullanılmaz oldu; okunmaz.)
-    var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
+    var hiddenPages: Set<NotchPage> { didSet { store(hiddenPages.map(\.rawValue).sorted(), "hiddenTabs") } }
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
     /// Menü çubuğundan "Notch'u gizle": bu ana kadar (`distantFuture` = gösterene kadar). Yeniden
     /// başlatmada korunur.
@@ -173,7 +173,7 @@ final class AppSettings {
         weatherPlace = defaults.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherMonitor.Place.self, from: $0) }
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
-        hiddenTabs = Set((defaults.stringArray(forKey: "hiddenTabs") ?? []).compactMap(NotchTab.init(rawValue:)))
+        hiddenPages = Set((defaults.stringArray(forKey: "hiddenTabs") ?? []).compactMap(NotchPage.init(rawValue:)))
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
             defaults.set(false, forKey: "lockScreenEnabled")
             defaults.set(true, forKey: "lockScreenAutoDisabled")

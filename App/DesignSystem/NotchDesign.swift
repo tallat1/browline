@@ -80,8 +80,8 @@ enum NotchDesign {
     /// Bant (sekmeler + durum) ile içerik arası.
     static let headerSpacing: CGFloat = 6
     /// Banttaki sekme simgesi ve aralığı.
-    static let tabIconSize: CGFloat = 24
-    static let tabIconSpacing: CGFloat = 2
+    static let sectionIconSize: CGFloat = 24
+    static let sectionIconSpacing: CGFloat = 2
 }
 
 extension View {

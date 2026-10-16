@@ -6,7 +6,7 @@ import SwiftUI
 /// Şimdi: açılış ekranı. Solda oynatıcı; sağda yalnız o an önemli olanlar (sıradaki toplantı, çalışan
 /// zamanlayıcı, canlı etkinlik, Claude limiti), en çok üç kart. Hiçbiri yoksa oynatıcı tüm genişliği
 /// alır. Karta basınca ayrıntı sekmesi açılır.
-struct NowView: View {
+struct NowPage: View {
     let coordinator: AppCoordinator
     let model: NotchSurfaceModel
 
@@ -18,7 +18,7 @@ struct NowView: View {
             let items = NowItem.current(coordinator: coordinator, now: timeline.currentDate)
             HStack(alignment: .top, spacing: 10) {
                 if coordinator.settings.nowPlayingEnabled {
-                    MediaTab(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
+                    MediaPage(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
                              sourceDescription: coordinator.nowPlayingSourceDescription)
                 }
                 if !items.isEmpty {
@@ -61,8 +61,8 @@ struct NowView: View {
     }
 
     /// Ayrıntı sekmesi kapalı ya da gizliyse kart yalnız bilgi verir.
-    private func open(_ tab: NotchTab) -> (() -> Void)? {
-        guard coordinator.availableTabs.contains(tab) else { return nil }
-        return { coordinator.ui.selectedTab = tab }
+    private func open(_ page: NotchPage) -> (() -> Void)? {
+        guard coordinator.availablePages.contains(page) else { return nil }
+        return { coordinator.ui.selectedPage = page }
     }
 }

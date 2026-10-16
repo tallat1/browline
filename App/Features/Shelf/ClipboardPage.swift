@@ -5,7 +5,7 @@ import SwiftUI
 
 /// Pano geçmişi: son kopyalananlar. Satıra basınca yeniden panoya kopyalanır (ardından ⌘V). Üzerine
 /// gelince sabitle ve sil. Yalnız bellekte; parola yöneticilerinin gizli kopyaları hiç alınmaz.
-struct ClipboardTab: View {
+struct ClipboardPage: View {
     let history: ClipboardHistory
     @State private var copiedID: UUID?
 
@@ -156,7 +156,7 @@ private struct ClipRow: View {
     }
 
     private func meta(now: Date) -> String {
-        let app = item.sourceBundleIdentifier.flatMap(MediaTab.appName(for:))
+        let app = item.sourceBundleIdentifier.flatMap(MediaPage.appName(for:))
         let minutes = Int(now.timeIntervalSince(item.copiedAt) / 60)
         let when = minutes < 1 ? String(localized: "az önce")
             : (minutes < 60 ? String(localized: "\(minutes) dk önce")

@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - Raf
 
-struct ShelfPage: View {
+struct ShelfSettingsPage: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 
@@ -13,13 +13,13 @@ struct ShelfPage: View {
             Section("Dosyalar") {
                 Toggle("Dosya rafı", isOn: $settings.shelfEnabled)
                     .settingsAnchor("shelf")
-                ShowInNotchToggle(settings: settings, tab: .shelf, isFeatureEnabled: settings.shelfEnabled)
+                ShowInNotchToggle(settings: settings, page: .shelf, isFeatureEnabled: settings.shelfEnabled)
                 SettingsNote("Ekran görüntüsü küçük resimleri \(ShelfStore.promiseDestination().lastPathComponent) klasörüne kaydedilir. Rafta \(coordinator.shelf.items.count) öğe.")
             }
             Section("Pano geçmişi") {
                 Toggle("Pano geçmişi", isOn: $settings.clipboardEnabled)
                     .settingsAnchor("clipboard")
-                ShowInNotchToggle(settings: settings, tab: .clipboard, isFeatureEnabled: settings.clipboardEnabled)
+                ShowInNotchToggle(settings: settings, page: .clipboard, isFeatureEnabled: settings.clipboardEnabled)
                 SettingsNote("Son 50 kopya, yalnız bellekte. Parola yöneticilerinin gizli kopyaları alınmaz.")
             }
         }

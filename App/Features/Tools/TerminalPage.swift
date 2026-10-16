@@ -6,7 +6,7 @@ import SwiftUI
 /// Terminal sekmesi: gerçek kabuk (SwiftTerm). Sekme görünürken panel klavye alabilir; yazmak için
 /// terminale tıklanır (sekmeye tıklayarak açıldıysa doğrudan yazılır). Odaklanınca notch sabitlenir;
 /// dışarı tıklama kapatır. Esc, Ctrl tuşları ve oklar kabuğa gider; ⌘C, ⌘V, ⌘A çalışır.
-struct TerminalTab: View {
+struct TerminalPage: View {
     let session: TerminalSession
     let model: NotchSurfaceModel
 

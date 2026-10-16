@@ -3,7 +3,7 @@ import NotchShell
 import SwiftUI
 
 /// Durum › CI: izlenen depolardaki son GitHub Actions çalışmaları. Satıra basınca tarayıcıda açılır.
-struct CITab: View {
+struct CIPage: View {
     let ci: CIMonitor
     let hasRepositories: Bool
     /// Ayarlar › Durum › CI'ı açar ve satırı vurgular.
