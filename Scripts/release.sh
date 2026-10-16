@@ -12,7 +12,7 @@
 #              --password <uygulamaya özel parola>   (parola betiğe ya da depoya yazılmaz)
 #       İsteğe bağlı: --identity "Developer ID Application: Ad (TAKIM)" (yoksa Anahtar Zinciri'nden ilki).
 #
-# Çıktı: dist/NotchMVP-<sürüm>.dmg ve .sha256. Sparkle eklenince appcast adımı buraya gelir (README).
+# Çıktı: dist/Browline-<sürüm>.dmg ve .sha256. Sparkle eklenince appcast adımı buraya gelir (README).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -58,13 +58,13 @@ make adapter sessions gen >/dev/null
 
 step "Release derleme"
 DERIVED=build/release
-xcodebuild -project NotchMVP.xcodeproj -scheme NotchMVP -configuration Release \
+xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Release \
   -derivedDataPath "$DERIVED" -skipPackagePluginValidation -quiet \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
   OTHER_CODE_SIGN_FLAGS="$([ "$DRY_RUN" = 1 ] && echo --timestamp=none || echo --timestamp)" \
   build
-APP="$DERIVED/Build/Products/Release/NotchMVP.app"
+APP="$DERIVED/Build/Products/Release/Browline.app"
 [ -d "$APP" ] || fail "uygulama derlenmedi: $APP"
 
 step "İmza doğrulama"
@@ -91,9 +91,9 @@ STAGING=$(mktemp -d)
 trap 'rm -rf "$STAGING"' EXIT
 cp -R "$APP" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
-DMG="dist/NotchMVP-$VERSION.dmg"
+DMG="dist/Browline-$VERSION.dmg"
 rm -f "$DMG"
-hdiutil create -quiet -volname "NotchMVP $VERSION" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
+hdiutil create -quiet -volname "Browline $VERSION" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
 codesign --force --sign "$IDENTITY" $([ "$DRY_RUN" = 1 ] && echo --timestamp=none || echo --timestamp) "$DMG"
 echo "  $DMG ($(du -h "$DMG" | cut -f1))"
 

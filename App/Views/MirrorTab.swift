@@ -43,7 +43,7 @@ struct MirrorTab: View {
             }
         default:
             EmptyStateView(symbol: "video.slash", title: "Kamera izni kapalı",
-                           message: "Gizlilik ayarlarından NotchMVP'ye izin verin.") {
+                           message: "Gizlilik ayarlarından Browline'a izin verin.") {
                 Button("Gizlilik ayarlarını aç") {
                     if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
                         NSWorkspace.shared.open(url)

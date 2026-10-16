@@ -39,7 +39,7 @@ final class SettingsWindowController {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.contentMinSize = NSSize(width: 760, height: 540)
-        window.title = String(localized: "NotchMVP Ayarları")
+        window.title = String(localized: "Browline Ayarları")
         window.isReleasedWhenClosed = false
         // Başka Space'te açık kalmışsa oraya geçmek yerine bulunulan Space'e gelsin.
         window.collectionBehavior = [.moveToActiveSpace]

@@ -123,7 +123,7 @@ struct ActivityIntentError: Error, CustomLocalizedStringResourceConvertible {
 enum ActivityIntentRunner {
     static func run(_ request: ActivityRequest) throws {
         guard let coordinator = AppCoordinator.current else {
-            throw ActivityIntentError(message: String(localized: "NotchMVP henüz hazır değil; birazdan yeniden deneyin."))
+            throw ActivityIntentError(message: String(localized: "Browline henüz hazır değil; birazdan yeniden deneyin."))
         }
         let response = coordinator.handleExternal(request, source: "Kestirme")
         guard response.ok else { throw ActivityIntentError(message: response.error ?? "") }

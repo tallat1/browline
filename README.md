@@ -1,7 +1,9 @@
-# NotchMVP (çalışma adı)
+# Browline
 
-MacBook çentiği için dynamic notch uygulamasının MVP'si. Faz 0 prototipinin (`../notch-prototype`) ölçülmüş
-kararları üzerine temiz modül yapısıyla yazıldı. Ürün adı ve bundle kimliği (`com.talatozcoban.notchmvp`) geçici.
+MacBook çentiği için dynamic notch uygulaması. Faz 0 prototipinin (`../notch-prototype`) ölçülmüş kararları
+üzerine temiz modül yapısıyla yazıldı. Eski çalışma adı NotchMVP: paket kimliği (`com.talatozcoban.notchmvp`),
+veri klasörü, soket ve `notchmvp://` şeması bu adla kaldı (izinler, ayarlar ve betikler bozulmasın; ilk yayından
+önce değiştirilecekse tek seferde).
 
 ## Derleme ve çalıştırma
 
@@ -54,7 +56,7 @@ veriyor); Xcode'da açınca eklentiye bir kez onay istenir.
   (AppleScript) konum bilinmediği için gizli.
 - ⚠️ Spotify MediaRemote konum komutunu doğru işlemiyor (2026-10-16: 2 sn geri istendi, sonraki şarkıya geçti).
   Spotify ve Music'te konum AppleScript ile değişir (`set player position`, ayrı `osascript` süreci); ilk
-  kullanımda macOS "NotchMVP, Spotify'ı denetlemek istiyor" diye sorar. Diğer oynatıcılarda MediaRemote.
+  kullanımda macOS "Browline, Spotify'ı denetlemek istiyor" diye sorar. Diğer oynatıcılarda MediaRemote.
 - Karıştır ve tekrar yalnız oynatıcı durumunu bildiriyorsa görünür (Music bildirir, Spotify bildirmez).
 - Ses kaydırıcısı, sessize alma ve çıkış cihazı menüsü (`VolumeController`, CoreAudio, izinsiz); dinleyiciler
   yalnız sekme açıkken. Kaydırıcı, ilerleme ya da menü kullanılınca notch sabitlenir, imleç kayınca kapanmaz.
@@ -162,7 +164,7 @@ Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkin
 kullanıcı kimliği ayrıca denetlenir). Satır başına bir JSON istek, satır başına bir JSON yanıt.
 
 ```sh
-notch push  --id build --title "Derleme" --subtitle "NotchMVP" --progress 40% --symbol hammer --tint "#FF9F0A"
+notch push  --id build --title "Derleme" --subtitle "Browline" --progress 40% --symbol hammer --tint "#FF9F0A"
 notch end   --id build
 notch flash --title "Derleme bitti" --symbol checkmark.circle.fill --tint "#34C759" --duration 3
 notch list
@@ -177,14 +179,14 @@ notch list
 Aynı etkinlik iki kapıdan daha gelir; ikisi de soketi dolaşmadan aynı işleyiciye girer, aynı sınırlar ve aynı
 "Etkinlik API'si" ayarı geçerlidir:
 
-- **URL şeması** (Raycast, Alfred, Kestirmeler "URL'yi Aç", betikler). Yalnız `push`, `end`, `flash`; parametreler
+- **URL şeması** (Raycast, Alfred, Kestirmeler "URL'yi Aç", betikler). Şema `browline://` (eski `notchmvp://` da çalışır). Yalnız `push`, `end`, `flash`; parametreler
   `notch` aracıyla aynı, `%` URL'de `%25` yazılır. Betikten çağırırken `open -g` kullanın: `-g` olmadan macOS
   uygulamayı öne alır (uygulama odağı önceki uygulamaya geri verir, ama bir an kayar).
 
   ```sh
-  open -g "notchmvp://push?id=build&title=Derleme&progress=40%25&symbol=hammer&tint=%23FF9F0A"
-  open -g "notchmvp://end?id=build"
-  open -g "notchmvp://flash?title=Bitti&symbol=checkmark.circle.fill&duration=3"
+  open -g "browline://push?id=build&title=Derleme&progress=40%25&symbol=hammer&tint=%23FF9F0A"
+  open -g "browline://end?id=build"
+  open -g "browline://flash?title=Bitti&symbol=checkmark.circle.fill&duration=3"
   ```
 
   ⚠️ Bir web sayfası da bu bağlantıyı açabilir (tarayıcı önce sorar); en kötü durumda notch'ta yabancı bir metin
@@ -195,7 +197,7 @@ Aynı etkinlik iki kapıdan daha gelir; ikisi de soketi dolaşmadan aynı işley
 ### AI ajanları
 
 `Examples/` altında hazır örnekler; ikisi de bağımlılıksız (JSON `plutil` ile okunur) ve ajanı hiçbir koşulda
-engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Applications/NotchMVP.app/Contents/Helpers/notch`).
+engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Applications/Browline.app/Contents/Helpers/notch`).
 
 - **Claude Code** (`Examples/claude-code/notch-hook.sh`): istem gönderilince ve her araçtan sonra "Claude
   çalışıyor" (proje adıyla), izin istenince turuncu "Claude onay bekliyor", yanıt bitince "Claude bitti". Oturum
@@ -244,6 +246,7 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
 | v1+: pano geçmişi, raf derinliği, Bluetooth, toplantı denetimi, müziğe tepkili çubuklar (2026-10-16) | ✓ yazıldı; pano, raf sıkıştırma adları, Bluetooth ayrıştırma ve uyarı eşikleri, spektrum bantları ve vuruş salınımı birim testli. Pano izleyici çalışıyor (izin `alwaysAllow`); raf çubuğu, Bluetooth kanadı (örnek aygıt) ve Sistem kartı (gerçek AirPods, %78), sessiz mikrofon kanadı ve kartı görsel doğrulandı. Mikrofon kısa süre sessize alınıp geri açıldı, aygıtta `mute 0` doğrulandı. Spektrum gerçek müzikle (izin verildi) çalıştı, çubuklar kareden kareye değişiyor. Gerçek Bluetooth bağlanma/ayrılma, gerçek görüşmede "Görüşmeye dön" ve sessizliğin aygıt değişince taşınması elle denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
+| Ad ve simge: Browline, Icon Composer simgesi | ✓ ad uygulama, menü, ayarlar, betikler ve İngilizce çeviride; paket kimliği, soket, veri klasörü ve `notchmvp://` uyumluluk için eski adla. Simge sistemin çizdiğiyle 512/32/16 px'te ve Hakkında sayfasında görsel doğrulandı; macOS 14/15'te `.icns` yolu denenmedi |
 | Durum › Sistem grafikleri (son 10 dk: işlemci, bellek, ağ) | ✓ yazıldı; işlemci ayrımı, 10 dk penceresi ve seyreltme birim testli; dört kart görsel doğrulandı (gerçek veri ve `system:fill-history` örnek geçmişi). Üzerine gelme elle denenmedi |
 | Enerji, v1+ modülleri açık (müzik duraklatılmış) | ✓ `top` ile, Debug: kapalı boşta %0,05, açık Sistem grafikleri %2,1 ("Enerji" bölümü). Müzik çalarken ve `powermetrics` ölçümü ✗ yapılmadı: `sudo Scripts/energy.sh` hazır, çalıştırılmadı |
 | Yayın boru hattı: Release, hardened runtime, DMG, notarization (`Scripts/release.sh`) | ✓ `--dry-run` geçti (Apple Development imzasıyla): üç ikili hardened runtime, `get-task-allow` yok, DMG 4,2 MB. Gerçek notarization ✗ denenmedi: Developer ID Application kimliği yok |
@@ -338,7 +341,7 @@ yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yaln�
 - (Bu turdaki ••• çip şeridi beş bölüme geçişte kaldırıldı.)
 - Ayarlar penceresi `orderFrontRegardless` + `.moveToActiveSpace` ile açılır: ajan uygulama notch'tan açınca
   macOS 14+ işbirlikçi etkinleştirmeyi reddedebiliyor ve pencere öndeki uygulamanın arkasında kalıyordu
-  (kullanıcı 2026-10-16). Doğrulama: pencere sırası (CGWindowList) açınca NotchMVP en önde.
+  (kullanıcı 2026-10-16). Doğrulama: pencere sırası (CGWindowList) açınca Browline en önde.
 - Menü çubuğu menüsü: başlık bölümü, simgeli öğeler, Uyanık tut'ta kalan süre ve seçim işareti; teknik Now
   Playing satırı ve "Paneli yeniden kur" yalnız menü Option ile açılınca ("Gelişmiş"). Now Playing kaynağı ayrıca
   Ayarlar › Gelişmiş'te.
@@ -425,7 +428,7 @@ Hepsi public API (ekran kaydı göstergesi hariç), hepsi ayarlarda kendi sayfas
 | Düşük Güç Modu | Crest | Sistem Düşük Güç Modu'ndayken (Ayarlar › Notch › Hareket, varsayılan açık) sürekli hareket durur: çubuklar durağan, kayan yazılar üç noktayla kesilir, müziğe tepki dinleyicisi kapanır. Kısa geçişler sürer | `NSProcessInfoPowerStateDidChange`, yoklama yok; SwiftUI ortam değeri `pausesContinuousMotion` (kilit ekranı dahil). Debug `power:low-on|off|auto` sistemi değiştirmeden benzetir |
 | Pano geçmişi | Maccy, Paste | Raf bölümünde Pano sayfası: son 50 kopya (metin, bağlantı, dosya, görsel ≤ 8 MB), uygulama ve zaman; basınca yeniden kopyalanır, sabitle / sil / temizle (sabitler kalır) | Yalnız bellekte, diske yazılmaz. `changeCount` 0,75 sn'de bir. nspasteboard.org gizli/geçici türler (parola yöneticileri) hiç alınmaz. macOS "diğer uygulamalardan yapıştırma" iznini engellerse sekme söyler |
 | Raf derinliği | Dropover, Yoink | Raf bölümünde Dosyalar sayfası. Altta Paylaş (sistem paylaşım menüsü), Sıkıştır (`ditto`; tek öğe yanına, çoklu İndirilenler'e tarihli zip) ve Temizle. Öğede: üzerine gelince göz (Quick Look, `qlmanage -p`), çift tık açar; sağ tık Aç, Önizle, Paylaş…, AirDrop, Sıkıştır, Yolu kopyala, Finder'da göster, Raftan kaldır | **Dönüştür** (sağ tık): görselde JPEG / PNG / HEIC olarak kaydet ve küçült (en uzun kenar 2048 ya da 1280 px, `sips`); videoda MP4 1080p / 720p ve sesi ayıkla (M4A, `avconvert`, ffmpeg gerekmez). Sonuç kaynağın yanına (yazılamıyorsa İndirilenler'e) yeni dosya, rafa da eklenir; özgün dosyaya dokunulmaz; sürerken karoda ilerleme. **Bırakma** AppKit katmanında (`FileDropView`, panelin en üstünde, yalnız dosya sürüklenirken isabet alır): Finder dosyası, **dosya sözü** (ekran görüntüsü/kaydının sağ alttaki küçük resmi, Fotoğraflar, Mail eki; `NSFilePromiseReceiver`) ve yalnız görsel verisi (PNG yazılır). Sözle gelen dosya macOS'un ekran görüntüsü klasörüne (`com.apple.screencapture location`, yoksa Masaüstü) yazılır: küçük resim sürüklenince macOS dosyayı kendisi kaydetmiyor. Geçici klasördeki adresler (/var/folders) oraya kopyalanır. ⚠️ Eskiden SwiftUI `onDrop(of: [.fileURL])` ve algılayıcı yalnız adrese bakıyordu: küçük resim notch'u açmıyordu. ⛔ `receivePromisedFiles` yalnız `performDragOperation` içinde eşzamanlı çağrılabilir. Kendi raf öğemizi notch'a geri bırakmak eklemez. Sıkıştırma ve dönüşüm arka planda; ad çakışırsa "ad 2.zip". Aynı dosya iki kez eklenmez: karşılaştırma dosya kimliğiyle (`ShelfStore.identity`: dosya başvurusu URL'si yola, `/private/tmp` ↔ `/tmp`). Raf 124 pt (104'te kesikli çerçeve gövdeden taşıyordu), ad tek satır, ortadan kısalır |
-| Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
+| Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "Browline: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
 | Zamanlayıcı | NotchFlow, Atoll | Hazır süreler, +1 dk, iptal; bitince "Süre doldu" ve ses. Kilit ekranında da görünür | Tek uyuyan Task; saniyelik çizim yalnız kanat ya da sekme ekrandayken |
 | Pil uyarıları | Alcove, boring.notch | Fişte değilken %20 ve %10 eşiği aşağı geçilince, fişteyken %100 olunca 4 sn; kilit ekranında da | Ek iş yok |
 | Kaydırarak parça geçme | Alcove | Açık notch'ta medya sekmesindeyken yatay iki parmak kaydırma: sola sonraki, sağa önceki | Ek iş yok |
@@ -491,12 +494,12 @@ Komut satırı derlemesi kataloğa yeni anahtar eklemez; yeni ekran metninden so
 
 ```sh
 make build
-xcrun xcstringstool sync App/Localizable.xcstrings --stringsdata $(find build/Build/Intermediates.noindex -name '*.stringsdata' -path '*NotchMVP.build*')
+xcrun xcstringstool sync App/Localizable.xcstrings --stringsdata $(find build/Build/Intermediates.noindex -name '*.stringsdata' -path '*Browline.build*')
 ```
 
 Ekranda Türkçe metin yalnız `LocalizedStringKey` ya da `String(localized:)` ile; değişkenden gelen metin
 (`Text(info.title)`) çevrilmez. Üçlü ifade `koşul ? Text("a") : Text("b")` biçiminde yazılır, yoksa `String` olur
-ve kataloğa girmez. Dili zorlayarak deneme: `open -n …/NotchMVP.app --args -AppleLanguages "(en)"`.
+ve kataloğa girmez. Dili zorlayarak deneme: `open -n …/Browline.app --args -AppleLanguages "(en)"`.
 
 ## Enerji
 
@@ -517,14 +520,14 @@ soru ya da bildirim olmadığına bakın.
 
 Süreç başına enerji etkisi için `sudo Scripts/energy.sh [saniye]` (varsayılan 60): beş senaryo (kapalı boşta, müzik
 çalarken yapay ve müziğe tepkili çubuklar, açık Şimdi, açık Sistem grafikleri). Her senaryodan önce ne yapılacağını
-yazar ve Enter bekler; `powermetrics --samplers tasks --show-process-energy -f plist` çıktısından NotchMVP satırını
+yazar ve Enter bekler; `powermetrics --samplers tasks --show-process-energy -f plist` çıktısından Browline satırını
 okur (`cputime_ms_per_s`, `idle_wakeups_per_s`, `intr_wakeups_per_s`, `energy_impact`), sonunda buraya
 yapıştırılacak tabloyu basar. Ölçüm sırasında fareye dokunmayın. ⚠️ Henüz çalıştırılmadı.
 
 ## Dağıtım
 
 `Scripts/release.sh`: `make adapter sessions gen` → Release derleme (`build/release`) → imza denetimi → imzalı DMG
-(`dist/NotchMVP-<sürüm>.dmg`, UDZO) → gerçek yayında `notarytool submit --wait` ve `stapler staple` → `.sha256`.
+(`dist/Browline-<sürüm>.dmg`, UDZO) → gerçek yayında `notarytool submit --wait` ve `stapler staple` → `.sha256`.
 Sürüm `project.yml`'den (0.1.0, derleme 1). Gerçek yayın kirli çalışma ağacını reddeder: paket bir commit'e karşılık
 gelmeli.
 
@@ -563,7 +566,7 @@ sanal ekranda çentik olmadığı için hap yolunu sınar.
 
 ## Ürün adı
 
-"NotchMVP" çalışma adı. Adaylar (2026-10-16 taraması: `.app` / `.com` alan adı DNS'i ve App Store / web araması; marka
+Seçilen ad **Browline** (2026-10-16; kaş çizgisi: ekranın üst kenarı ve çentik). Adaylar (2026-10-16 taraması: `.app` / `.com` alan adı DNS'i ve App Store / web araması; marka
 tescili ayrıca bakılmalı):
 
 | Ad | Anlam | `.app` | `.com` | Çakışma |
@@ -579,6 +582,23 @@ tescili ayrıca bakılmalı):
 
 ⛔ "Dynamic Island" (Apple markası) ve mevcut adlar (NotchNook, Alcove, DynamicLake, MediaMate, NotchPop, Islet,
 Pulse Island, MacNotch, Crest, boring.notch, Atoll, NotchDrop, MewNotch, Halo) kullanılmaz.
+
+## Simge
+
+`App/Browline.icon` (Icon Composer; Xcode › Open Developer Tool › Icon Composer ile açılır). Fikir adın kendisi:
+ekranın üst kenarı çentiğin etrafından dolanan sıcak bir çizgi, kaş gibi.
+
+- Dolgu: üstten alta koyu kahve-siyah geçiş (`#2A2420` → `#0E0D0F`).
+- Ön grup `rim.svg`: kenar çizgisi (52 birim, sarıdan turuncu-kırmızıya), Liquid Glass vurgusu bu katmanda.
+- Arka grup `bezel.svg` (çentik ve çerçeve şeridi, kamera noktası) ve `glow.svg` (çizginin altında sıcak ışık, camsız).
+- Katman SVG'leri 1024'lük tuvalde, `viewBox="100 100 824 824"`: tasarım eski 824'lük gövde ölçüsünde çizildi,
+  maske sistemden gelir.
+
+Derlemede `ASSETCATALOG_COMPILER_APPICON_NAME: Browline`; actool `Assets.car` (macOS 26+ cam görünüm, koyu/renkli/şeffaf
+kipler) ve macOS 14/15 için `Browline.icns` üretir. XcodeGen `.icon`'u `wrapper.icon` olarak kaynaklara ekliyor.
+Sistemin çizdiği hâli `NSWorkspace.shared.icon(forFile:)` ile 512/32/16 px denendi (macOS 27); 16 px'te 44 birimlik
+çizgi sönük kaldığı için 52'ye kalınlaştı. Ayarlar › Hakkında'da simge, ad ve sürüm. Simge paketi DMG'yi 4,2'den 5,9 MB'a
+büyüttü (`Assets.car` ≈ 1,7 MB).
 
 ## Lisans notu
 

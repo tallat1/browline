@@ -66,7 +66,7 @@ final class DebugCommandChannel {
         case "shelf:add-test":
             // Yalnız deneme dosyası; kullanıcının raf öğelerine dokunmaz.
             let file = URL(fileURLWithPath: "/tmp/notch-raf-deneme.txt")
-            try? "NotchMVP raf denemesi".write(to: file, atomically: true, encoding: .utf8)
+            try? "Browline raf denemesi".write(to: file, atomically: true, encoding: .utf8)
             coordinator.shelf.add([file])
         case "shelf:remove-test":
             // Raf çözülmüş yolu (/private/tmp) tutabiliyor: önekle değil dosya kimliğiyle.
@@ -184,15 +184,15 @@ final class DebugCommandChannel {
             coordinator.activities.flash(AppCoordinator.ActivityKind.trackChange,
                                          duration: AppCoordinator.trackPeekDuration(for: title))
         case "awake:on":
-            coordinator.keepAwake.start(for: .seconds(90), reason: "NotchMVP debug")
+            coordinator.keepAwake.start(for: .seconds(90), reason: "Browline debug")
         case "awake:off":
             coordinator.keepAwake.stop()
         case "awake:forever":
-            coordinator.keepAwake.start(reason: "NotchMVP debug")
+            coordinator.keepAwake.start(reason: "Browline debug")
         case let command where command.hasPrefix("awake:"):
             // awake:<saniye>: süre dolumunu kısa sürede sınamak için.
             if let seconds = Int(command.dropFirst("awake:".count)), seconds > 0 {
-                coordinator.keepAwake.start(for: .seconds(seconds), reason: "NotchMVP debug")
+                coordinator.keepAwake.start(for: .seconds(seconds), reason: "Browline debug")
             }
         case "battery:low":
             coordinator.activities.flash(AppCoordinator.ActivityKind.batteryLow, duration: .seconds(4))
@@ -239,7 +239,7 @@ final class DebugCommandChannel {
         case "terminal:feed-test":
             // Yalnız ekrana yazar (kabuğa gitmez): pencere dışındayken gelen çıktı geri gelince görünüyor mu.
             let stamp = Date.now.formatted(date: .omitted, time: .standard)
-            coordinator.terminal.view?.feed(text: "\r\n[NotchMVP deneme] pencere dışındayken yazıldı \(stamp)\r\n")
+            coordinator.terminal.view?.feed(text: "\r\n[Browline deneme] pencere dışındayken yazıldı \(stamp)\r\n")
             let attached = coordinator.terminal.view?.window != nil
             debugLog.info("terminal deneme satırı yazıldı (\(stamp, privacy: .public)), pencerede \(attached)")
         case "terminal:check":
@@ -247,7 +247,7 @@ final class DebugCommandChannel {
             guard let view = coordinator.terminal.view else { break }
             let terminal = view.getTerminal()
             let rows = (0..<terminal.rows).compactMap { terminal.getLine(row: $0)?.translateToString(trimRight: true) }
-            let markerRow = rows.firstIndex { $0.contains("[NotchMVP deneme]") } ?? -1
+            let markerRow = rows.firstIndex { $0.contains("[Browline deneme]") } ?? -1
             let cursor = terminal.getCursorLocation()
             let used = rows.filter { !$0.isEmpty }.count
             debugLog.info("terminal tamponu: deneme satırı \(markerRow), dolu satır \(used), imleç \(cursor.x),\(cursor.y)")

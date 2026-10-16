@@ -4,7 +4,7 @@
 # Codex bildirimi JSON olarak son argümanda verir; alan adları Codex sürümüne göre değişebilir,
 # bu yüzden yalnız tür ve çalışma klasörü okunur, ikisi de yoksa yine bildirilir.
 
-NOTCH="${NOTCH_CLI:-/Applications/NotchMVP.app/Contents/Helpers/notch}"
+NOTCH="${NOTCH_CLI:-/Applications/Browline.app/Contents/Helpers/notch}"
 [ -x "$NOTCH" ] || exit 0
 
 payload="${!#}"

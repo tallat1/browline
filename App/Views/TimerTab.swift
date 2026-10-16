@@ -77,7 +77,7 @@ private struct KeepAwakeToggle: View {
 
     var body: some View {
         Button {
-            if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "NotchMVP: uyanık tut")) }
+            if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "Browline: uyanık tut")) }
         } label: {
             // Renk etiketin içinde: QuietButtonStyle kendi rengini dıştan verir, içteki kazanır.
             Label(keepAwake.isActive ? String(localized: "Uyanık tutuluyor · kapat") : String(localized: "Ekranı uyanık tut"),

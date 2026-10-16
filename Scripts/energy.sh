@@ -1,5 +1,5 @@
 #!/bin/bash
-# Enerji ölçümü: powermetrics (sudo) ile NotchMVP'nin senaryo başına işlemci, uyanma ve enerji etkisi.
+# Enerji ölçümü: powermetrics (sudo) ile Browline'ın senaryo başına işlemci, uyanma ve enerji etkisi.
 #
 #   sudo Scripts/energy.sh            # tüm senaryolar, her biri 60 sn
 #   sudo Scripts/energy.sh 30         # her biri 30 sn
@@ -11,7 +11,7 @@ set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "sudo ile çalıştırın: sudo $0 $*" >&2; exit 1; }
 SECONDS_PER=${1:-60}
 SAMPLES=$(( SECONDS_PER / 5 ))
-pgrep -x NotchMVP >/dev/null || { echo "NotchMVP çalışmıyor" >&2; exit 1; }
+pgrep -x Browline >/dev/null || { echo "Browline çalışmıyor" >&2; exit 1; }
 
 SCENARIOS=(
   "Kapalı, boşta|Notch kapalı, müzik duraklatılmış, ekranda bekleyen bildirim yok."
@@ -29,7 +29,7 @@ for scenario in "${SCENARIOS[@]}"; do
   read -r answer
   [ "$answer" = "s" ] && continue
   echo "  ölçülüyor (${SECONDS_PER} sn)…"
-  # plist çıktısı NUL ile ayrılmış örnekler; NotchMVP satırı ortalanır.
+  # plist çıktısı NUL ile ayrılmış örnekler; Browline satırı ortalanır.
   line=$(powermetrics --samplers tasks --show-process-energy -i 5000 -n "$SAMPLES" -f plist 2>/dev/null | python3 -c '
 import plistlib, sys
 raw = sys.stdin.buffer.read().split(b"\0")
@@ -43,7 +43,7 @@ for chunk in raw:
     except Exception:
         continue
     for task in sample.get("tasks", []):
-        if task.get("name") == "NotchMVP":
+        if task.get("name") == "Browline":
             cpu += task.get("cputime_ms_per_s", 0.0)
             wake += task.get("idle_wakeups_per_s", 0.0) + task.get("intr_wakeups_per_s", 0.0)
             energy += task.get("energy_impact", 0.0)
@@ -52,7 +52,7 @@ if n:
     print(f"{cpu/n/10:.2f}|{wake/n:.2f}|{energy/n:.2f}|{n}")
 ')
   if [ -z "$line" ]; then
-    echo "  NotchMVP örneklerde bulunamadı"
+    echo "  Browline örneklerde bulunamadı"
     continue
   fi
   IFS='|' read -r cpu wake energy n <<<"$line"

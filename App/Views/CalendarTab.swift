@@ -53,7 +53,7 @@ struct CalendarTab: View {
             }
         case .denied:
             EmptyStateView(symbol: "calendar.badge.exclamationmark", title: "Takvim izni kapalı",
-                           message: "Gizlilik ayarlarından NotchMVP'ye izin verin.") {
+                           message: "Gizlilik ayarlarından Browline'a izin verin.") {
                 Button("Gizlilik ayarlarını aç") { CalendarMonitor.openPrivacySettings() }
                     .buttonStyle(CapsuleButtonStyle())
             }

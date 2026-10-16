@@ -82,7 +82,7 @@ struct KeepAwakeTests {
     /// Gerçek güç iddiası kurulur ve hemen bırakılır; sistemde iz kalmaz.
     @Test func startAndStopReleasesAssertion() {
         let awake = KeepAwake()
-        #expect(awake.start(for: .seconds(30), reason: "NotchMVP test"))
+        #expect(awake.start(for: .seconds(30), reason: "Browline test"))
         #expect(awake.isActive)
         #expect(awake.endsAt != nil)
         awake.stop()

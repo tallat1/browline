@@ -1,4 +1,4 @@
-name: NotchMVP
+name: Browline
 options:
   bundleIdPrefix: com.talatozcoban
   # Kaynak dil Türkçe; İngilizce çeviri App/Localizable.xcstrings ve App/InfoPlist.xcstrings'te.
@@ -23,14 +23,14 @@ settings:
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
     SWIFT_EMIT_LOC_STRINGS: YES
 targets:
-  NotchMVP:
+  Browline:
     type: application
     platform: macOS
     sources:
       - path: App
         excludes:
           - "Info.plist"
-          - "NotchMVP.entitlements"
+          - "Browline.entitlements"
     dependencies:
       # Yalnız derleme sırası için; ikili Scripts/embed-adapter.sh ile Helpers'a kopyalanır.
       - target: notch
@@ -47,25 +47,25 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleName: NotchMVP
-        CFBundleDisplayName: NotchMVP
+        CFBundleName: Browline
+        CFBundleDisplayName: Browline
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         # Ajan uygulama: Dock simgesi ve uygulama menüsü yok.
         LSUIElement: true
-        NSHumanReadableCopyright: "Çalışma adı NotchMVP"
+        NSHumanReadableCopyright: "© 2026 Browline"
         NSAppleEventsUsageDescription: "MediaRemote kullanılamadığında Music ve Spotify'ı oynat/duraklat ve parça geçişi için denetlemek."
         NSCalendarsFullAccessUsageDescription: "Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak."
         NSRemindersFullAccessUsageDescription: "Bugün vadesi gelen anımsatıcıları Takvim sekmesinde göstermek ve tamamlandı işaretlemek için."
         NSCameraUsageDescription: "Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez."
         NSAudioCaptureUsageDescription: "Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez."
-        # Etkinlik API'sinin URL kapısı: notchmvp://push?id=…&title=…
+        # Etkinlik API'sinin URL kapısı: browline://push?id=…&title=… (notchmvp:// eski adla da çalışır)
         CFBundleURLTypes:
           - CFBundleURLName: com.talatozcoban.notchmvp.activity
-            CFBundleURLSchemes: [notchmvp]
+            CFBundleURLSchemes: [browline, notchmvp]
     entitlements:
-      path: App/NotchMVP.entitlements
+      path: App/Browline.entitlements
       properties:
         com.apple.security.automation.apple-events: true
         com.apple.security.personal-information.calendars: true
@@ -74,7 +74,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.notchmvp
-        PRODUCT_NAME: NotchMVP
+        PRODUCT_NAME: Browline
+        # Icon Composer simgesi (App/Browline.icon): macOS 26+ Liquid Glass; actool 14/15 için .icns de üretir.
+        ASSETCATALOG_COMPILER_APPICON_NAME: Browline
         GENERATE_INFOPLIST_FILE: NO
         # Kararlı imza: ad-hoc imza her derlemede değişir ve TCC izinleri (Takvim, Automation) sıfırlanır.
         CODE_SIGN_STYLE: Manual

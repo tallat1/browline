@@ -68,7 +68,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    /// `open notchmvp://…` (−g olmadan) ajan uygulamayı etkinleştirir ve kullanıcının odağını alır.
+    /// `open browline://…` (−g olmadan) ajan uygulamayı etkinleştirir ve kullanıcının odağını alır.
     /// Açık ayar penceresi yoksa odak önceki uygulamaya geri verilir.
     private func returnFocusIfNeeded() {
         guard NSApp.isActive, !NSApp.windows.contains(where: { $0.isVisible && $0.canBecomeKey }),
@@ -93,7 +93,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func installStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = NSImage(systemSymbolName: "rectangle.topthird.inset.filled",
-                                     accessibilityDescription: "NotchMVP")
+                                     accessibilityDescription: "Browline")
         let menu = NSMenu()
         menu.delegate = self
         item.menu = menu
@@ -104,7 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     /// Option ile açılınca (gelişmiş öğeler); günlük kullanımda gürültü olmasın.
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        menu.addItem(.sectionHeader(title: "NotchMVP"))
+        menu.addItem(.sectionHeader(title: "Browline"))
         // O an geçerli durum satırları: yoksa menü eskisi kadar kısa (2026-10-16 tasarım denetimi).
         let lines = statusLines()
         if !lines.isEmpty {
@@ -148,7 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let button = statusItem?.button else { return }
         let muted = coordinator.isMicrophoneMuted
         button.image = NSImage(systemSymbolName: muted ? "mic.slash.fill" : "rectangle.topthird.inset.filled",
-                               accessibilityDescription: "NotchMVP")
+                               accessibilityDescription: "Browline")
         button.appearsDisabled = coordinator.isNotchHidden
         button.toolTip = coordinator.isNotchHidden ? String(localized: "Notch gizli") : (muted ? String(localized: "Mikrofon kapalı") : nil)
     }
@@ -240,7 +240,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         item.image = NSImage(systemSymbolName: awake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer",
                              accessibilityDescription: nil)
         let submenu = NSMenu()
-        let reason = String(localized: "NotchMVP: uyanık tut")
+        let reason = String(localized: "Browline: uyanık tut")
         for (title, duration) in [(String(localized: "30 dakika"), Duration.seconds(30 * 60)),
                                   (String(localized: "1 saat"), .seconds(60 * 60)),
                                   (String(localized: "2 saat"), .seconds(2 * 60 * 60))] {

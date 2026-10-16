@@ -76,7 +76,7 @@ public enum ActivitySocketClient {
 
         public var description: String {
             switch self {
-            case .notRunning: "NotchMVP çalışmıyor ya da etkinlik API'si kapalı"
+            case .notRunning: "Browline çalışmıyor ya da etkinlik API'si kapalı"
             case let .io(message): "iletişim hatası: \(message)"
             case .badResponse: "uygulamadan anlaşılmayan yanıt"
             }

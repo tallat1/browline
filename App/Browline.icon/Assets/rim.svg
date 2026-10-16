@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="100 100 824 824">
+  <defs>
+    <linearGradient id="rim" x1="100" y1="0" x2="924" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE08A"/><stop offset="0.5" stop-color="#FFA048"/><stop offset="1" stop-color="#FF5E3A"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 262 H312 Q344 262 344 294 V318 Q344 372 398 372 H626 Q680 372 680 318 V294 Q680 262 712 262 H964"
+        fill="none" stroke="url(#rim)" stroke-width="52" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

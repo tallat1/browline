@@ -999,6 +999,36 @@
         }
       }
     },
+    "Browline Ayarları": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browline Settings"
+          }
+        }
+      }
+    },
+    "Browline henüz hazır değil; birazdan yeniden deneyin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browline is not ready yet; try again in a moment."
+          }
+        }
+      }
+    },
+    "Browline: uyanık tut": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browline: keep awake"
+          }
+        }
+      }
+    },
     "Bu kısayol başka bir uygulamada kayıtlı; başka birini seçin.": {
       "localizations": {
         "en": {
@@ -1715,12 +1745,12 @@
         }
       }
     },
-    "Gizlilik ayarlarından NotchMVP'ye izin verin.": {
+    "Gizlilik ayarlarından Browline'a izin verin.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Allow NotchMVP in Privacy settings."
+            "value": "Allow Browline in Privacy settings."
           }
         }
       }
@@ -1745,12 +1775,12 @@
         }
       }
     },
-    "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan NotchMVP'ye izin verin.": {
+    "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan Browline'a izin verin.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Allow NotchMVP in Privacy & Security › Paste from Other Apps."
+            "value": "Allow Browline in Privacy & Security › Paste from Other Apps."
           }
         }
       }
@@ -2743,36 +2773,6 @@
         }
       }
     },
-    "NotchMVP Ayarları": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NotchMVP Settings"
-          }
-        }
-      }
-    },
-    "NotchMVP henüz hazır değil; birazdan yeniden deneyin.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NotchMVP is not ready yet; try again in a moment."
-          }
-        }
-      }
-    },
-    "NotchMVP: uyanık tut": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NotchMVP: keep awake"
-          }
-        }
-      }
-    },
     "Now Playing: MediaRemote (sistem geneli)": {
       "localizations": {
         "en": {
@@ -3525,12 +3525,12 @@
         }
       }
     },
-    "Sürüm": {
+    "Sürüm %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Version"
+            "value": "Version %@"
           }
         }
       }
@@ -4389,16 +4389,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Moving bars while playing"
-          }
-        }
-      }
-    },
-    "Çalışma adı; ürün adı henüz belirlenmedi.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Working name; the product name is not decided yet."
           }
         }
       }

@@ -95,7 +95,7 @@ final class TerminalSession {
             .filter { !$0.hasPrefix("LANG=") }
         variables.append("LANG=\(localeName)")
         variables.append("SHELL=\(shell)")
-        variables.append("TERM_PROGRAM=NotchMVP")
+        variables.append("TERM_PROGRAM=Browline")
         // bash'in "varsayılan kabuk artık zsh" uyarısı küçük alanı dolduruyor.
         variables.append("BASH_SILENCE_DEPRECATION_WARNING=1")
         for key in ["PATH", "TMPDIR", "SSH_AUTH_SOCK"] {

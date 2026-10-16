@@ -182,7 +182,7 @@ private final class TapSession: SpectrumSession {
 
     init(levels: SpectrumLevels) throws {
         let description = CATapDescription(stereoGlobalTapButExcludeProcesses: [])
-        description.name = "NotchMVP spektrum"
+        description.name = "Browline spektrum"
         description.isPrivate = true
         description.muteBehavior = .unmuted
         var status = AudioHardwareCreateProcessTap(description, &tapID)
@@ -191,7 +191,7 @@ private final class TapSession: SpectrumSession {
         do {
             let outputUID = try Self.defaultOutputUID()
             let aggregate: [String: Any] = [
-                kAudioAggregateDeviceNameKey: "NotchMVP spektrum",
+                kAudioAggregateDeviceNameKey: "Browline spektrum",
                 kAudioAggregateDeviceUIDKey: "com.talatozcoban.notchmvp.spectrum.\(UUID().uuidString)",
                 kAudioAggregateDeviceMainSubDeviceKey: outputUID,
                 kAudioAggregateDeviceIsPrivateKey: true,

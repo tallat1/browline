@@ -1,4 +1,4 @@
-APP := build/Build/Products/Debug/NotchMVP.app
+APP := build/Build/Products/Debug/Browline.app
 ADAPTER_SRC := ThirdParty/mediaremote-adapter
 ADAPTER_BUILD := build/adapter
 SESSIONS_BUILD := build/sessions
@@ -25,7 +25,7 @@ $(SESSIONS_BUILD)/MediaSessions.dylib: Helpers/MediaSessions/MediaSessions.m
 		-Wall -framework Foundation -framework AppKit -o $@ $<
 
 build: gen adapter sessions
-	xcodebuild -project NotchMVP.xcodeproj -scheme NotchMVP -configuration Debug -skipPackagePluginValidation \
+	xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Debug -skipPackagePluginValidation \
 		-derivedDataPath build -quiet build
 
 run: build
@@ -46,7 +46,7 @@ log:
 
 # Kapalı notch boşta ölçümü: imleci notch'tan uzak ve hareketsiz bırakın.
 measure:
-	swift Scripts/idle-probe.swift --name NotchMVP --seconds 60
+	swift Scripts/idle-probe.swift --name Browline --seconds 60
 
 clean:
-	rm -rf build NotchMVP.xcodeproj
+	rm -rf build Browline.xcodeproj

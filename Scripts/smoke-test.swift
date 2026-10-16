@@ -18,7 +18,7 @@ func send(_ command: String) {
 func panelWindowIDs() -> [CGWindowID] {
     let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
     return list.compactMap { window in
-        guard window[kCGWindowOwnerName as String] as? String == "NotchMVP",
+        guard window[kCGWindowOwnerName as String] as? String == "Browline",
               window[kCGWindowLayer as String] as? Int == 27 else { return nil }
         return window[kCGWindowNumber as String] as? CGWindowID
     }
@@ -37,7 +37,7 @@ func capture(_ name: String) {
 }
 
 guard !panelWindowIDs().isEmpty else {
-    print("NotchMVP paneli bulunamadı; uygulama açık mı?")
+    print("Browline paneli bulunamadı; uygulama açık mı?")
     exit(1)
 }
 
@@ -49,7 +49,7 @@ send("tab:shelf"); Thread.sleep(forTimeInterval: 0.5); capture("5-raf")
 send("tab:media"); send("close"); Thread.sleep(forTimeInterval: 3.5); capture("6-kapali-tekrar")
 
 // Dış etkinlik API'si: uygulama paketindeki notch aracıyla.
-let cli = "build/Build/Products/Debug/NotchMVP.app/Contents/Helpers/notch"
+let cli = "build/Build/Products/Debug/Browline.app/Contents/Helpers/notch"
 func notch(_ arguments: String...) {
     let process = Process()
     process.executableURL = URL(fileURLWithPath: cli)
@@ -58,7 +58,7 @@ func notch(_ arguments: String...) {
     process.waitUntilExit()
 }
 if FileManager.default.isExecutableFile(atPath: cli) {
-    notch("push", "--id", "smoke", "--title", "Derleme", "--subtitle", "NotchMVP", "--progress", "40%",
+    notch("push", "--id", "smoke", "--title", "Derleme", "--subtitle", "Browline", "--progress", "40%",
           "--symbol", "hammer", "--tint", "#FF9F0A")
     Thread.sleep(forTimeInterval: 0.8); capture("7-kompakt-dis-etkinlik")
     send("tab:activities"); send("open"); Thread.sleep(forTimeInterval: 0.9); capture("8-acik-etkinlikler")

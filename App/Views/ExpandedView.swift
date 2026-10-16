@@ -398,7 +398,7 @@ private struct KeepAwakeButton: View {
 
     var body: some View {
         Button {
-            if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "NotchMVP: uyanık tut")) }
+            if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "Browline: uyanık tut")) }
         } label: {
             HStack(spacing: 3) {
                 Image(systemName: keepAwake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")

@@ -1,7 +1,7 @@
 import ActivityAPI
 import Foundation
 
-// notch: NotchMVP'ye yerel soket üzerinden etkinlik gönderir. Kestirmeler "Kabuk Betiği Çalıştır"
+// notch: Browline'a yerel soket üzerinden etkinlik gönderir. Kestirmeler "Kabuk Betiği Çalıştır"
 // eylemiyle de çağrılabilir. Çıkış kodları: 0 tamam, 1 uygulama hatası, 2 kullanım, 3 uygulama çalışmıyor.
 
 let usage = """
@@ -100,7 +100,7 @@ do {
     // ask kullanıcıyı bekler: okuma süresi soru süresinden biraz uzun.
     let waitTime = operation == .ask ? (request.ttl ?? ExternalQuestion.defaultTTL) + 5 : 3
     let response = try ActivitySocketClient.send(request, timeout: waitTime)
-    guard response.ok else { fail("NotchMVP: \(response.error ?? "bilinmeyen hata")", code: 1) }
+    guard response.ok else { fail("Browline: \(response.error ?? "bilinmeyen hata")", code: 1) }
     if operation == .ask {
         guard let decision = response.decision else { exit(4) }
         print(decision.rawValue)

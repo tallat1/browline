@@ -480,9 +480,18 @@ struct AboutPage: View {
     var body: some View {
         SettingsForm(page: .about) {
             Section {
-                LabeledContent("Sürüm", value: "NotchMVP \(version)")
-                    .settingsAnchor("about")
-                SettingsNote("Çalışma adı; ürün adı henüz belirlenmedi.")
+                HStack(spacing: 14) {
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable()
+                        .frame(width: 64, height: 64)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(verbatim: "Browline").font(.title2.weight(.semibold))
+                        Text("Sürüm \(version)").foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 4)
+                .settingsAnchor("about")
             }
             Section("Üçüncü taraf yazılım") {
                 DisclosureGroup("mediaremote-adapter (ungive), BSD-3-Clause") {

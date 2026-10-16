@@ -1,11 +1,13 @@
 import Foundation
 
 /// URL şeması: Raycast, Alfred, Kestirmeler "URL'yi Aç" ve betikler için.
-/// `notchmvp://push?id=build&title=Derleme&progress=40%25&symbol=hammer`
-/// `notchmvp://end?id=build` · `notchmvp://flash?title=Bitti&duration=3`
+/// `browline://push?id=build&title=Derleme&progress=40%25&symbol=hammer`
+/// `browline://end?id=build` · `browline://flash?title=Bitti&duration=3`
 /// Yanıt kanalı olmadığı için yalnız push, end ve flash. Alan sınırları sokettekiyle aynı.
 public enum ActivityURL {
-    public static let scheme = "notchmvp"
+    public static let scheme = "browline"
+    /// Çalışma adından kalan şema: eski betik ve kestirmeler bozulmasın.
+    public static let legacySchemes: Set<String> = ["notchmvp"]
 
     public enum ParseError: Error, Equatable, CustomStringConvertible {
         case scheme
@@ -27,9 +29,9 @@ public enum ActivityURL {
                                                     "priority", "ttl", "duration"]
 
     public static func request(from url: URL) throws(ParseError) -> ActivityRequest {
-        guard url.scheme?.lowercased() == scheme,
+        guard let urlScheme = url.scheme?.lowercased(), urlScheme == scheme || legacySchemes.contains(urlScheme),
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { throw .scheme }
-        // notchmvp://push?… ya da notchmvp:push?…
+        // browline://push?… ya da browline:push?…
         let name = (components.host ?? components.path).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         let operation: ActivityRequest.Operation
         switch name.lowercased() {

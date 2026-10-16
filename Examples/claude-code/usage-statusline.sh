@@ -1,5 +1,5 @@
 #!/bin/bash
-# Claude Code durum satırı: plan limitlerini (5 saatlik oturum, haftalık) NotchMVP'ye yazar ve kısa
+# Claude Code durum satırı: plan limitlerini (5 saatlik oturum, haftalık) Browline'a yazar ve kısa
 # bir durum satırı basar. Kaynak, belgelenmiş `rate_limits` alanı: yalnız Pro/Max aboneliğinde ve
 # oturumun ilk yanıtından sonra gelir. Yalnız iki yüzde ve sıfırlanma zamanı yazılır; oturum, klasör
 # ya da istem bilgisi dosyaya geçmez. Bağımlılık yok (JSON plutil ile okunur).

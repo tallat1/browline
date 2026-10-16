@@ -22,7 +22,7 @@ struct ClipboardTab: View {
     private var content: some View {
         if history.isReadingBlocked {
             EmptyStateView(symbol: "hand.raised", title: "Pano okuma engellenmiş",
-                           message: "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan NotchMVP'ye izin verin.")
+                           message: "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan Browline'a izin verin.")
         } else if history.items.isEmpty {
             EmptyStateView(symbol: "doc.on.clipboard", title: "Henüz kopyalanan bir şey yok",
                            message: "Kopyaladığın metin, bağlantı, dosya ve görseller burada görünür; basınca yeniden kopyalanır.")

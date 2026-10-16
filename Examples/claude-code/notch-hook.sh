@@ -6,7 +6,7 @@
 # Claude'u hiçbir koşulda engellemez: notch yoksa ya da uygulama kapalıysa sessizce çıkar.
 # Bağımlılık yok (JSON plutil ile okunur). Kurulum: README › AI ajanları.
 
-NOTCH="${NOTCH_CLI:-/Applications/NotchMVP.app/Contents/Helpers/notch}"
+NOTCH="${NOTCH_CLI:-/Applications/Browline.app/Contents/Helpers/notch}"
 [ -x "$NOTCH" ] || exit 0
 
 input=$(cat)
