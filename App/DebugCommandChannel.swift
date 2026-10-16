@@ -37,7 +37,9 @@ final class DebugCommandChannel {
         case "close":
             models.forEach { $0.dismiss() }
         case let tab where tab.hasPrefix("tab:"):
-            if let value = NotchTab(rawValue: String(tab.dropFirst(4))) { coordinator.ui.selectedTab = value }
+            // "media" eski ad: Şimdi.
+            let name = String(tab.dropFirst(4))
+            if let value = NotchTab(rawValue: name == "media" ? "now" : name) { coordinator.ui.selectedTab = value }
         case "flash:power":
             coordinator.activities.flash(AppCoordinator.ActivityKind.power, duration: .seconds(3))
         case "hud:preview":

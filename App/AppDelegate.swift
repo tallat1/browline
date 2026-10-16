@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         #endif
         installStatusItem()
         trackFrontmostApplication()
+        coordinator.openSettings = { [weak self] in self?.settingsWindow.show() }
         if !coordinator.settings.hasCompletedOnboarding { settingsWindow.show() }
     }
 

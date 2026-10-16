@@ -8,16 +8,28 @@ struct CalendarTab: View {
     let reminders: RemindersMonitor?
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            events
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            if let reminders {
-                RemindersColumn(reminders: reminders)
-                    .frame(width: 210, alignment: .topLeading)
-                    .frame(maxHeight: .infinity, alignment: .topLeading)
-                    .notchCard()
+        // Etkinlik de anımsatıcı da yoksa iki boş kutu yerine tek sakin satır.
+        if isQuietDay {
+            EmptyStateView(symbol: "calendar.badge.checkmark", title: "Bugün boş görünüyor",
+                           message: "Önümüzdeki 24 saatte etkinlik ve anımsatıcı yok.")
+        } else {
+            HStack(alignment: .top, spacing: 10) {
+                events
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                if let reminders {
+                    RemindersColumn(reminders: reminders)
+                        .frame(width: 210, alignment: .topLeading)
+                        .frame(maxHeight: .infinity, alignment: .topLeading)
+                        .notchCard()
+                }
             }
         }
+    }
+
+    private var isQuietDay: Bool {
+        guard calendar.access == .granted, calendar.upcoming.isEmpty else { return false }
+        guard let reminders else { return true }
+        return reminders.access == .granted && reminders.reminders.isEmpty
     }
 
     /// İzin durumu ve boş/dolu değişince çapraz geçiş.

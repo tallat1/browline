@@ -36,7 +36,7 @@ struct ClaudeTab: View {
                     }
                     Text(updatedText(current.capturedAt, now: timeline.date))
                         .font(NotchDesign.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.secondary)
                 }
             }
         } else if let problem = apiProblem, usage.activeLimits.isEmpty {
@@ -115,7 +115,8 @@ private struct WindowCard: View {
             CardLabel(title)
             if let window {
                 let percent = Int(window.usedPercentage.rounded())
-                Text(verbatim: "%\(percent)")
+                // Yerele göre: Türkçe "%22", İngilizce "22%".
+                Text(verbatim: NowFormat.percent(Double(percent)))
                     .font(.system(size: 22, weight: .semibold).monospacedDigit())
                     .contentTransition(.numericText())
                     .notchAnimation(value: percent)

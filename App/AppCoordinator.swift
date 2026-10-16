@@ -6,8 +6,10 @@ import NotchShell
 import Observation
 import SwiftUI
 
+/// Açık notch'un sekmeleri. "Şimdi" hep ilk ve sabit; şeritte en çok 4 sabitlenmiş sekme, kalanlar
+/// Diğer menüsünde (karmaşıklık bütçesi, 2026-10-16 tasarım turu).
 enum NotchTab: String, CaseIterable, Identifiable, Sendable {
-    case media
+    case now
     case calendar
     case shelf
     case activities
@@ -22,7 +24,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
 
     var symbol: String {
         switch self {
-        case .media: "music.note"
+        case .now: "house"
         case .calendar: "calendar"
         case .shelf: "tray.full"
         case .activities: "square.stack.3d.up"
@@ -37,7 +39,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .media: String(localized: "Medya")
+        case .now: String(localized: "Şimdi")
         case .calendar: String(localized: "Takvim")
         case .shelf: String(localized: "Raf")
         case .activities: String(localized: "Etkinlikler")
@@ -55,7 +57,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
 @MainActor
 @Observable
 final class NotchUIState {
-    var selectedTab: NotchTab = .media
+    var selectedTab: NotchTab = .now
     var activityAPIStatus = String(localized: "Kapalı")
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""
@@ -125,6 +127,8 @@ final class AppCoordinator {
     let notes = NotesStore()
     let claudeUsage = ClaudeUsageMonitor()
     let terminal = TerminalSession()
+    /// Ayar penceresini uygulama temsilcisi açar (notch'taki Diğer menüsünden "Sekmeleri düzenle").
+    var openSettings: (() -> Void)?
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -360,14 +364,24 @@ final class AppCoordinator {
         if enabled { start() } else { stop() }
     }
 
-    /// Kullanıcının sırasıyla; modülü kapalı ya da gizlenmiş sekme yok.
-    var availableTabs: [NotchTab] {
-        settings.orderedTabs.filter { isModuleEnabled(for: $0) && !settings.hiddenTabs.contains($0) }
+    /// Şeritteki sekmeler: Şimdi + kullanıcının sabitledikleri (modülü açık olanlar).
+    var stripTabs: [NotchTab] {
+        [.now] + settings.pinnedTabs.filter { $0 != .now && isModuleEnabled(for: $0) }
     }
+
+    /// Diğer menüsündekiler: sabitlenmemiş, gizlenmemiş, modülü açık sekmeler.
+    var overflowTabs: [NotchTab] {
+        NotchTab.allCases.filter {
+            $0 != .now && !settings.pinnedTabs.contains($0) && !settings.hiddenTabs.contains($0) && isModuleEnabled(for: $0)
+        }
+    }
+
+    var availableTabs: [NotchTab] { stripTabs + overflowTabs }
 
     func isModuleEnabled(for tab: NotchTab) -> Bool {
         switch tab {
-        case .media: settings.nowPlayingEnabled
+        // Şimdi her zaman var: müzik kapalıysa da toplantı, etkinlik ve zamanlayıcı orada.
+        case .now: true
         case .calendar: settings.calendarEnabled
         case .shelf: settings.shelfEnabled
         case .activities: settings.activityAPIEnabled
@@ -401,7 +415,7 @@ final class AppCoordinator {
 
     /// Açık notch'ta yatay kaydırma: medya sekmesindeyken parça geçişi (Alcove).
     private func horizontalSwipe(forward: Bool) {
-        guard ui.selectedTab == .media, nowPlaying.info != nil else { return }
+        guard ui.selectedTab == .now, nowPlaying.info != nil else { return }
         if forward { nowPlaying.nextTrack() } else { nowPlaying.previousTrack() }
         AppLog.coordinator.notice("kaydırma: \(forward ? "sonraki" : "önceki", privacy: .public) parça")
     }

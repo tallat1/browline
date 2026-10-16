@@ -329,50 +329,93 @@ private struct WeatherPlaceField: View {
     }
 }
 
-/// Sekmelerin sırası ve görünürlüğü. Modülü kapalı sekme listede kalır ama notch'ta görünmez.
+/// Şeritte Şimdi'nin yanında duran sekmeler (en çok 4, sürükleyerek sıralanır) ve Diğer menüsü.
+/// Gizlenen sekme menüde de görünmez; modülü kapalı sekme Modüller'den açılır.
 private struct TabSettings: View {
     let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 
+    private var others: [NotchTab] {
+        NotchTab.allCases.filter { $0 != .now && !settings.pinnedTabs.contains($0) }
+    }
+
+    private var canPin: Bool { settings.pinnedTabs.count < AppSettings.maxPinnedTabs }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             List {
-                ForEach(settings.orderedTabs) { tab in
-                    HStack(spacing: 10) {
-                        Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary)
-                        Image(systemName: tab.symbol).frame(width: 20)
-                        Text(tab.title)
-                        Spacer()
-                        if !coordinator.isModuleEnabled(for: tab) {
-                            Text("Modül kapalı").font(.caption).foregroundStyle(.secondary)
-                        }
-                        Toggle(tab.title, isOn: Binding(
-                            get: { !settings.hiddenTabs.contains(tab) },
-                            set: { visible in
-                                if visible { settings.hiddenTabs.remove(tab) } else { settings.hiddenTabs.insert(tab) }
-                            }))
-                            .labelsHidden()
-                            .toggleStyle(.switch)
-                            .controlSize(.small)
+                Section {
+                    row(.now) {
+                        Text("Her zaman ilk").font(.caption).foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 2)
+                    ForEach(settings.pinnedTabs) { tab in
+                        row(tab, draggable: true) {
+                            Button {
+                                settings.pinnedTabs.removeAll { $0 == tab }
+                            } label: {
+                                Image(systemName: "pin.slash")
+                            }
+                            .buttonStyle(.borderless)
+                            .help("Şeritten çıkar, Diğer menüsüne taşı")
+                        }
+                    }
+                    .onMove { source, destination in
+                        settings.pinnedTabs.move(fromOffsets: source, toOffset: destination)
+                    }
+                } header: {
+                    Text("Şeritte (en çok \(AppSettings.maxPinnedTabs))")
                 }
-                .onMove { source, destination in
-                    var order = settings.orderedTabs
-                    order.move(fromOffsets: source, toOffset: destination)
-                    settings.tabOrder = order
+                Section("Diğer menüsünde") {
+                    ForEach(others) { tab in
+                        row(tab) {
+                            Button {
+                                guard canPin else { return }
+                                settings.hiddenTabs.remove(tab)
+                                settings.pinnedTabs.append(tab)
+                            } label: {
+                                Image(systemName: "pin")
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(!canPin)
+                            .help(canPin ? "Şeride sabitle" : "Şerit dolu; önce birini çıkarın")
+                            Toggle(tab.title, isOn: Binding(
+                                get: { !settings.hiddenTabs.contains(tab) },
+                                set: { visible in
+                                    if visible { settings.hiddenTabs.remove(tab) } else { settings.hiddenTabs.insert(tab) }
+                                }))
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .controlSize(.small)
+                                .help("Diğer menüsünde göster")
+                        }
+                    }
                 }
             }
             .listStyle(.inset(alternatesRowBackgrounds: true))
-            Text("Sürükleyerek sıralayın. Kapattığınız sekme notch'ta görünmez; modülü kapalı sekme Modüller'den açılır.")
+            Text("Şeritte Şimdi ve sabitlediğiniz en çok \(AppSettings.maxPinnedTabs) sekme durur; kalanlar notch'taki ••• menüsünde. Kapattığınız sekme menüde de görünmez.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Button("Varsayılan sıraya dön") {
-                settings.tabOrder = []
+            Button("Varsayılana dön") {
+                settings.pinnedTabs = AppSettings.defaultPinnedTabs
                 settings.hiddenTabs = []
             }
         }
         .padding()
+    }
+
+    private func row<Trailing: View>(_ tab: NotchTab, draggable: Bool = false,
+                                     @ViewBuilder trailing: () -> Trailing) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "line.3.horizontal").foregroundStyle(.tertiary).opacity(draggable ? 1 : 0)
+            Image(systemName: tab.symbol).frame(width: 20)
+            Text(tab.title)
+            Spacer()
+            if !coordinator.isModuleEnabled(for: tab) {
+                Text("Modül kapalı").font(.caption).foregroundStyle(.secondary)
+            }
+            trailing()
+        }
+        .padding(.vertical, 2)
     }
 }
 

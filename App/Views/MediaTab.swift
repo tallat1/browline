@@ -73,10 +73,16 @@ struct MediaTab: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .notchAnimation(value: info.title)
         } else {
+            // Kaynak adı (MediaRemote…) kullanıcıya gürültü; yalnız yedeğe düşüldüyse nedeniyle gösterilir.
             EmptyStateView(symbol: "music.note",
                            title: nowPlaying.source == .checking ? "Medya kaynağı denetleniyor…" : "Şu an bir şey çalmıyor",
-                           message: LocalizedStringKey(sourceDescription))
+                           message: isFallback ? LocalizedStringKey(sourceDescription) : nil)
         }
+    }
+
+    private var isFallback: Bool {
+        if case .playerNotifications = nowPlaying.source { return true }
+        return false
     }
 
     private var accent: Color {
@@ -285,7 +291,9 @@ private struct ScrubBar: View {
 
     var body: some View {
         if let duration = info.duration, duration > 0 {
-            TimelineView(.animation(minimumInterval: 1, paused: !info.isPlaying || dragFraction != nil)) { timeline in
+            // `.animation(minimumInterval:)` ekran tazelemesiyle her karede uyanıyordu (Şimdi açıkken
+            // ana iş parçacığı ≈ %12 meşgul, 2026-10-16); saniyelik düz zamanlayıcı, duraklatılmışken uyumaz.
+            TimelineView(.periodic(from: .now, by: info.isPlaying && dragFraction == nil ? 1 : 3600)) { timeline in
                 let elapsed = dragFraction.map { $0 * duration } ?? (info.elapsed(at: timeline.date) ?? 0)
                 let active = canSeek && (isHovering || dragFraction != nil)
                 HStack(spacing: 8) {

@@ -218,16 +218,24 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 
 ## Açık notch tasarımı
 
-- **Bant** (çentiğin iki yanı): solda bulunulan sekmenin adı, sağda durum (hava, uyanık tutma, kamera/mikrofon,
-  pil). Dar sekmede durum azalır, pil en son gider.
-- **Sekme şeridi** bandın altında: seçili sekme simge ve adıyla, diğerleri simgeyle; seçim kayan zeminle geçer.
-  Çentiğin altında sekme kalmaz (eskiden bant solunda ~153 pt vardı, 8 sekme sığmıyordu).
-- **Sekmeye göre boy** (`NotchTab.bodySize`): Ayna kare (300×300), Takvim geniş (640), Not yüksek, Zamanlayıcı dar;
-  şekil yay animasyonuyla geçer. Panel karesi en büyük boyu kapsar (`NotchLayoutConfig.maxOpenWidth/ContentHeight`),
-  boş kısım saydam olduğu için tıklama geçer.
+2026-10-16 sadeleştirme turu (denetim: 10 eş ağırlıklı sekme, çift başlık, sekmeye göre zıplayan genişlik,
+yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
+
+- **Tek satır başlık**: bantta çentiğin solunda sekme simgeleri (yalnız simge, ad üzerine gelince), sağında durum
+  (hava, uyanık tutma, kamera/mikrofon, pil). Ayrı başlık ve şerit satırı yok; içerik ≈ 36 pt yukarıda.
+- **Şimdi** (`NowView`, hep ilk ve sabit): solda oynatıcı, sağda yalnız o an önemli olanlar, en çok 3 kart:
+  4 saat içindeki toplantı (Katıl), çalışan zamanlayıcı (iptal), canlı dış etkinlik, Claude oturum/hafta.
+  Hiçbiri yoksa oynatıcı tüm genişlikte. Karta basınca ayrıntı sekmesi açılır.
+- **Sekme bütçesi**: şeritte Şimdi + en çok 4 sabit sekme (varsayılan Raf, Not, Terminal, Takvim); kalanlar
+  "•••" menüsünde (NSMenu, imleçte). Menüden açılan sekme geçici olarak şeride eklenir; sığmayan sabit sekme
+  menüye kayar, seçili olan hep kalır (`TabBarLayout`). Ayarlar › Sekmeler: sabitle/çıkar, sırala, menüden gizle.
+- **Sabit genişlik** 640 pt (`NotchDesign.openWidth`); sekmeye göre yalnız boy değişir (`NotchTab.bodyHeight`).
+- **Sakin boş durumlar**: Takvim'de etkinlik de anımsatıcı da yoksa tek satır; medya boşken kaynak adı
+  ("MediaRemote…") gösterilmez, yalnız yedeğe düşüldüyse nedeniyle.
 - **Görsel dil** `App/Views/NotchDesign.swift`: tek yazı ölçeği (13/12/11), kart, boş durum, kapsül ve simge
-  düğmeleri; görünümlerde sabit ölçü yazılmaz.
-- **Sekme düzenleme**: Ayarlar › Sekmeler'de sürükleyerek sıralama ve gizleme.
+  düğmeleri; görünümlerde sabit ölçü yazılmaz. Yüzdeler yerele göre (`NowFormat.percent`).
+- ⚠️ İlerleme çubuğu `TimelineView(.animation(minimumInterval: 1))` ile her ekran karesinde uyanıyordu: medya
+  açıkken ana iş parçacığı ≈ %12 meşgul. `.periodic(by: 1)` (duraklatılmışken 1 saat) ile ≈ %0,4.
 
 ## Terminal sekmesi
 

@@ -55,10 +55,12 @@ final class AppSettings {
     /// Kamera izni yalnız Ayna sekmesinde düğmeye basınca istenir.
     var mirrorEnabled: Bool { didSet { store(mirrorEnabled, "mirrorEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
-    /// Sekme sırası (kullanıcı sürükleyerek değiştirir).
-    var tabOrder: [NotchTab] { didSet { store(tabOrder.map(\.rawValue), "tabOrder") } }
-    /// Modülü açık olsa da notch'ta gösterilmeyen sekmeler.
+    /// Şeritte Şimdi'nin yanında duran sekmeler, sırasıyla; en çok `maxPinnedTabs`.
+    var pinnedTabs: [NotchTab] { didSet { store(pinnedTabs.map(\.rawValue), "pinnedTabs") } }
+    /// Modülü açık olsa da Diğer menüsünde de gösterilmeyen sekmeler.
     var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
+    static let maxPinnedTabs = 4
+    static let defaultPinnedTabs: [NotchTab] = [.shelf, .notes, .terminal, .calendar]
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
     var lockScreenEnabled: Bool {
         didSet {
@@ -116,7 +118,9 @@ final class AppSettings {
         weatherPlace = defaults.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherMonitor.Place.self, from: $0) }
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
-        tabOrder = (defaults.stringArray(forKey: "tabOrder") ?? []).compactMap(NotchTab.init(rawValue:))
+        pinnedTabs = defaults.stringArray(forKey: "pinnedTabs")
+            .map { Array($0.compactMap(NotchTab.init(rawValue:)).filter { $0 != .now }.prefix(Self.maxPinnedTabs)) }
+            ?? Self.defaultPinnedTabs
         hiddenTabs = Set((defaults.stringArray(forKey: "hiddenTabs") ?? []).compactMap(NotchTab.init(rawValue:)))
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
             defaults.set(false, forKey: "lockScreenEnabled")
@@ -137,11 +141,6 @@ final class AppSettings {
         } else {
             UserDefaults.standard.removeObject(forKey: Self.lockSessionKey)
         }
-    }
-
-    /// Kayıtlı sıra; sonradan eklenen sekmeler varsayılan yerleriyle sona eklenir.
-    var orderedTabs: [NotchTab] {
-        tabOrder + NotchTab.allCases.filter { !tabOrder.contains($0) }
     }
 
     var panelOptions: PanelManager.Options {

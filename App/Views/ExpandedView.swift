@@ -1,9 +1,10 @@
+import AppKit
 import Integrations
 import NotchShell
 import SwiftUI
 
-/// Açık notch: bantta (çentiğin iki yanı) solda bulunulan sekmenin adı, sağda durum; altında
-/// sekme şeridi; en altta sekmenin içeriği. Her sekme kendi boyunu ister, şekil ona göre açılır.
+/// Açık notch: tek satır başlık (bantta, çentiğin solunda sekmeler, sağında durum) ve altında sekmenin
+/// içeriği. Genişlik tüm sekmelerde aynı (geçişte yana zıplama yok), yalnız boy içeriğe göre değişir.
 struct ExpandedView: View {
     let context: NotchContext
     let model: NotchSurfaceModel
@@ -13,39 +14,29 @@ struct ExpandedView: View {
         let ui = coordinator.ui
         let tabs = coordinator.availableTabs
         let sideWidth = max(0, (context.size.width - context.notchGapWidth) / 2 - context.horizontalInset)
+        let bar = TabBarLayout(strip: coordinator.stripTabs, overflow: coordinator.overflowTabs,
+                               selected: ui.selectedTab, width: sideWidth)
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                if tabs.contains(ui.selectedTab) {
-                    SectionTitle(tab: ui.selectedTab).frame(width: sideWidth, alignment: .leading)
-                } else {
-                    Color.clear.frame(width: sideWidth)
+                TabBar(layout: bar, selected: ui.selectedTab, onMenuOpen: { model.tapped() },
+                       onEditTabs: { coordinator.openSettings?() }) { tab in
+                    ui.selectedTab = tab
                 }
+                .frame(width: sideWidth, alignment: .leading)
                 Spacer(minLength: context.notchGapWidth)
                 StatusArea(coordinator: coordinator).frame(width: sideWidth, alignment: .trailing)
             }
             .frame(height: context.bandHeight)
 
-            if tabs.isEmpty {
-                EmptyStateView(symbol: "square.grid.2x2", title: "Tüm modüller kapalı",
-                               message: "Menü çubuğundaki simgeden Ayarlar'ı açın.")
-            } else {
-                TabStrip(tabs: tabs, selected: ui.selectedTab,
-                         availableWidth: context.size.width - 2 * context.horizontalInset) { tab in
-                    ui.selectedTab = tab
-                }
-                .frame(height: NotchDesign.stripHeight)
-                .padding(.top, 4)
-
-                content(ui.selectedTab)
-                    .padding(.top, NotchDesign.stripSpacing)
-                    .padding(.bottom, context.bottomInset)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .id(ui.selectedTab)
-                    .notchTransition(.swap)
-            }
+            content(ui.selectedTab)
+                .padding(.top, NotchDesign.headerSpacing)
+                .padding(.bottom, context.bottomInset)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .id(ui.selectedTab)
+                .notchTransition(.swap)
         }
-        // Sekme hangi yoldan değişirse değişsin (şerit, dosya sürükleme, ayar, debug) içerik ve seçim
-        // zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar. Eskiden yalnız şerit düğmesi canlıydı.
+        // Sekme hangi yoldan değişirse değişsin (şerit, Diğer menüsü, dosya sürükleme, ayar, debug)
+        // içerik ve seçim zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar.
         .notchAnimation(NotchMotion.resize, value: ui.selectedTab)
         .notchAnimation(value: tabs)
         .padding(.horizontal, context.horizontalInset)
@@ -55,23 +46,20 @@ struct ExpandedView: View {
             if dragging, tabs.contains(.shelf) { ui.selectedTab = .shelf }
         }
         .onChange(of: ui.selectedTab, initial: true) { _, tab in
-            model.preferredOpenSize = tabs.isEmpty ? nil : openSize(for: tab)
+            model.preferredOpenSize = openSize(for: tab)
         }
     }
 
-    /// Sekmenin istediği tüm açık boyut: bant + şerit + içerik + alt boşluk.
+    /// Sekmenin istediği tüm açık boyut: bant + boşluk + içerik + alt boşluk; genişlik sabit.
     private func openSize(for tab: NotchTab) -> CGSize {
-        let body = tab.bodySize
-        return CGSize(width: body.width,
-                      height: context.bandHeight + 4 + NotchDesign.stripHeight + NotchDesign.stripSpacing
-                        + body.height + context.bottomInset)
+        CGSize(width: NotchDesign.openWidth,
+               height: context.bandHeight + NotchDesign.headerSpacing + tab.bodyHeight + context.bottomInset)
     }
 
     @ViewBuilder
     private func content(_ tab: NotchTab) -> some View {
         switch tab {
-        case .media: MediaTab(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
-                              sourceDescription: coordinator.nowPlayingSourceDescription)
+        case .now: NowView(coordinator: coordinator, model: model)
         case .calendar: CalendarTab(calendar: coordinator.calendar,
                                     reminders: coordinator.settings.remindersEnabled ? coordinator.reminders : nil)
         case .shelf: ShelfTab(shelf: coordinator.shelf)
@@ -87,36 +75,164 @@ struct ExpandedView: View {
 }
 
 extension NotchTab {
-    /// İçerik alanının istediği boyut (bant ve şerit hariç). Ayna kare, takvim geniş, not yüksek,
-    /// zamanlayıcı dar.
-    var bodySize: CGSize {
+    /// İçerik alanının boyu (bant hariç). Genişlik hepsinde `NotchDesign.openWidth`.
+    var bodyHeight: CGFloat {
         switch self {
-        case .media: CGSize(width: 560, height: 132)
-        case .calendar: CGSize(width: 640, height: 124)
-        case .shelf: CGSize(width: 560, height: 104)
-        case .activities: CGSize(width: 560, height: 120)
-        case .notes: CGSize(width: 560, height: 196)
-        case .timer: CGSize(width: 480, height: 84)
-        case .system: CGSize(width: 560, height: 88)
-        case .mirror: CGSize(width: 400, height: 300)
-        case .claude: CGSize(width: 560, height: 150)
-        // ≈ 85 sütun × 18 satır (12 pt SF Mono).
-        case .terminal: CGSize(width: 660, height: 280)
+        case .now: 132
+        case .calendar: 124
+        case .shelf: 104
+        case .activities: 120
+        case .notes: 196
+        case .timer: 84
+        case .system: 88
+        case .mirror: 300
+        case .claude: 150
+        // ≈ 77 sütun × 18 satır (12 pt SF Mono).
+        case .terminal: 280
         }
     }
 }
 
-/// Bantta, çentiğin solunda: bulunulan sekme. Sığmazsa yalnız simge.
-private struct SectionTitle: View {
-    let tab: NotchTab
+/// Bantta hangi sekme simgelerinin göründüğü. Diğer menüsünden açılan sekme geçici olarak şeride
+/// eklenir (nerede olunduğu görünsün); sığmayan sabit sekmeler menüye kayar, seçili olan hep kalır.
+struct TabBarLayout: Equatable {
+    let shown: [NotchTab]
+    let menu: [NotchTab]
+
+    static let slotWidth: CGFloat = NotchDesign.tabIconSize + NotchDesign.tabIconSpacing
+
+    init(strip: [NotchTab], overflow: [NotchTab], selected: NotchTab, width: CGFloat) {
+        var shown = strip + (overflow.contains(selected) ? [selected] : [])
+        var moved: [NotchTab] = []
+        let capacity = max(2, Int((width + NotchDesign.tabIconSpacing) / Self.slotWidth))
+        while shown.count + (overflow.isEmpty && moved.isEmpty ? 0 : 1) > capacity,
+              let drop = shown.last(where: { $0 != selected && $0 != .now }) {
+            shown.removeAll { $0 == drop }
+            moved.append(drop)
+        }
+        self.shown = shown
+        let inMenu = Set(overflow + moved)
+        menu = NotchTab.allCases.filter { inMenu.contains($0) }
+    }
+}
+
+/// Sekme simgeleri (yalnız simge; ad üzerine gelince). Seçim kayan bir zeminle geçer.
+private struct TabBar: View {
+    let layout: TabBarLayout
+    let selected: NotchTab
+    let onMenuOpen: () -> Void
+    let onEditTabs: () -> Void
+    let select: (NotchTab) -> Void
+    @Namespace private var selection
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            Label(tab.title, systemImage: tab.symbol).labelStyle(.titleAndIcon)
-            Image(systemName: tab.symbol)
+        HStack(spacing: NotchDesign.tabIconSpacing) {
+            ForEach(layout.shown) { tab in
+                TabIconButton(tab: tab, isSelected: tab == selected, namespace: selection) { select(tab) }
+                    .notchTransition(.fade)
+            }
+            if !layout.menu.isEmpty {
+                MoreTabsButton(tabs: layout.menu, selected: selected, onOpen: onMenuOpen, onEdit: onEditTabs,
+                               select: select)
+            }
         }
-        .font(NotchDesign.title)
-        .lineLimit(1)
+        .notchAnimation(value: layout)
+    }
+}
+
+private struct TabIconButton: View {
+    let tab: NotchTab
+    let isSelected: Bool
+    let namespace: Namespace.ID
+    let action: () -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: tab.symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .frame(width: NotchDesign.tabIconSize, height: NotchDesign.tabIconSize)
+                .foregroundStyle(isSelected ? Color.white : Color.white.opacity(isHovering ? 0.85 : 0.5))
+                .background {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous).fill(NotchDesign.selectionFill)
+                            .matchedGeometryEffect(id: "selection", in: namespace)
+                    } else if isHovering {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous).fill(NotchDesign.cardFill)
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .notchAnimation(NotchMotion.hover, value: isHovering)
+        .help(tab.title)
+        .accessibilityLabel(tab.title)
+    }
+}
+
+/// "•••": sabitlenmemiş sekmeler. Menü imlecin olduğu yerde açılır; açıkken notch sabitlenir.
+private struct MoreTabsButton: View {
+    let tabs: [NotchTab]
+    let selected: NotchTab
+    let onOpen: () -> Void
+    let onEdit: () -> Void
+    let select: (NotchTab) -> Void
+    @State private var isHovering = false
+
+    var body: some View {
+        Button {
+            onOpen()
+            TabMenu.show(tabs: tabs, selected: selected, select: select, edit: onEdit)
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 12, weight: .semibold))
+                .frame(width: NotchDesign.tabIconSize, height: NotchDesign.tabIconSize)
+                .foregroundStyle(Color.white.opacity(isHovering ? 0.85 : 0.5))
+                .background {
+                    if isHovering {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous).fill(NotchDesign.cardFill)
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .notchAnimation(NotchMotion.hover, value: isHovering)
+        .help("Diğer sekmeler")
+        .accessibilityLabel("Diğer sekmeler")
+    }
+}
+
+@MainActor
+private enum TabMenu {
+    static func show(tabs: [NotchTab], selected: NotchTab, select: @escaping (NotchTab) -> Void,
+                     edit: @escaping () -> Void) {
+        AppLog.coordinator.notice("sekmeler: Diğer menüsü açıldı (\(tabs.count))")
+        let menu = NSMenu()
+        for tab in tabs {
+            let item = NSMenuItem(title: tab.title, action: #selector(MenuTarget.run), keyEquivalent: "")
+            let target = MenuTarget { select(tab) }
+            item.target = target
+            item.representedObject = target
+            item.state = tab == selected ? .on : .off
+            item.image = NSImage(systemSymbolName: tab.symbol, accessibilityDescription: nil)
+            menu.addItem(item)
+        }
+        menu.addItem(.separator())
+        let editItem = NSMenuItem(title: String(localized: "Sekmeleri düzenle…"), action: #selector(MenuTarget.run),
+                                  keyEquivalent: "")
+        let editTarget = MenuTarget(edit)
+        editItem.target = editTarget
+        editItem.representedObject = editTarget
+        menu.addItem(editItem)
+        menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+    }
+
+    final class MenuTarget: NSObject {
+        let handler: () -> Void
+        init(_ handler: @escaping () -> Void) { self.handler = handler }
+        @objc func run() { handler() }
     }
 }
 
@@ -195,68 +311,6 @@ private struct KeepAwakeButton: View {
         }
         .buttonStyle(IconButtonStyle(size: 22))
         .help(keepAwake.isActive ? String(localized: "Uyanık tutmayı kapat") : String(localized: "Ekranı uyanık tut"))
-    }
-}
-
-/// Sekme şeridi: seçili sekme simge ve adıyla, diğerleri yalnız simgeyle; seçim kayan bir zeminle
-/// geçer. Ad sığmıyorsa hepsi simge.
-private struct TabStrip: View {
-    let tabs: [NotchTab]
-    let selected: NotchTab
-    let availableWidth: CGFloat
-    let select: (NotchTab) -> Void
-    @Namespace private var selection
-
-    var body: some View {
-        let showsLabel = estimatedWidth(withLabel: true) <= availableWidth
-        HStack(spacing: 2) {
-            ForEach(tabs) { tab in
-                TabButton(tab: tab, isSelected: tab == selected, showsLabel: showsLabel && tab == selected,
-                          namespace: selection) { select(tab) }
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func estimatedWidth(withLabel: Bool) -> CGFloat {
-        let icons = CGFloat(tabs.count) * 32 + CGFloat(max(0, tabs.count - 1)) * 2
-        return icons + (withLabel ? CGFloat(selected.title.count) * 7 + 8 : 0)
-    }
-}
-
-private struct TabButton: View {
-    let tab: NotchTab
-    let isSelected: Bool
-    let showsLabel: Bool
-    let namespace: Namespace.ID
-    let action: () -> Void
-    @State private var isHovering = false
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: tab.symbol).font(.system(size: 12, weight: .semibold))
-                if showsLabel {
-                    Text(tab.title).font(NotchDesign.captionEmphasized).lineLimit(1).fixedSize()
-                }
-            }
-            .padding(.horizontal, 10)
-            .frame(minWidth: 32, minHeight: NotchDesign.stripHeight)
-            .foregroundStyle(isSelected ? Color.white : Color.white.opacity(isHovering ? 0.85 : 0.5))
-            .background {
-                if isSelected {
-                    Capsule().fill(NotchDesign.selectionFill).matchedGeometryEffect(id: "selection", in: namespace)
-                } else if isHovering {
-                    Capsule().fill(NotchDesign.cardFill)
-                }
-            }
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .onHover { isHovering = $0 }
-        .notchAnimation(NotchMotion.hover, value: isHovering)
-        .help(tab.title)
-        .accessibilityLabel(tab.title)
     }
 }
 

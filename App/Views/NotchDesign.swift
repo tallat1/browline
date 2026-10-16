@@ -19,9 +19,13 @@ enum NotchDesign {
 
     static let cardRadius: CGFloat = 12
     static let cardPadding = EdgeInsets(top: 10, leading: 12, bottom: 10, trailing: 12)
-    /// Sekme şeridinin yüksekliği ve şerit ile içerik arası.
-    static let stripHeight: CGFloat = 28
-    static let stripSpacing: CGFloat = 8
+    /// Açık notch'un genişliği: tüm sekmelerde aynı (geçişte yana zıplama yok).
+    static let openWidth: CGFloat = 640
+    /// Bant (sekmeler + durum) ile içerik arası.
+    static let headerSpacing: CGFloat = 6
+    /// Banttaki sekme simgesi ve aralığı.
+    static let tabIconSize: CGFloat = 24
+    static let tabIconSpacing: CGFloat = 2
 
 }
 
