@@ -1,3 +1,4 @@
+import AppKit
 import CoreAudio
 import Foundation
 import Testing
@@ -447,5 +448,92 @@ struct SpectrumAnalyzerTests {
         #expect(bins.count == SpectrumLevels.bandCount)
         #expect(zip(bins, bins.dropFirst()).allSatisfy { $0.upperBound == $1.lowerBound })
         #expect(bins.allSatisfy { !$0.isEmpty })
+    }
+}
+
+struct ShelfConverterTests {
+    @Test func optionsDependOnType() {
+        let png = ShelfConversion.options(for: URL(fileURLWithPath: "/tmp/a.png"))
+        #expect(png.contains(.image(.jpeg)) && png.contains(.image(.heic)) && !png.contains(.image(.png)))
+        #expect(png.contains(.resize(maxPixels: 1280)))
+        #expect(ShelfConversion.options(for: URL(fileURLWithPath: "/tmp/a.mov")).contains(.audio))
+        #expect(ShelfConversion.options(for: URL(fileURLWithPath: "/tmp/a.pdf")).isEmpty)
+        #expect(ShelfConversion.options(for: URL(fileURLWithPath: "/tmp/a.JPG")).contains(.image(.png)))
+    }
+
+    @Test func outputNames() {
+        let source = URL(fileURLWithPath: "/tmp/Ekran Resmi.png")
+        #expect(ShelfConversion.image(.jpeg).outputName(for: source) == "Ekran Resmi.jpg")
+        #expect(ShelfConversion.resize(maxPixels: 1280).outputName(for: source) == "Ekran Resmi 1280px.png")
+        let movie = URL(fileURLWithPath: "/tmp/kayit.mov")
+        #expect(ShelfConversion.video(.p720).outputName(for: movie) == "kayit 720p.mp4")
+        #expect(ShelfConversion.audio.outputName(for: movie) == "kayit.m4a")
+    }
+
+    /// Gerçek sips: 40×30 PNG → JPEG ve 20 px'e küçültme; özgün dosya yerinde kalır.
+    @Test func convertsImagesWithSips() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("kare.png")
+        let image = NSImage(size: NSSize(width: 40, height: 30), flipped: false) { rect in
+            NSColor.systemOrange.setFill()
+            rect.fill()
+            return true
+        }
+        let tiff = try #require(image.tiffRepresentation)
+        let png = try #require(NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]))
+        try png.write(to: source)
+
+        let jpeg = try #require(ShelfConverter.run(.image(.jpeg), source: source,
+                                                   destination: directory.appendingPathComponent("kare.jpg")))
+        #expect(NSImage(contentsOf: jpeg) != nil)
+        let small = try #require(ShelfConverter.run(.resize(maxPixels: 20), source: source,
+                                                    destination: directory.appendingPathComponent("kare 20px.png")))
+        let rep = try #require(NSBitmapImageRep(data: Data(contentsOf: small)))
+        #expect(max(rep.pixelsWide, rep.pixelsHigh) == 20)
+        #expect(FileManager.default.fileExists(atPath: source.path))
+        // Çakışmada numaralı ad.
+        #expect(ShelfStore.unique(jpeg).lastPathComponent == "kare 2.jpg")
+    }
+}
+
+@MainActor
+struct CIMonitorTests {
+    // gh run list --json çıktısının biçimi (örnek değerler).
+    static let sample = #"[{"conclusion":"","createdAt":"2026-10-16T09:58:01Z","databaseId":101,"displayTitle":"Örnek değişiklik","headBranch":"main","status":"in_progress","url":"https://github.com/ornek/depo/actions/runs/101","workflowName":"CI"},{"conclusion":"failure","createdAt":"2026-10-16T09:00:00Z","databaseId":100,"displayTitle":"Önceki","headBranch":"main","status":"completed","url":"https://github.com/ornek/depo/actions/runs/100","workflowName":"CI"}]"#
+
+    @Test func parsesRuns() {
+        let runs = CIMonitor.parse(Data(Self.sample.utf8), repository: "ornek/depo")
+        #expect(runs.map(\.id) == [101, 100])
+        #expect(runs[0].state == .active)
+        #expect(runs[1].state == .failure)
+        #expect(runs[0].repositoryName == "depo")
+        #expect(runs[0].url?.absoluteString.hasSuffix("/101") == true)
+    }
+
+    @Test func normalizesRepositoryNames() {
+        #expect(CIMonitor.normalize("https://github.com/ornek/depo.git") == "ornek/depo")
+        #expect(CIMonitor.normalize("git@github.com:tallat1/notch.git") == "tallat1/notch")
+        #expect(CIMonitor.normalize(" ornek/depo ") == "ornek/depo")
+        #expect(CIMonitor.normalize("tek-parca") == nil)
+        let config = "[core]\n\tbare = false\n[remote \"origin\"]\n\turl = git@github.com:ornek/depo.git\n"
+        #expect(CIMonitor.originURL(in: config) == "git@github.com:ornek/depo.git")
+    }
+
+    @Test func reportsFinishedRunOnce() {
+        let monitor = CIMonitor()
+        var finished: [Int] = []
+        monitor.onRunFinished = { finished.append($0.id) }
+        let active = CIMonitor.parse(Data(Self.sample.utf8), repository: "ornek/depo")
+        monitor.apply(active)  // ilk okuma: bitmiş 100 bildirilmez
+        #expect(finished.isEmpty)
+        #expect(monitor.activeRuns.map(\.id) == [101])
+        let done = CIMonitor.Run(id: 101, repository: "ornek/depo", workflow: "CI", title: "Örnek değişiklik",
+                                 branch: "main", state: .success, createdAt: active[0].createdAt, url: nil)
+        monitor.apply([done, active[1]])
+        monitor.apply([done, active[1]])
+        #expect(finished == [101])
+        #expect(monitor.activeRuns.isEmpty)
     }
 }

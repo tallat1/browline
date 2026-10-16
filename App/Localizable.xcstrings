@@ -41,6 +41,38 @@
         }
       }
     },
+    "%@ kaldı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ left"
+          }
+        }
+      }
+    },
+    "%@ okunamadı; gh auth status ile kontrol edin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read %@; check with gh auth status."
+          }
+        }
+      }
+    },
+    "%@ olarak kaydet": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as %@"
+          }
+        }
+      }
+    },
     "%@ sıfırlanır": {
       "localizations": {
         "en": {
@@ -73,6 +105,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open %@"
+          }
+        }
+      }
+    },
+    "%@ ve %lld dosya daha": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ and %lld more"
           }
         }
       }
@@ -121,6 +165,16 @@
           "stringUnit": {
             "state": "new",
             "value": "%1$@ — %2$@ (duraklatıldı)"
+          }
+        }
+      }
+    },
+    "%@ — gh auth status ile oturumu ve depo erişimini kontrol edin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — check your session and repository access with gh auth status."
           }
         }
       }
@@ -449,6 +503,16 @@
         }
       }
     },
+    "Aranıyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching…"
+          }
+        }
+      }
+    },
     "Araçlar": {
       "localizations": {
         "en": {
@@ -475,6 +539,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Displays without a choice"
+          }
+        }
+      }
+    },
+    "Ayarlar › Modüller › CI durumu'ndan depo ekleyin (ör. sahip/depo).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add repositories in Settings › Modules › CI status (e.g. owner/repo)."
           }
         }
       }
@@ -589,6 +663,26 @@
         }
       }
     },
+    "Başarılı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passed"
+          }
+        }
+      }
+    },
+    "Başarısız": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Failed"
+          }
+        }
+      }
+    },
     "Başlatılamadı: %@": {
       "localizations": {
         "en": {
@@ -699,6 +793,16 @@
         }
       }
     },
+    "Bitti": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
     "Bluetooth": {
       "localizations": {
         "en": {
@@ -805,6 +909,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sections"
+          }
+        }
+      }
+    },
+    "CI durumu (GitHub Actions, kendi gh oturumunuzla)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CI status (GitHub Actions, via your own gh session)"
           }
         }
       }
@@ -989,6 +1103,26 @@
         }
       }
     },
+    "Dönüştür": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convert"
+          }
+        }
+      }
+    },
+    "Dönüştürülüyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Converting…"
+          }
+        }
+      }
+    },
     "Düşük Güç Modu'nda hareketi durdur (çubuklar, kayan yazı, müzik dinleyicisi)": {
       "localizations": {
         "en": {
@@ -1009,12 +1143,42 @@
         }
       }
     },
+    "Ekle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add"
+          }
+        }
+      }
+    },
+    "Ekran kaydediliyor ya da paylaşılıyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen is being recorded or shared"
+          }
+        }
+      }
+    },
     "Ekran kaydı ve ekran paylaşımında gizle": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Hide during screen recording and sharing"
+          }
+        }
+      }
+    },
+    "Ekran kaydı ve paylaşım göstergesi (macOS'un belgelenmemiş bir işleviyle)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen recording and sharing indicator (uses an undocumented macOS function)"
           }
         }
       }
@@ -1149,6 +1313,16 @@
         }
       }
     },
+    "GitHub Actions durumu kendi gh oturumunuzla okunur: Terminal'de brew install gh, sonra gh auth login.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub Actions status is read with your own gh session: run brew install gh, then gh auth login in Terminal."
+          }
+        }
+      }
+    },
     "Gizleme": {
       "localizations": {
         "en": {
@@ -1185,6 +1359,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow NotchMVP in Privacy & Security › Paste from Other Apps."
+          }
+        }
+      }
+    },
+    "Görsel": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image"
           }
         }
       }
@@ -1489,6 +1675,26 @@
         }
       }
     },
+    "Kilit ekranında notch genişler: solda çalan şarkı, sağda pil (müzik yoksa pil ve kalan süre). Kilitte tıklanamaz; macOS'un saatini örtmemek için kapalı notch yüksekliğinde.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the lock screen the notch widens: the playing song on the left, battery on the right (battery and time left when nothing plays). It can't be clicked while locked and stays at closed-notch height so it never covers the macOS clock."
+          }
+        }
+      }
+    },
+    "Kilitliyken müzik ve pil şeridi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music and battery strip while locked"
+          }
+        }
+      }
+    },
     "Kilitliyken yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Private SkyLight API kullanır: bir sorun WindowServer'ı yeniden başlatıp oturumu kapatabilir.": {
       "localizations": {
         "en": {
@@ -1539,6 +1745,18 @@
         }
       }
     },
+    "Küçült (en çok %lld px)": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrink (up to %lld px)"
+          }
+        }
+      }
+    },
     "Kısa mola": {
       "localizations": {
         "en": {
@@ -1575,6 +1793,18 @@
           "stringUnit": {
             "state": "translated",
             "value": "License text not found."
+          }
+        }
+      }
+    },
+    "MP4 olarak kaydet (%@)": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save as MP4 (%@)"
           }
         }
       }
@@ -2221,6 +2451,18 @@
         }
       }
     },
+    "Sesi ayıkla (M4A)": {
+      "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract Audio (M4A)"
+          }
+        }
+      }
+    },
     "Sesi aç": {
       "localizations": {
         "en": {
@@ -2341,6 +2583,26 @@
         }
       }
     },
+    "Son çalışma yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recent runs"
+          }
+        }
+      }
+    },
+    "Son çalıştığım depoları öner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggest my recent repositories"
+          }
+        }
+      }
+    },
     "Sonraki": {
       "localizations": {
         "en": {
@@ -2397,6 +2659,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose a duration"
+          }
+        }
+      }
+    },
+    "Süren çalışma varken 30 sn'de bir, yoksa 3 dk'da bir sorulur. Anahtar uygulamaya gelmez; gh kendi oturumunu kullanır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked every 30 s while a run is in progress, otherwise every 3 min. No token reaches the app; gh uses its own session."
           }
         }
       }
@@ -2487,6 +2759,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mark as Completed"
+          }
+        }
+      }
+    },
+    "Tarayıcıda aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in Browser"
           }
         }
       }
@@ -2691,6 +2973,16 @@
         }
       }
     },
+    "Yalnız benim başlattığım çalışmalar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only runs I started"
+          }
+        }
+      }
+    },
     "Yalnız bu istek için": {
       "localizations": {
         "en": {
@@ -2841,6 +3133,16 @@
         }
       }
     },
+    "dolmasına %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "full in %@"
+          }
+        }
+      }
+    },
     "en düşük %lld°, en yüksek %lld°": {
       "localizations": {
         "en": {
@@ -2853,6 +3155,26 @@
           "stringUnit": {
             "state": "new",
             "value": "en düşük %1$lld°, en yüksek %2$lld°"
+          }
+        }
+      }
+    },
+    "gh bulunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gh not found"
+          }
+        }
+      }
+    },
+    "gh bulunamadı: Terminal'de brew install gh, sonra gh auth login.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "gh not found: run brew install gh, then gh auth login in Terminal."
           }
         }
       }
@@ -2883,6 +3205,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "mediaremote-adapter (ungive), BSD-3-Clause. Used unmodified, as a separate process."
+          }
+        }
+      }
+    },
+    "sahip/depo ya da GitHub adresi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "owner/repo or GitHub URL"
           }
         }
       }
@@ -2943,6 +3275,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Working name; the product name is not decided yet."
+          }
+        }
+      }
+    },
+    "Çalışmalar okunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read runs"
           }
         }
       }
@@ -3187,12 +3529,42 @@
         }
       }
     },
+    "İzlemeyi bırak": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop Watching"
+          }
+        }
+      }
+    },
+    "İzlenen depo yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No watched repositories"
+          }
+        }
+      }
+    },
     "İşlemci": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "CPU"
+          }
+        }
+      }
+    },
+    "Şarj tamam": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully charged"
           }
         }
       }

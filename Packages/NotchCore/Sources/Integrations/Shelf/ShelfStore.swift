@@ -109,21 +109,30 @@ public final class ShelfStore {
         }
     }
 
-    nonisolated static func archiveURL(for urls: [URL], downloads: URL, now: Date) -> URL {
+    /// Ad çakışırsa "ad 2.uzantı", "ad 3.uzantı"…
+    nonisolated static func unique(_ base: URL) -> URL {
         let fileManager = FileManager.default
-        func unique(_ base: URL) -> URL {
-            var candidate = base
-            var counter = 2
-            let stem = base.deletingPathExtension().lastPathComponent
-            while fileManager.fileExists(atPath: candidate.path) {
-                candidate = base.deletingLastPathComponent().appendingPathComponent("\(stem) \(counter).zip")
-                counter += 1
-            }
-            return candidate
+        var candidate = base
+        var counter = 2
+        let stem = base.deletingPathExtension().lastPathComponent
+        let ext = base.pathExtension
+        while fileManager.fileExists(atPath: candidate.path) {
+            let name = ext.isEmpty ? "\(stem) \(counter)" : "\(stem) \(counter).\(ext)"
+            candidate = base.deletingLastPathComponent().appendingPathComponent(name)
+            counter += 1
         }
+        return candidate
+    }
+
+    /// Kaynağın yanı, yazılamıyorsa İndirilenler.
+    nonisolated static func outputDirectory(for source: URL, downloads: URL) -> URL {
+        let parent = source.deletingLastPathComponent()
+        return FileManager.default.isWritableFile(atPath: parent.path) ? parent : downloads
+    }
+
+    nonisolated static func archiveURL(for urls: [URL], downloads: URL, now: Date) -> URL {
         if urls.count == 1 {
-            let parent = urls[0].deletingLastPathComponent()
-            let directory = fileManager.isWritableFile(atPath: parent.path) ? parent : downloads
+            let directory = outputDirectory(for: urls[0], downloads: downloads)
             return unique(directory.appendingPathComponent(urls[0].lastPathComponent + ".zip"))
         }
         let formatter = DateFormatter()
@@ -160,7 +169,7 @@ public final class ShelfStore {
         return destination
     }
 
-    nonisolated private static func run(_ tool: String, _ arguments: [String]) -> Int32 {
+    nonisolated static func run(_ tool: String, _ arguments: [String]) -> Int32 {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: tool)
         process.arguments = arguments

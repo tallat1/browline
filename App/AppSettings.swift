@@ -31,6 +31,14 @@ final class AppSettings {
     var questionsEnabled: Bool { didSet { store(questionsEnabled, "questionsEnabled") } }
     var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
     var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
+    /// GitHub Actions durumu (`gh` ile); izlenen depolar "sahip/depo".
+    var ciEnabled: Bool { didSet { store(ciEnabled, "ciEnabled") } }
+    var ciRepositories: [String] { didSet { store(ciRepositories, "ciRepositories") } }
+    /// Yalnız gh oturumundaki kullanıcının başlattığı çalışmalar.
+    var ciOnlyMine: Bool { didSet { store(ciOnlyMine, "ciOnlyMine") } }
+    var screenRecordingIndicatorEnabled: Bool {
+        didSet { store(screenRecordingIndicatorEnabled, "screenRecordingIndicatorEnabled") }
+    }
     /// İndirilenler klasörü TCC korumalı; kullanıcı açana kadar erişilmez.
     var downloadsEnabled: Bool { didSet { store(downloadsEnabled, "downloadsEnabled") } }
     var trackPeekEnabled: Bool { didSet { store(trackPeekEnabled, "trackPeekEnabled") } }
@@ -71,6 +79,8 @@ final class AppSettings {
     /// beş bölüme geçişte kullanılmaz oldu; okunmaz.)
     var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
+    /// Kilitliyken müzik + pil şeridi; varsayılan açık.
+    var lockScreenWidgetsEnabled: Bool { didSet { store(lockScreenWidgetsEnabled, "lockScreenWidgetsEnabled") } }
     var lockScreenEnabled: Bool {
         didSet {
             if lockScreenEnabled { lockScreenAutoDisabled = false }
@@ -112,6 +122,10 @@ final class AppSettings {
         questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? true
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
+        screenRecordingIndicatorEnabled = defaults.object(forKey: "screenRecordingIndicatorEnabled") as? Bool ?? true
+        ciEnabled = defaults.object(forKey: "ciEnabled") as? Bool ?? true
+        ciRepositories = defaults.stringArray(forKey: "ciRepositories") ?? []
+        ciOnlyMine = defaults.object(forKey: "ciOnlyMine") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
         trackPeekEnabled = defaults.object(forKey: "trackPeekEnabled") as? Bool ?? true
         animatedEqualizer = defaults.object(forKey: "animatedEqualizer") as? Bool ?? true
@@ -140,6 +154,7 @@ final class AppSettings {
             defaults.set(true, forKey: "lockScreenAutoDisabled")
         }
         defaults.removeObject(forKey: Self.lockSessionKey)
+        lockScreenWidgetsEnabled = defaults.object(forKey: "lockScreenWidgetsEnabled") as? Bool ?? true
         lockScreenEnabled = defaults.bool(forKey: "lockScreenEnabled")
         lockScreenAutoDisabled = defaults.bool(forKey: "lockScreenAutoDisabled")
     }

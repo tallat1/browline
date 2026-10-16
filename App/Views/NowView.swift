@@ -55,6 +55,8 @@ struct NowView: View {
             NowCard(open: open(.claude)) { ClaudeCardContent(usage: coordinator.claudeUsage) }
         case .call:
             NowCard(open: nil) { CallCardContent(microphone: coordinator.microphone) }
+        case let .ci(run):
+            NowCard(open: open(.ci)) { CICardContent(run: run, others: coordinator.ci.activeRuns.count - 1) }
         }
     }
 
@@ -73,6 +75,8 @@ enum NowItem: Identifiable {
     case activity(ExternalActivity, more: Int = 0)
     case claude
     case call
+    /// Süren CI çalışması (ilki).
+    case ci(CIMonitor.Run)
 
     var id: String {
         switch self {
@@ -81,6 +85,7 @@ enum NowItem: Identifiable {
         case let .activity(activity, _): "activity-\(activity.id)"
         case .claude: "claude"
         case .call: "call"
+        case let .ci(run): "ci-\(run.id)"
         }
     }
 
@@ -103,6 +108,7 @@ enum NowItem: Identifiable {
             items.append(.meeting(event))
         }
         if settings.timerEnabled, coordinator.timer.isRunning { items.append(.timer) }
+        if settings.ciEnabled, let run = coordinator.ci.activeRuns.first { items.append(.ci(run)) }
         if settings.activityAPIEnabled {
             items += coordinator.externalActivities.activities.prefix(2).map { NowItem.activity($0) }
         }
@@ -293,6 +299,36 @@ private struct CallCardContent: View {
             .help(microphone.isMuted ? "Mikrofonu aç" : "Mikrofonu sessize al (tüm uygulamalar)")
         }
         .notchAnimation(value: microphone.isMuted)
+    }
+}
+
+/// Süren derleme: depo · iş akışı, commit başlığı ve geçen süre.
+private struct CICardContent: View {
+    let run: CIMonitor.Run
+    let others: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "hammer.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                MarqueeText(text: run.workflow.isEmpty ? run.repositoryName : "\(run.repositoryName) · \(run.workflow)",
+                            size: 12, weight: .semibold, trigger: .hover)
+                Text(verbatim: run.title).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(1)
+            }
+            Spacer(minLength: 4)
+            VStack(alignment: .trailing, spacing: 2) {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    Text(CountdownTimer.format(max(0, timeline.date.timeIntervalSince(run.createdAt))))
+                        .font(NotchDesign.captionEmphasized.monospacedDigit())
+                        .foregroundStyle(.orange)
+                }
+                if others > 0 {
+                    Text(verbatim: "+\(others)").font(NotchDesign.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
     }
 }
 

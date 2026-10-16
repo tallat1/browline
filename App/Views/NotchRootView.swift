@@ -124,6 +124,32 @@ struct CompactLeadingView: View {
                 WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"))
             case AppCoordinator.ActivityKind.batteryFull:
                 WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"))
+            case AppCoordinator.ActivityKind.lockWidget:
+                if let info = coordinator.nowPlaying.info, coordinator.settings.nowPlayingEnabled {
+                    HStack(spacing: 8) {
+                        TrackArtwork(image: coordinator.nowPlaying.artwork, version: coordinator.nowPlaying.artworkVersion)
+                        MarqueeText(text: info.title, size: 13, weight: .semibold)
+                    }
+                    .padding(.leading, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else if let state = coordinator.battery.state {
+                    WideWingLabel(symbol: state.symbolName, tint: state.isCharging ? .green : (state.percent <= 20 ? .red : .white),
+                                  text: NowFormat.percent(Double(state.percent)))
+                }
+            case AppCoordinator.ActivityKind.ci:
+                if let run = coordinator.ci.activeRuns.first {
+                    WideWingLabel(symbol: "hammer.fill", tint: .orange,
+                                  text: run.workflow.isEmpty ? run.repositoryName : "\(run.repositoryName) · \(run.workflow)")
+                }
+            case AppCoordinator.ActivityKind.ciDone:
+                if let run = coordinator.ui.lastFinishedRun {
+                    WideWingLabel(symbol: CIStateIcon.symbol(for: run.state), tint: CIStateIcon.tint(for: run.state),
+                                  text: run.workflow.isEmpty ? run.repositoryName : "\(run.repositoryName) · \(run.workflow)")
+                }
+            case AppCoordinator.ActivityKind.screenRecording:
+                Image(systemName: "record.circle.fill")
+                    .foregroundStyle(.purple)
+                    .help("Ekran kaydediliyor ya da paylaşılıyor")
             case AppCoordinator.ActivityKind.microphone:
                 let muted = coordinator.microphone.isMuted
                 WideWingLabel(symbol: muted ? "mic.slash.fill" : "mic.fill", tint: muted ? .red : .white,
@@ -155,6 +181,14 @@ struct CompactLeadingView: View {
 struct CompactTrailingView: View {
     let coordinator: AppCoordinator
     let activityID: ActivityID?
+
+    static func ciResultTitle(_ state: CIMonitor.Run.State) -> LocalizedStringKey {
+        switch state {
+        case .success: "Başarılı"
+        case .failure: "Başarısız"
+        case .active, .other: "Bitti"
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -268,6 +302,42 @@ struct CompactTrailingView: View {
                         .foregroundStyle(activityID == AppCoordinator.ActivityKind.batteryLow ? .red : .secondary)
                         .padding(.trailing, 12)
                         .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.lockWidget:
+                LockWidgetTrailing(coordinator: coordinator)
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            case AppCoordinator.ActivityKind.ci:
+                // İlk süren çalışmanın süresi; birden çoksa sayısı.
+                if let run = coordinator.ci.activeRuns.first {
+                    HStack(spacing: 6) {
+                        if coordinator.ci.activeRuns.count > 1 {
+                            Text(verbatim: "+\(coordinator.ci.activeRuns.count - 1)").foregroundStyle(.secondary)
+                        }
+                        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                            Text(CountdownTimer.format(max(0, timeline.date.timeIntervalSince(run.createdAt))))
+                                .monospacedDigit()
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                    .padding(.trailing, 12)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.ciDone:
+                if let run = coordinator.ui.lastFinishedRun {
+                    Text(Self.ciResultTitle(run.state))
+                        .foregroundStyle(CIStateIcon.tint(for: run.state))
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.screenRecording:
+                // Kaydın süresi; saniyelik çizim yalnız kayıt sürerken ve kanat ekrandayken.
+                if let startedAt = coordinator.screenRecording.startedAt {
+                    TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                        Text(CountdownTimer.format(max(0, timeline.date.timeIntervalSince(startedAt))))
+                            .monospacedDigit()
+                            .foregroundStyle(.purple)
+                    }
                 }
             case AppCoordinator.ActivityKind.microphone:
                 // Mikrofonu kullanan uygulama (görüşme), yoksa boş.
@@ -511,5 +581,33 @@ extension BluetoothMonitor.Device {
         case ..<88: "battery.75percent"
         default: "battery.100percent"
         }
+    }
+}
+
+/// Kilit şeridinin sağı: müzik çalıyorsa pil; müzik yoksa (solda pil) kalan ya da dolma süresi.
+private struct LockWidgetTrailing: View {
+    let coordinator: AppCoordinator
+
+    var body: some View {
+        if let state = coordinator.battery.state {
+            if coordinator.nowPlaying.info != nil, coordinator.settings.nowPlayingEnabled {
+                HStack(spacing: 4) {
+                    Text(verbatim: NowFormat.percent(Double(state.percent))).monospacedDigit()
+                    Image(systemName: state.symbolName)
+                        .foregroundStyle(state.isCharging ? .green : (state.percent <= 20 ? .red : .secondary))
+                }
+                .foregroundStyle(.secondary)
+            } else if let text = Self.remaining(state) {
+                Text(text).monospacedDigit().foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    /// "1 sa 20 dk kaldı" / "dolmasına 35 dk"; sistem hesaplamıyorsa nil.
+    static func remaining(_ state: BatteryMonitor.State) -> String? {
+        let minutes = state.isCharging ? state.minutesToFull : (state.isPluggedIn ? nil : state.minutesToEmpty)
+        guard let minutes, minutes > 0 else { return state.isPluggedIn && !state.isCharging ? String(localized: "Şarj tamam") : nil }
+        let duration = minutes >= 60 ? String(localized: "\(minutes / 60) sa \(minutes % 60) dk") : String(localized: "\(minutes) dk")
+        return state.isCharging ? String(localized: "dolmasına \(duration)") : String(localized: "\(duration) kaldı")
     }
 }

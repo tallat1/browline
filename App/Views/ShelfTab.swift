@@ -4,11 +4,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// Dosya rafı: notch'a sürüklenen dosyalar burada durur, buradan başka yere sürüklenir, paylaşılır,
-/// sıkıştırılır ya da önizlenir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
+/// sıkıştırılır, dönüştürülür ya da önizlenir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
 struct ShelfTab: View {
     let shelf: ShelfStore
     @State private var isTargeted = false
     @State private var isCompressing = false
+    /// Dönüştürülmekte olan öğeler (karo üstünde ilerleme).
+    @State private var converting: Set<ShelfStore.Item.ID> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -19,7 +21,9 @@ struct ShelfTab: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(shelf.items) { item in
-                            ShelfTile(item: item, shelf: shelf, compress: compress).notchTransition(.swap)
+                            ShelfTile(item: item, shelf: shelf, isConverting: converting.contains(item.id),
+                                      compress: compress, convert: { convert(item, $0, $1) })
+                                .notchTransition(.swap)
                         }
                     }
                     .padding(.horizontal, 4)
@@ -73,6 +77,16 @@ struct ShelfTab: View {
         }
     }
 
+    /// Sonuç kaynağın yanına yazılır ve rafa eklenir; başarısızsa uyarı sesi.
+    private func convert(_ item: ShelfStore.Item, _ url: URL, _ conversion: ShelfConversion) {
+        guard !converting.contains(item.id) else { return }
+        converting.insert(item.id)
+        ShelfConverter.convert(url, conversion) { result in
+            converting.remove(item.id)
+            if let result { shelf.add([result]) } else { NSSound.beep() }
+        }
+    }
+
     /// Sonuç rafa da eklenir: arşiv hemen sürüklenip paylaşılabilsin.
     private func compress(_ urls: [URL]) {
         guard !urls.isEmpty, !isCompressing else { return }
@@ -87,7 +101,9 @@ struct ShelfTab: View {
 private struct ShelfTile: View {
     let item: ShelfStore.Item
     let shelf: ShelfStore
+    let isConverting: Bool
     let compress: ([URL]) -> Void
+    let convert: (URL, ShelfConversion) -> Void
     @State private var isHovering = false
 
     var body: some View {
@@ -95,8 +111,14 @@ private struct ShelfTile: View {
             Image(nsImage: NSWorkspace.shared.icon(forFile: item.url.path))
                 .resizable()
                 .frame(width: 36, height: 36)
+                .opacity(isConverting ? 0.35 : 1)
+                .overlay {
+                    if isConverting {
+                        ProgressView().controlSize(.small).help("Dönüştürülüyor…")
+                    }
+                }
                 .overlay(alignment: .topTrailing) {
-                    if isHovering {
+                    if isHovering, !isConverting {
                         // Önizleme: Quick Look.
                         Button { preview() } label: {
                             Image(systemName: "eye")
@@ -117,7 +139,6 @@ private struct ShelfTile: View {
                 .truncationMode(.middle)
                 .frame(width: 66)
         }
-        .help(item.name)
         .padding(6)
         .background(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
             .fill(isHovering ? NotchDesign.cardHoverFill : .clear))
@@ -138,6 +159,14 @@ private struct ShelfTile: View {
             }
             Button("AirDrop ile gönder") { if let url { ShelfStore.shareViaAirDrop([url]) } }
             Button("Sıkıştır") { if let url { compress([url]) } }
+            if let url, !ShelfConversion.options(for: url).isEmpty {
+                Menu("Dönüştür") {
+                    ForEach(ShelfConversion.options(for: url), id: \.self) { conversion in
+                        Button(conversion.title) { convert(url, conversion) }
+                    }
+                }
+                .disabled(isConverting)
+            }
             Button("Yolu kopyala") { if let url { ShelfStore.copyPaths([url]) } }
             Button("Finder'da göster") { if let url { NSWorkspace.shared.activateFileViewerSelecting([url]) } }
             Divider()

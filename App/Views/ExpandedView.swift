@@ -115,6 +115,7 @@ struct ExpandedView: View {
         case .claude: ClaudeTab(usage: coordinator.claudeUsage)
         case .terminal: TerminalTab(session: coordinator.terminal, model: model)
         case .clipboard: ClipboardTab(history: coordinator.clipboard)
+        case .ci: CITab(ci: coordinator.ci, hasRepositories: !coordinator.settings.ciRepositories.isEmpty)
         }
     }
 }
@@ -136,6 +137,7 @@ extension NotchTab {
         // ≈ 77 sütun × 18 satır (12 pt SF Mono).
         case .terminal: 280
         case .clipboard: 200
+        case .ci: 160
         }
     }
 }
@@ -357,6 +359,10 @@ private struct StatusArea: View {
             if coordinator.privacy.isCameraActive {
                 Circle().fill(.green).frame(width: 6, height: 6).help("Kamera kullanımda").notchTransition(.fade)
             }
+            if coordinator.screenRecording.isRecording {
+                Circle().fill(.purple).frame(width: 6, height: 6).help("Ekran kaydediliyor ya da paylaşılıyor")
+                    .notchTransition(.fade)
+            }
             if coordinator.privacy.isMicrophoneActive {
                 Circle().fill(.orange).frame(width: 6, height: 6).help("Mikrofon kullanımda").notchTransition(.fade)
             }
@@ -375,7 +381,7 @@ private struct StatusArea: View {
 
 /// Durum çiplerinden hangilerinin göründüğü; değişince çipler solarak girip çıkar.
 private struct StatusSignature: Equatable {
-    let weather: Bool, keepAwake: Bool, camera: Bool, microphone: Bool, battery: Int?
+    let weather: Bool, keepAwake: Bool, camera: Bool, microphone: Bool, screen: Bool, battery: Int?
 
     @MainActor
     init(coordinator: AppCoordinator) {
@@ -383,6 +389,7 @@ private struct StatusSignature: Equatable {
         keepAwake = coordinator.keepAwake.isActive
         camera = coordinator.privacy.isCameraActive
         microphone = coordinator.privacy.isMicrophoneActive
+        screen = coordinator.screenRecording.isRecording
         battery = coordinator.battery.state?.percent
     }
 }

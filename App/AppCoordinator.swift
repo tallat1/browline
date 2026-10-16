@@ -26,7 +26,7 @@ enum NotchSection: String, CaseIterable, Identifiable, Sendable {
         case .shelf: [.shelf, .clipboard]
         case .calendar: [.calendar]
         case .tools: [.notes, .timer, .terminal, .mirror]
-        case .status: [.system, .claude]
+        case .status: [.system, .claude, .ci]
         }
     }
 
@@ -64,6 +64,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
     case claude
     case terminal
     case clipboard
+    case ci
 
     var id: String { rawValue }
 
@@ -80,6 +81,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .claude: "sparkles"
         case .terminal: "terminal"
         case .clipboard: "doc.on.clipboard"
+        case .ci: "hammer"
         }
     }
 
@@ -96,6 +98,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .claude: "Claude"
         case .terminal: String(localized: "Terminal")
         case .clipboard: String(localized: "Pano")
+        case .ci: "CI"
         }
     }
 
@@ -105,7 +108,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .shelf, .clipboard: .shelf
         case .calendar: .calendar
         case .notes, .timer, .terminal, .mirror: .tools
-        case .system, .claude: .status
+        case .system, .claude, .ci: .status
         }
     }
 
@@ -131,6 +134,8 @@ final class NotchUIState {
     var bluetoothEvent: BluetoothEvent?
     /// Mikrofon kısayolu kaydedilemedi (birleşim başka uygulamada kayıtlı).
     var micShortcutUnavailable = false
+    /// Son biten CI çalışması (kısa bildirimde gösterilir).
+    var lastFinishedRun: CIMonitor.Run?
 }
 
 /// Bluetooth kısa bildirimi: hangi aygıt, ne oldu.
@@ -172,18 +177,24 @@ final class AppCoordinator {
         static let claudeUsage: ActivityID = "claudeUsage"
         static let bluetooth: ActivityID = "bluetooth"
         static let microphone: ActivityID = "microphone"
+        static let screenRecording: ActivityID = "screenRecording"
+        static let ci: ActivityID = "ci"
+        /// Kilitliyken müzik + pil şeridi (kilit ekranı bileşeni).
+        static let lockWidget: ActivityID = "lockWidget"
+        static let ciDone: ActivityID = "ciDone"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix)
                 || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull,
-                    claudeUsage, bluetooth, microphone].contains(id)
+                    claudeUsage, bluetooth, microphone, ci, ciDone, lockWidget].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
         /// etkinlik metni bilgisayarın başındaki herkese görünür.
         static func isAllowedOnLockScreen(_ id: ActivityID) -> Bool {
-            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake, batteryLow, batteryFull, microphone].contains(id)
+            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake, batteryLow, batteryFull, microphone,
+             screenRecording, lockWidget].contains(id)
         }
     }
 
@@ -216,6 +227,8 @@ final class AppCoordinator {
     let microphone = MicrophoneControl()
     let spectrum = AudioSpectrum()
     let lowPower = LowPowerMode()
+    let screenRecording = ScreenRecordingMonitor()
+    let ci = CIMonitor()
     /// Sistem geneli sessize alma kısayolu; `start()`'ta kurulur.
     private var micShortcut: GlobalShortcut?
     private var registeredMicShortcut: GlobalShortcut.Preset?
@@ -257,6 +270,18 @@ final class AppCoordinator {
     }
 
     var isMicrophoneMuted: Bool { settings.meetingControlsEnabled && microphone.isMuted }
+
+    /// Kilitliyken geniş şerit: solda müzik (yoksa pil), sağda pil ya da kalan süre. Kilit ekranında
+    /// panel tıklama almıyor ve büyük kart macOS'un saatinin üstüne biner; bu yüzden kompakt yükseklikte.
+    /// Öncelik 32: Now Playing'in (30) önünde, çalışan zamanlayıcının (35) ve uyarıların arkasında.
+    private func updateLockWidget() {
+        let hasContent = (settings.nowPlayingEnabled && nowPlaying.info != nil) || (settings.batteryEnabled && battery.state != nil)
+        if lockScreen.isLocked, settings.lockScreenWidgetsEnabled, hasContent {
+            activities.setLive(ActivityKind.lockWidget, priority: 32)
+        } else {
+            activities.removeLive(ActivityKind.lockWidget)
+        }
+    }
 
     /// Düşük Güç Modu'nda (ayar açıksa) kayan yazı ve çubuklar durur, ses dinleyicisi kapanır.
     var isMotionPaused: Bool { settings.pauseMotionInLowPower && lowPower.isEnabled }
@@ -357,6 +382,8 @@ final class AppCoordinator {
                 activities.flash(ActivityKind.trackChange, duration: Self.trackPeekDuration(for: info.title))
             }
             lastTrackInfo = info
+            // Kilitliyken müzik başlayınca/bitince şerit güncellensin (pil yoksa tek içerik müzik).
+            if lockScreen.isLocked { updateLockWidget() }
             // Kompakt kanatlar yalnız çalarken; duraklatılmış parça açık notch'ta görünmeye devam eder.
             // Duraklama hemen değil kısa bir payla kanadı kapatır: şarkı geçişindeki anlık duraklama
             // notch'u kapatıp yeniden açmasın.
@@ -409,6 +436,26 @@ final class AppCoordinator {
             AppLog.coordinator.notice("gizlilik: kamera \(camera ? "açık" : "kapalı", privacy: .public), mikrofon \(microphone ? "açık" : "kapalı", privacy: .public)")
             self.microphone.refreshInputApps()
             updatePrivacyActivity()
+        }
+        ci.onActiveChanged = { [weak self] runs in
+            guard let self else { return }
+            AppLog.coordinator.notice("CI: \(runs.count) süren çalışma")
+            // Müzik ve toplantı önde; boşta kapalı notch'ta süren derleme görünür.
+            if runs.isEmpty { activities.removeLive(ActivityKind.ci) } else { activities.setLive(ActivityKind.ci, priority: 12) }
+        }
+        ci.onRunFinished = { [weak self] run in
+            guard let self else { return }
+            AppLog.coordinator.notice("CI bitti: \(String(describing: run.state), privacy: .public)")
+            ui.lastFinishedRun = run
+            let text = run.workflow.isEmpty ? run.repositoryName : "\(run.repositoryName) · \(run.workflow)"
+            activities.flash(ActivityKind.ciDone, duration: Self.readableFlashDuration(base: .seconds(4), text: text))
+        }
+        screenRecording.onChange = { [weak self] recording in
+            guard let self else { return }
+            AppLog.coordinator.notice("ekran kaydı: \(recording ? "başladı" : "bitti", privacy: .public)")
+            // Kamera/mikrofon göstergesinin (15) hemen önünde; müzik ve toplantı önde kalır.
+            if recording { activities.setLive(ActivityKind.screenRecording, priority: 16) }
+            else { activities.removeLive(ActivityKind.screenRecording) }
         }
         microphone.onChange = { [weak self] in
             guard let self else { return }
@@ -474,6 +521,7 @@ final class AppCoordinator {
             // Ana panel kilit altında kalır; açık kalmasın ki kilit açılınca raf ya da takvim görünmesin.
             if locked { panels.models.forEach { $0.dismiss() } }
             settings.setLockSessionOpen(locked && lockScreen.status == .ready)
+            updateLockWidget()
             updateCompactState()
         }
 
@@ -501,6 +549,8 @@ final class AppCoordinator {
         bluetooth.stop()
         // Bizim kapattığımız mikrofon çıkarken geri açılır.
         microphone.stop()
+        screenRecording.stop()
+        ci.stop()
         micShortcut?.unregister()
         registeredMicShortcut = nil
         spectrum.isEnabled = false
@@ -525,12 +575,19 @@ final class AppCoordinator {
         toggle(settings.calendarEnabled, start: calendar.start, stop: calendar.stop)
         setActivityAPI(enabled: settings.activityAPIEnabled)
         toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
+        toggle(settings.screenRecordingIndicatorEnabled, start: screenRecording.start, stop: screenRecording.stop)
+        if settings.ciEnabled {
+            ci.start(repositories: settings.ciRepositories, onlyMine: settings.ciOnlyMine)
+        } else {
+            ci.stop()
+        }
         toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
         toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
         toggle(settings.bluetoothEnabled, start: bluetooth.start, stop: bluetooth.stop)
         toggle(settings.meetingControlsEnabled, start: microphone.start, stop: microphone.stop)
         updateMicShortcut()
         updateSpectrum()
+        updateLockWidget()
         updatePrivacyActivity()
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
         if !settings.systemStatsEnabled { systemStats.stop() }
@@ -602,6 +659,7 @@ final class AppCoordinator {
         case .claude: settings.claudeUsageEnabled
         case .terminal: settings.terminalEnabled
         case .clipboard: settings.clipboardEnabled
+        case .ci: settings.ciEnabled
         }
     }
 

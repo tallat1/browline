@@ -169,9 +169,15 @@ private struct ModuleSettings: View {
                         .foregroundStyle(.secondary)
                 }
                 Toggle("Kamera ve mikrofon göstergesi", isOn: $settings.privacyIndicatorEnabled)
+                Toggle("Ekran kaydı ve paylaşım göstergesi (macOS'un belgelenmemiş bir işleviyle)",
+                       isOn: $settings.screenRecordingIndicatorEnabled)
                 Toggle("İndirmeler (İndirilenler klasörü izni ister)", isOn: $settings.downloadsEnabled)
             }
             Section {
+                Toggle("Kilitliyken müzik ve pil şeridi", isOn: $settings.lockScreenWidgetsEnabled)
+                Text("Kilit ekranında notch genişler: solda çalan şarkı, sağda pil (müzik yoksa pil ve kalan süre). Kilitte tıklanamaz; macOS'un saatini örtmemek için kapalı notch yüksekliğinde.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Toggle("Kilit ekranında göster (deneysel)", isOn: $settings.lockScreenEnabled)
                 Text("Kilitliyken yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Private SkyLight API kullanır: bir sorun WindowServer'ı yeniden başlatıp oturumu kapatabilir.")
                     .font(.caption)
@@ -231,6 +237,10 @@ private struct ModuleSettings: View {
                 Toggle("Terminal (kapatınca açık kabuk sonlanır)", isOn: $settings.terminalEnabled)
                 Toggle("Pano geçmişi (yalnız bellekte; parola yöneticilerinin gizli kopyaları alınmaz)",
                        isOn: $settings.clipboardEnabled)
+                Toggle("CI durumu (GitHub Actions, kendi gh oturumunuzla)", isOn: $settings.ciEnabled)
+                if settings.ciEnabled {
+                    CIRepositorySettings(settings: settings, ci: coordinator.ci)
+                }
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled)
                 if settings.claudeUsageEnabled {
                     Toggle("Yüzdeleri kullanım uç noktasından al (belgelenmemiş)", isOn: $settings.claudeUsageAPIEnabled)
@@ -449,5 +459,77 @@ private struct ModuleReveal: Equatable {
         place = settings.weatherPlace?.name
         lockDisabled = settings.lockScreenAutoDisabled
         lock = coordinator.lockScreen.status
+    }
+}
+
+/// İzlenen depolar: ekle, kaldır, son çalışılan depoları öner; yalnız benimkiler.
+private struct CIRepositorySettings: View {
+    @Bindable var settings: AppSettings
+    let ci: CIMonitor
+    @State private var draft = ""
+    @State private var suggestions: [String] = []
+    @State private var isSearching = false
+
+    var body: some View {
+        ForEach(settings.ciRepositories, id: \.self) { repository in
+            HStack {
+                Image(systemName: "hammer").foregroundStyle(.secondary)
+                Text(verbatim: repository)
+                Spacer()
+                Button {
+                    settings.ciRepositories.removeAll { $0 == repository }
+                } label: {
+                    Image(systemName: "minus.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("İzlemeyi bırak")
+            }
+        }
+        HStack {
+            TextField("sahip/depo ya da GitHub adresi", text: $draft)
+                .onSubmit(add)
+            Button("Ekle", action: add)
+                .disabled(CIMonitor.normalize(draft) == nil)
+        }
+        HStack {
+            Button(isSearching ? "Aranıyor…" : "Son çalıştığım depoları öner") { suggest() }
+                .disabled(isSearching)
+            ForEach(suggestions.filter { !settings.ciRepositories.contains($0) }, id: \.self) { repository in
+                Button(repository) { settings.ciRepositories.append(repository) }
+                    .buttonStyle(.link)
+            }
+        }
+        Toggle("Yalnız benim başlattığım çalışmalar", isOn: $settings.ciOnlyMine)
+        Text(statusText)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+    }
+
+    private var statusText: String {
+        switch ci.status {
+        case .missingTool: String(localized: "gh bulunamadı: Terminal'de brew install gh, sonra gh auth login.")
+        case let .failed(repository): String(localized: "\(repository) okunamadı; gh auth status ile kontrol edin.")
+        case .idle, .running:
+            String(localized: "Süren çalışma varken 30 sn'de bir, yoksa 3 dk'da bir sorulur. Anahtar uygulamaya gelmez; gh kendi oturumunu kullanır.")
+        }
+    }
+
+    private func add() {
+        guard let repository = CIMonitor.normalize(draft) else { return }
+        if !settings.ciRepositories.contains(repository) { settings.ciRepositories.append(repository) }
+        draft = ""
+    }
+
+    /// ~/GitHub (yoksa ev klasörü) altındaki git depoları; son 14 günde commit alan GitHub depoları.
+    private func suggest() {
+        isSearching = true
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let github = home.appendingPathComponent("GitHub")
+        let root = FileManager.default.fileExists(atPath: github.path) ? github : home
+        Task {
+            let found = await Task.detached(priority: .utility) { CIMonitor.suggestedRepositories(in: root) }.value
+            suggestions = found
+            isSearching = false
+        }
     }
 }

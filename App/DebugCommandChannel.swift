@@ -69,6 +69,31 @@ final class DebugCommandChannel {
         case "power:low-on", "power:low-off", "power:low-auto":
             // Sistemi değiştirmeden Düşük Güç Modu benzetimi.
             coordinator.lowPower.override = command == "power:low-auto" ? nil : command == "power:low-on"
+        case "ci:state":
+            let ci = coordinator.ci
+            let summary = "durum \(String(describing: ci.status)), çalışma \(ci.runs.count), süren \(ci.activeRuns.count)"
+            AppLog.coordinator.notice("CI durumu: \(summary, privacy: .public)")
+        case "ci:preview-start", "ci:preview-done", "ci:preview-fail":
+            // Örnek çalışma: depo ve iş akışı adı deneme olduğunu söyler; yalnız bellekte.
+            let started = Date.now.addingTimeInterval(-95)
+            func sample(_ state: CIMonitor.Run.State) -> CIMonitor.Run {
+                CIMonitor.Run(id: -1, repository: "ornek/deneme-depo", workflow: "Örnek iş akışı", title: "Deneme commit'i",
+                              branch: "main", state: state, createdAt: started, url: nil)
+            }
+            switch command {
+            case "ci:preview-start": coordinator.ci.preview([sample(.active)])
+            case "ci:preview-fail": coordinator.ci.preview([sample(.active)]); coordinator.ci.preview([sample(.failure)])
+            default: coordinator.ci.preview([sample(.active)]); coordinator.ci.preview([sample(.success)])
+            }
+        case "ci:preview-clear":
+            coordinator.ci.preview([])
+        case "ci:suggest":
+            // Yalnız okur: ~/GitHub altındaki depoların origin adresleri ve son commit zamanı.
+            let root = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("GitHub")
+            Task {
+                let found = await Task.detached { CIMonitor.suggestedRepositories(in: root) }.value
+                AppLog.coordinator.notice("CI önerileri: \(found.joined(separator: ", "), privacy: .public)")
+            }
         case "mic:toggle":
             coordinator.microphone.toggleMute()
         case "bluetooth:state":
