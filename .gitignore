@@ -4,3 +4,4 @@ build/
 .swiftpm/
 NotchMVP.xcodeproj/
 xcuserdata/
+dist/

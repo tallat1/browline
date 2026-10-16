@@ -5,12 +5,17 @@ set -eu
 
 APP="$TARGET_BUILD_DIR/$WRAPPER_NAME"
 IDENTITY="${EXPANDED_CODE_SIGN_IDENTITY:--}"
+# Notarization güvenli zaman damgası ister; geliştirme derlemesinde ağ beklememek için yok.
+case "${CODE_SIGN_IDENTITY:-}" in
+  "Developer ID"*) TIMESTAMP="--timestamp" ;;
+  *) TIMESTAMP="--timestamp=none" ;;
+esac
 mkdir -p "$APP/Contents/Helpers"
 
 # notch komut satırı aracı (aynı derlemenin ürünü).
 if [ -x "$BUILT_PRODUCTS_DIR/notch" ]; then
   cp "$BUILT_PRODUCTS_DIR/notch" "$APP/Contents/Helpers/notch"
-  codesign --force --timestamp=none --options runtime --sign "$IDENTITY" "$APP/Contents/Helpers/notch"
+  codesign --force "$TIMESTAMP" --options runtime --sign "$IDENTITY" "$APP/Contents/Helpers/notch"
 fi
 
 # Çoklu medya oturumu yardımcısı (Helpers/MediaSessions); yoksa tek oturum gösterilir.
@@ -19,7 +24,7 @@ if [ -f "$SESSIONS_LIBRARY" ]; then
   mkdir -p "$APP/Contents/Frameworks" "$APP/Contents/Resources"
   cp "$SESSIONS_LIBRARY" "$APP/Contents/Frameworks/MediaSessions.dylib"
   cp "$SRCROOT/Helpers/MediaSessions/media-sessions.pl" "$APP/Contents/Resources/"
-  codesign --force --timestamp=none --sign "$IDENTITY" "$APP/Contents/Frameworks/MediaSessions.dylib"
+  codesign --force "$TIMESTAMP" --sign "$IDENTITY" "$APP/Contents/Frameworks/MediaSessions.dylib"
 else
   echo "warning: çoklu medya oturumu yardımcısı derlenmemiş ('make sessions'); tek oturum gösterilecek."
 fi
@@ -36,7 +41,7 @@ rsync -a --delete "$ADAPTER_BUILD/MediaRemoteAdapter.framework" "$APP/Contents/F
 cp "$ADAPTER_BUILD/MediaRemoteAdapterTestClient" "$APP/Contents/Helpers/"
 cp "$SRCROOT/ThirdParty/mediaremote-adapter/bin/mediaremote-adapter.pl" "$APP/Contents/Resources/"
 
-codesign --force --timestamp=none --options runtime --sign "$IDENTITY" \
+codesign --force "$TIMESTAMP" --options runtime --sign "$IDENTITY" \
   "$APP/Contents/Helpers/MediaRemoteAdapterTestClient"
-codesign --force --timestamp=none --sign "$IDENTITY" \
+codesign --force "$TIMESTAMP" --sign "$IDENTITY" \
   "$APP/Contents/Frameworks/MediaRemoteAdapter.framework"

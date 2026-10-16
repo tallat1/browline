@@ -667,7 +667,8 @@ final class AppCoordinator {
         updateLockWidget()
         updatePrivacyActivity()
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
-        if !settings.systemStatsEnabled { systemStats.stop() }
+        // Modül açıkken arka planda seyrek örnekleme: Sistem sayfası açılınca grafik geçmişi hazır.
+        toggle(settings.systemStatsEnabled, start: systemStats.startBackground, stop: systemStats.stop)
         toggle(settings.claudeUsageEnabled, start: claudeUsage.start, stop: claudeUsage.stop)
         claudeUsage.setAPIEnabled(settings.claudeUsageEnabled && settings.claudeUsageAPIEnabled)
         if settings.weatherEnabled, let place = settings.weatherPlace { weather.start(place: place) } else { weather.stop() }

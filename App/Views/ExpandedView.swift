@@ -131,8 +131,9 @@ extension NotchTab {
     /// İçerik alanının boyu (bant hariç). Genişlik hepsinde `NotchDesign.openWidth`.
     var bodyHeight: CGFloat {
         switch self {
-        case .now, .activities, .calendar, .timer, .system: Self.shortHeight
-        case .shelf, .clipboard, .notes, .claude, .ci: Self.mediumHeight
+        case .now, .activities, .calendar, .timer: Self.shortHeight
+        // Sistem grafiklerle orta boyda: Durum bölümünün üç sayfası aynı boy, geçişte zıplama yok.
+        case .shelf, .clipboard, .notes, .system, .claude, .ci: Self.mediumHeight
         case .terminal, .mirror: Self.longHeight
         }
     }

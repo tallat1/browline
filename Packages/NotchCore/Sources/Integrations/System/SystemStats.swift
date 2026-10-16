@@ -2,48 +2,135 @@ import Darwin
 import Foundation
 import Observation
 
-/// İşlemci, bellek ve ağ hızı. Public Mach ve getifaddrs; yalnız sekme ekrandayken saniyede bir
-/// örneklenir, sekme kapanınca durur.
+/// İşlemci, bellek ve ağ hızı. Public Mach ve getifaddrs. Sayfa ekrandayken saniyede bir; modül
+/// açıkken arka planda 5 sn'de bir (2 sn esneklikle, uyanmalar birleşsin) örneklenir ve son 10 dakika
+/// grafik için tutulur: kullanıcı "daha ayrıntılı grafik" istedi (2026-10-16), sayfa açılınca geçmiş
+/// hazır olsun.
 @MainActor
 @Observable
 public final class SystemStats {
     public struct Snapshot: Equatable, Sendable {
         /// 0…1; ilk örnekte (iki sayaç okuması gerekir) nil.
         public var cpu: Double?
+        /// İşlemcinin kullanıcı (uygulamalar) ve sistem (çekirdek) payı, 0…1.
+        public var cpuUser: Double?
+        public var cpuSystem: Double?
         public var memoryUsed: UInt64
         public var memoryTotal: UInt64
+        public var memory: MemoryBreakdown?
         /// Bayt/sn
         public var download: Double
         public var upload: Double
     }
 
+    /// Etkinlik Monitörü'nün bellek ayrımı (bayt).
+    public struct MemoryBreakdown: Equatable, Sendable {
+        public var app: UInt64
+        public var wired: UInt64
+        public var compressed: UInt64
+        public var used: UInt64 { app + wired + compressed }
+    }
+
+    /// Grafik noktası.
+    public struct Sample: Identifiable, Equatable, Sendable {
+        public var id: Date { date }
+        public let date: Date
+        public let cpuUser: Double
+        public let cpuSystem: Double
+        /// Kullanılan bellek oranı, 0…1.
+        public let memory: Double
+        public let download: Double
+        public let upload: Double
+    }
+
     public private(set) var snapshot: Snapshot?
+    public private(set) var history: [Sample] = []
+    public nonisolated static let historyWindow: TimeInterval = 600
+    nonisolated static let minimumHistorySpacing: TimeInterval = 1.9
+    @ObservationIgnored private var isEnabled = false
+    @ObservationIgnored private var isForeground = false
     @ObservationIgnored private var task: Task<Void, Never>?
     @ObservationIgnored private var lastTicks: CPUTicks?
     @ObservationIgnored private var lastBytes: (received: UInt64, sent: UInt64, at: Date)?
 
     public init() {}
 
-    public func start() {
-        guard task == nil else { return }
-        task = Task { @MainActor [weak self] in
-            while !Task.isCancelled {
-                self?.sample()
-                try? await Task.sleep(for: .seconds(1))
-            }
-        }
+    /// Modül açıkken: arka planda seyrek örnekleme, geçmiş birikir.
+    public func startBackground() {
+        guard !isEnabled else { return }
+        isEnabled = true
+        restart()
+    }
+
+    /// Sayfa görünür olunca saniyede bir; kapanınca arka plan hızına (modül kapalıysa durur).
+    public func setForeground(_ foreground: Bool) {
+        guard foreground != isForeground else { return }
+        isForeground = foreground
+        restart()
     }
 
     public func stop() {
+        isEnabled = false
+        isForeground = false
         task?.cancel()
         task = nil
         lastTicks = nil
         lastBytes = nil
+        history = []
+        snapshot = nil
+    }
+
+    private func restart() {
+        task?.cancel()
+        task = nil
+        guard isEnabled || isForeground else {
+            lastTicks = nil
+            lastBytes = nil
+            return
+        }
+        let foreground = isForeground
+        task = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                self?.sample()
+                if foreground {
+                    try? await Task.sleep(for: .seconds(1), tolerance: .milliseconds(100))
+                } else {
+                    try? await Task.sleep(for: .seconds(5), tolerance: .seconds(2))
+                }
+            }
+        }
+    }
+
+    /// Çizim için en çok `limit` nokta: eşit aralıklı seçilir, son nokta hep kalır. Saniyelik örneklerle
+    /// 10 dakika 600 nokta ediyordu; dört grafiği her saniye çizmek açık Sistem sayfasında %2,35 işlemci
+    /// tutuyordu (2026-10-16 ölçümü).
+    public nonisolated static func downsampled(_ history: [Sample], limit: Int = 120) -> [Sample] {
+        guard history.count > limit, limit > 1 else { return history }
+        let step = Double(history.count - 1) / Double(limit - 1)
+        return (0..<limit).map { history[Int((Double($0) * step).rounded())] }
+    }
+
+    /// Ölçüm için: geçmişi son 10 dakikanın saniyelik yapay noktalarıyla doldurur (çizim maliyeti).
+    public func fillHistoryForMeasurement(now: Date = .now) {
+        history = (0..<600).map { index in
+            let t = Double(index)
+            return Sample(date: now.addingTimeInterval(t - 600), cpuUser: 0.1 + 0.05 * sin(t / 9),
+                          cpuSystem: 0.05, memory: 0.8, download: 2_000 + 1_500 * sin(t / 5), upload: 800)
+        }
+    }
+
+    /// Pencere dışına düşenler atılır.
+    nonisolated static func trimmed(_ history: [Sample], now: Date) -> [Sample] {
+        let cutoff = now.addingTimeInterval(-historyWindow)
+        guard let first = history.firstIndex(where: { $0.date >= cutoff }) else { return [] }
+        return first == 0 ? history : Array(history[first...])
     }
 
     // MARK: - Örnekleme
 
     struct CPUTicks: Equatable {
+        var user: UInt64 = 0
+        var system: UInt64 = 0
         var busy: UInt64
         var total: UInt64
     }
@@ -54,9 +141,17 @@ public final class SystemStats {
         return min(1, Double(new.busy - old.busy) / Double(new.total - old.total))
     }
 
+    /// Kullanıcı (nice dahil) ve sistem payları; toplamları meşgul oranına eşit.
+    nonisolated static func cpuSplit(from old: CPUTicks?, to new: CPUTicks) -> (user: Double, system: Double)? {
+        guard let old, new.total > old.total, new.user >= old.user, new.system >= old.system else { return nil }
+        let total = Double(new.total - old.total)
+        return (min(1, Double(new.user - old.user) / total), min(1, Double(new.system - old.system) / total))
+    }
+
     private func sample() {
         let ticks = Self.readCPUTicks()
         let cpu = ticks.flatMap { Self.cpuUsage(from: lastTicks, to: $0) }
+        let split = ticks.flatMap { Self.cpuSplit(from: lastTicks, to: $0) }
         lastTicks = ticks
         let now = Date.now
         let bytes = Self.readNetworkBytes()
@@ -71,9 +166,20 @@ public final class SystemStats {
         }
         if let bytes { lastBytes = (bytes.received, bytes.sent, now) }
         // Bellek ilk örnekte de gösterilir; işlemci bir saniye sonra gelir.
-        snapshot = Snapshot(cpu: cpu, memoryUsed: Self.readMemoryUsed() ?? 0,
-                            memoryTotal: ProcessInfo.processInfo.physicalMemory,
+        let memory = Self.readMemory()
+        let total = ProcessInfo.processInfo.physicalMemory
+        snapshot = Snapshot(cpu: cpu, cpuUser: split?.user, cpuSystem: split?.system,
+                            memoryUsed: memory?.used ?? 0, memoryTotal: total, memory: memory,
                             download: download, upload: upload)
+        // İlk örnekte işlemci payı yok (iki sayaç okuması gerekir): geçmişe ikinci örnekten itibaren.
+        // Grafik en sık 2 sn'de bir değişir (rakamlar saniyede bir): dört grafiği her saniye yeniden
+        // çizmek açık sayfada belirgin işlemci tutuyordu.
+        if let split, now.timeIntervalSince(history.last?.date ?? .distantPast) >= Self.minimumHistorySpacing {
+            let point = Sample(date: now, cpuUser: split.user, cpuSystem: split.system,
+                               memory: total > 0 ? Double(memory?.used ?? 0) / Double(total) : 0,
+                               download: download, upload: upload)
+            history = Self.trimmed(history + [point], now: now)
+        }
     }
 
     private static func readCPUTicks() -> CPUTicks? {
@@ -87,11 +193,11 @@ public final class SystemStats {
         guard result == KERN_SUCCESS else { return nil }
         let user = UInt64(info.cpu_ticks.0), system = UInt64(info.cpu_ticks.1)
         let idle = UInt64(info.cpu_ticks.2), nice = UInt64(info.cpu_ticks.3)
-        return CPUTicks(busy: user + system + nice, total: user + system + idle + nice)
+        return CPUTicks(user: user + nice, system: system, busy: user + system + nice, total: user + system + idle + nice)
     }
 
     /// Etkinlik Monitörü'ndeki "Kullanılan Bellek"e yakın: uygulama belleği + kablolu + sıkıştırılmış.
-    private static func readMemoryUsed() -> UInt64? {
+    private static func readMemory() -> MemoryBreakdown? {
         var info = vm_statistics64()
         var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size / MemoryLayout<integer_t>.size)
         let result = withUnsafeMutablePointer(to: &info) {
@@ -102,8 +208,9 @@ public final class SystemStats {
         var pageSize: vm_size_t = 0
         guard result == KERN_SUCCESS, host_page_size(mach_host_self(), &pageSize) == KERN_SUCCESS else { return nil }
         let appPages = UInt64(info.internal_page_count) - min(UInt64(info.purgeable_count), UInt64(info.internal_page_count))
-        let pages = appPages + UInt64(info.wire_count) + UInt64(info.compressor_page_count)
-        return pages * UInt64(pageSize)
+        let size = UInt64(pageSize)
+        return MemoryBreakdown(app: appPages * size, wired: UInt64(info.wire_count) * size,
+                               compressed: UInt64(info.compressor_page_count) * size)
     }
 
     /// Geri döngü dışındaki arayüzlerin toplam bayt sayaçları.

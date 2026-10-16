@@ -1969,6 +1969,16 @@
         }
       }
     },
+    "Hız": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speed"
+          }
+        }
+      }
+    },
     "Hızlı not": {
       "localizations": {
         "en": {
@@ -2813,6 +2823,16 @@
         }
       }
     },
+    "Oran": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rate"
+          }
+        }
+      }
+    },
     "Otomasyon": {
       "localizations": {
         "en": {
@@ -2929,6 +2949,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brightness can't be set on this Mac; brightness keys stay with the system."
+          }
+        }
+      }
+    },
+    "Pay": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
           }
         }
       }
@@ -3321,6 +3351,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Instead of the system indicator"
+          }
+        }
+      }
+    },
+    "Son 10 dakikada en yüksek indirme: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Peak download in the last 10 minutes: %@"
           }
         }
       }
@@ -3765,6 +3805,16 @@
         }
       }
     },
+    "Tür": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        }
+      }
+    },
     "Uyanık tut": {
       "localizations": {
         "en": {
@@ -3831,6 +3881,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "Apply"
+          }
+        }
+      }
+    },
+    "Uygulama %@ GB · Kablolu %@ GB · Sıkıştırılmış %@ GB": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App %1$@ GB · Wired %2$@ GB · Compressed %3$@ GB"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Uygulama %1$@ GB · Kablolu %2$@ GB · Sıkıştırılmış %3$@ GB"
           }
         }
       }
@@ -4035,6 +4101,22 @@
         }
       }
     },
+    "Yeşil: uygulamalar (%@) · Turuncu: sistem (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Green: apps (%1$@) · Orange: system (%2$@)"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Yeşil: uygulamalar (%1$@) · Turuncu: sistem (%2$@)"
+          }
+        }
+      }
+    },
     "Yolu kopyala": {
       "localizations": {
         "en": {
@@ -4045,12 +4127,32 @@
         }
       }
     },
+    "Yön": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direction"
+          }
+        }
+      }
+    },
     "Yüzen kart (menü çubuğunun altında)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Floating card (below the menu bar)"
+          }
+        }
+      }
+    },
+    "Zaman": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time"
           }
         }
       }

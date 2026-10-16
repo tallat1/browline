@@ -46,6 +46,9 @@ final class DebugCommandChannel {
             coordinator.closeOnboarding?()
         case let step where step.hasPrefix("onboarding:step:"):
             if let value = Int(step.dropFirst(16)) { coordinator.onboardingStepForDebug?(value) }
+        case "system:fill-history":
+            // Yapay 600 nokta: grafik çizim maliyetini dolu geçmişle ölçmek için.
+            coordinator.systemStats.fillHistoryForMeasurement()
         case "notch:hide":
             coordinator.hideNotch(for: 3600)
         case "notch:show":

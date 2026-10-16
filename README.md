@@ -218,7 +218,7 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
   `notify = ["/bin/bash", "/YOL/notch-notify.sh"]`. Codex bildirim alanları sürüme göre değişebilir; betik yalnız
   tür ve klasörü okur.
 
-## Durum (2026-10-15)
+## Durum (2026-10-16)
 
 | MVP maddesi | Durum |
 |---|---|
@@ -244,8 +244,11 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
 | v1+: pano geçmişi, raf derinliği, Bluetooth, toplantı denetimi, müziğe tepkili çubuklar (2026-10-16) | ✓ yazıldı; pano, raf sıkıştırma adları, Bluetooth ayrıştırma ve uyarı eşikleri, spektrum bantları ve vuruş salınımı birim testli. Pano izleyici çalışıyor (izin `alwaysAllow`); raf çubuğu, Bluetooth kanadı (örnek aygıt) ve Sistem kartı (gerçek AirPods, %78), sessiz mikrofon kanadı ve kartı görsel doğrulandı. Mikrofon kısa süre sessize alınıp geri açıldı, aygıtta `mute 0` doğrulandı. Spektrum gerçek müzikle (izin verildi) çalıştı, çubuklar kareden kareye değişiyor. Gerçek Bluetooth bağlanma/ayrılma, gerçek görüşmede "Görüşmeye dön" ve sessizliğin aygıt değişince taşınması elle denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
-| Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
-| macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
+| Durum › Sistem grafikleri (son 10 dk: işlemci, bellek, ağ) | ✓ yazıldı; işlemci ayrımı, 10 dk penceresi ve seyreltme birim testli; dört kart görsel doğrulandı (gerçek veri ve `system:fill-history` örnek geçmişi). Üzerine gelme elle denenmedi |
+| Enerji, v1+ modülleri açık (müzik duraklatılmış) | ✓ `top` ile, Debug: kapalı boşta %0,05, açık Sistem grafikleri %2,1 ("Enerji" bölümü). Müzik çalarken ve `powermetrics` ölçümü ✗ yapılmadı: `sudo Scripts/energy.sh` hazır, çalıştırılmadı |
+| Yayın boru hattı: Release, hardened runtime, DMG, notarization (`Scripts/release.sh`) | ✓ `--dry-run` geçti (Apple Development imzasıyla): üç ikili hardened runtime, `get-task-allow` yok, DMG 4,2 MB. Gerçek notarization ✗ denenmedi: Developer ID Application kimliği yok |
+| Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: besleme adresi, EdDSA anahtarı ve barındırma kararı bekliyor |
+| Eski macOS (hedef 14.0) | ✓ derleyici erişilebilirliği zorluyor, 162 SF Symbol'ün hepsi 14.0'da var, sürüm korumaları yazıldı ("Eski macOS uyumluluğu"). macOS 14, 15, 26'da çalıştırma ✗ denenmedi (sanal makine gerekir) |
 
 ## Açık notch tasarımı
 
@@ -427,13 +430,13 @@ Hepsi public API (ekran kaydı göstergesi hariç), hepsi ayarlarda kendi sayfas
 | Pil uyarıları | Alcove, boring.notch | Fişte değilken %20 ve %10 eşiği aşağı geçilince, fişteyken %100 olunca 4 sn; kilit ekranında da | Ek iş yok |
 | Kaydırarak parça geçme | Alcove | Açık notch'ta medya sekmesindeyken yatay iki parmak kaydırma: sola sonraki, sağa önceki | Ek iş yok |
 | Anımsatıcılar | NotchNook, Atoll | Takvim sekmesinde sağ sütun: bugün ve gecikmiş, en çok 4; daireye basınca tamamlanır | İzin "Anımsatıcıları göster"de; değişiklik EKEventStoreChanged ile |
-| Sistem durumu | Atoll | Sistem sekmesi: işlemci, bellek (Etkinlik Monitörü'ne yakın), ağ hızı | Mach + getifaddrs; saniyede bir, yalnız sekme açıkken |
+| Sistem durumu | Atoll | Durum › Sistem: son 10 dakikanın grafikleri. İşlemci yığılı alan (yeşil uygulamalar, turuncu sistem; ölçek %25 adımla büyür), bellek eğrisi ve altında uygulama / kablolu / sıkıştırılmış çubuğu (Etkinlik Monitörü'ne yakın), ağ indirme (camgöbeği) ve yükleme (pembe) çizgisi. Üzerine gelince dikey çizgi, o anın değeri ve saati; altta en yüksek indirme. Bluetooth kartı yanında | Mach (`host_cpu_load_info` kullanıcı+nice / sistem, `vm_statistics64`) + getifaddrs. Ayar açıkken arka planda 5 sn'de bir (±2 sn esnek), sekme ekrandayken saniyede bir. Geçmiş 10 dk, iki nokta arası en az 1,9 sn, çizimde en çok 120 noktaya seyreltilir; ayar kapanınca örnekleme durur, geçmiş silinir. ⚠️ Grafikler gövdedeyken her saniyelik anlık değer dördünü baştan kuruyordu (%2,83): ayrı `Equatable` görünüm, yalnız geçmiş ya da imleç değişince çizilir (%2,08); büyük sayıda `numericText` geçişi de yok |
 | Pomodoro | NotchFlow | Zamanlayıcıda: 25 dk odak, 5 dk mola, dört turda bir 15 dk; evreler kendiliğinden geçer, halka odakta kırmızı, molada yeşil | Zamanlayıcıyla aynı |
 | Hava durumu | Atoll, MacNotch | Açık notch'ta sağ üstte simge ve sıcaklık; üzerine gelince en düşük/en yüksek. Şehir ayarlardan, Open-Meteo (anahtarsız) | Varsayılan kapalı; yalnız şehrin koordinatları gönderilir, konum izni yok; yarım saatte bir ve uyanınca |
 | Hızlı not | NotchPad, Islet | Not sekmesi, uygulama klasöründe `notes.txt`; duraksayınca kaydedilir | Klavye: sekme görünürken panel key olabilir, ama yalnız alana tıklayınca alır; yazarken notch sabitlenir; kapanınca klavye öndeki uygulamaya döner. Düzen menüsü olmadığı için ⌘C/V/X/A/Z panelde elle yönlendirilir |
 | Ayna | boring.notch, NotchNook | AVFoundation önizleme, yatay çevrilmiş | Kamera yalnız sekme açıkken; izin ilk "Kameraya erişim ver"de, `com.apple.security.device.camera` |
 
-Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `timer:pomodoro`, `weather:<şehir>|off`, `tab:notes`, `tab:timer`, `tab:system`, `tab:mirror`, `tab:clipboard`, `clipboard:state` (yalnız sayı ve tür), `shelf:add-test|remove-test`, `bluetooth:state|preview-connect|preview-low|preview-disconnect` (örnek aygıt "deneme" adlı), `mic:state|toggle|shortcut`, `spectrum:state|probe-on|probe-off`, `power:low-on|low-off|low-auto`, `ci:state|suggest|preview-start|preview-done|preview-fail|preview-clear` (örnek depo "deneme"), `lock:on|off`, `settings:open|close`.
+Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `timer:pomodoro`, `weather:<şehir>|off`, `tab:notes`, `tab:timer`, `tab:system`, `tab:mirror`, `tab:clipboard`, `clipboard:state` (yalnız sayı ve tür), `shelf:add-test|remove-test`, `bluetooth:state|preview-connect|preview-low|preview-disconnect` (örnek aygıt "deneme" adlı), `mic:state|toggle|shortcut`, `spectrum:state|probe-on|probe-off`, `power:low-on|low-off|low-auto`, `ci:state|suggest|preview-start|preview-done|preview-fail|preview-clear` (örnek depo "deneme"), `lock:on|off`, `settings:open|close`, `system:fill-history` (600 örnek nokta, yalnız ölçüm ve görsel deneme için).
 
 ## Ekranlar
 
@@ -477,7 +480,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (466 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (475 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 
@@ -494,6 +497,88 @@ xcrun xcstringstool sync App/Localizable.xcstrings --stringsdata $(find build/Bu
 Ekranda Türkçe metin yalnız `LocalizedStringKey` ya da `String(localized:)` ile; değişkenden gelen metin
 (`Text(info.title)`) çevrilmez. Üçlü ifade `koşul ? Text("a") : Text("b")` biçiminde yazılır, yoksa `String` olur
 ve kataloğa girmez. Dili zorlayarak deneme: `open -n …/NotchMVP.app --args -AppleLanguages "(en)"`.
+
+## Enerji
+
+2026-10-16, macOS 27.0.1, Apple silicon, Debug derleme, müzik duraklatılmış. `top -l 13 -s 5 -pid <pid> -stats
+pid,cpu,power,idlew` (ilk örnek atılır): sudo istemez, ama süreç başına enerji değil işlemci yüzdesi ve boşta uyanma
+verir.
+
+| Durum | İşlemci | Uyanma/sn | Not |
+|---|---|---|---|
+| Kapalı, kullanıcı boşta (Sistem örneklemesi arka planda) | %0,05 | 2,0 | |
+| Kapalı, kullanıcı fareyi kullanırken | %0,35 | ≈ 18 | Uyanmaların kaynağı imleç: üzerine gelme izleyicisi her fare olayında uyanır |
+| Açık, Şimdi | %0,48 | ≈ 19 | İmleç notch'un üzerinde |
+| Açık, Durum › Sistem grafikleri | %2,1 | 0,6 | Önce %2,83; bir tekrarı %2,90, ölçüm gürültülü |
+| Release, kapalı | %0,60 | 6,2 | Açılıştan hemen sonra; temiz tekrar yapılmadı |
+
+⚠️ Bekleyen bir Claude izin sorusu notch'u açık tutarken "kapalı" ölçüm %2,9 çıktı; ölçmeden önce ekranda bekleyen
+soru ya da bildirim olmadığına bakın.
+
+Süreç başına enerji etkisi için `sudo Scripts/energy.sh [saniye]` (varsayılan 60): beş senaryo (kapalı boşta, müzik
+çalarken yapay ve müziğe tepkili çubuklar, açık Şimdi, açık Sistem grafikleri). Her senaryodan önce ne yapılacağını
+yazar ve Enter bekler; `powermetrics --samplers tasks --show-process-energy -f plist` çıktısından NotchMVP satırını
+okur (`cputime_ms_per_s`, `idle_wakeups_per_s`, `intr_wakeups_per_s`, `energy_impact`), sonunda buraya
+yapıştırılacak tabloyu basar. Ölçüm sırasında fareye dokunmayın. ⚠️ Henüz çalıştırılmadı.
+
+## Dağıtım
+
+`Scripts/release.sh`: `make adapter sessions gen` → Release derleme (`build/release`) → imza denetimi → imzalı DMG
+(`dist/NotchMVP-<sürüm>.dmg`, UDZO) → gerçek yayında `notarytool submit --wait` ve `stapler staple` → `.sha256`.
+Sürüm `project.yml`'den (0.1.0, derleme 1). Gerçek yayın kirli çalışma ağacını reddeder: paket bir commit'e karşılık
+gelmeli.
+
+- `--dry-run`: Developer ID olmadan boru hattını sınar ("Apple Development" imzası, zaman damgasız, notarization
+  atlanır). Çıkan DMG başka Mac'te Gatekeeper'dan geçmez.
+- `--notary-profile <ad>` (isteğe bağlı `--identity "Developer ID Application: … (TAKIM)"`): gerçek yayın. Önce bir
+  kez Developer ID Application sertifikası ve `xcrun notarytool store-credentials <ad> --apple-id … --team-id …
+  --password <uygulamaya özel parola>`; parola betikte ve depoda durmaz.
+
+Denetimler: `codesign --verify --deep --strict`; uygulama, gömülü `notch` aracı ve MediaRemote adaptör istemcisi
+hardened runtime ile mi imzalı; `get-task-allow` yok mu. ⚠️ Xcode Release derlemesine de `get-task-allow`
+ekliyordu (notarization reddeder): `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO` ile kapandı. `embed-adapter.sh` Developer ID
+kimliğinde `--timestamp`, diğerlerinde `--timestamp=none` kullanır. Yetkiler: Apple olayları, kamera, takvim.
+
+Sparkle 2 eklenmedi; karar bekleyenler: appcast'in yeri (GitHub Releases ya da kendi alan adı), EdDSA anahtar çifti
+(`generate_keys`, özel anahtar Anahtar Zinciri'nde), Info.plist'e `SUFeedURL` ve `SUPublicEDKey`, denetim aralığı ve
+ayarlarda "Güncellemeleri denetle". Sonra `release.sh` sonuna `generate_appcast dist/`.
+
+## Eski macOS uyumluluğu
+
+Hedef macOS 14.0 (`project.yml`); derleyici 14.0 üstü API'yi `#available` olmadan derlemez. Kullanılan 162 SF Symbol'ün
+hepsi 14.0'da var (sistemin `CoreGlyphs.bundle/…/name_availability.plist` dosyasından tarandı).
+
+| Özellik | Gereken | Öncesinde |
+|---|---|---|
+| Müziğe tepkili çubuklar (`CATapDescription` süreç dokunuşu) | 14.2 | Yapay çubuklar (ayar açık olsa da müziğe tepki yok; neden yalnız debug `spectrum:state`'te) |
+| Menü öğesi alt başlığı (`NSMenuItem.subtitle`) | 14.4 | Alt başlık başlığa " · " ile eklenir |
+| İzin bölmesinin adı uygulamanın dilinde (`localizedString(…localizations:)`) | 15.4 | Sistemin dilinde |
+| Pano erişim iznini okuma (`NSPasteboard.accessBehavior`) | 15.4 | Bu izin yok; okuma engeli denetlenmez |
+| İzin bölmesi adları ("Aygıt Denetimi ve Veri Erişimi" vb.) | 27 | Sistemden okunamazsa sürüme göre bilinen ad |
+
+⚠️ Belgelenmemiş API'ler (SkyLight kilit paneli, DisplayServices parlaklık, `CGSIsScreenWatcherPresent`) çalışma anında
+`dlsym` ile çözülür, sembol yoksa özellik kapanır; MediaRemote adaptörü ayrı süreç. Hepsi yalnız macOS 27'de doğrulandı. Gerçek
+deneme için Apple silicon'da macOS 14 / 15 / 26 sanal makineleri (Virtualization.framework, ör. UTM ya da tart):
+sanal ekranda çentik olmadığı için hap yolunu sınar.
+
+## Ürün adı
+
+"NotchMVP" çalışma adı. Adaylar (2026-10-16 taraması: `.app` / `.com` alan adı DNS'i ve App Store / web araması; marka
+tescili ayrıca bakılmalı):
+
+| Ad | Anlam | `.app` | `.com` | Çakışma |
+|---|---|---|---|---|
+| Browline | Kaş çizgisi: ekranın üst kenarı | boş | dolu | Uygulama bulunmadı |
+| Overbrow | Kaşın üstü | boş | boş | Yok ("Overbrowsered" ayrı ürün) |
+| Saçak | Evin saçağı: üstte, altını korur | `sacak.app` boş | — | Türkçe; İngilizcede "ç" yazımı sorun |
+| Toplight | Üst ışık | boş | dolu | Uygulama bulunmadı |
+| Eaveline | Saçak çizgisi | boş | dolu | Uygulama bulunmadı |
+| Brimline | Şapka kenarı | boş | dolu | Uygulama bulunmadı |
+| Ledgeline | Pervaz çizgisi | boş | dolu | Uygulama bulunmadı |
+| Halobar | Hale çubuğu | boş | dolu | ⚠️ "Halo" adlı notch uygulaması ve "HaloStrip" menü çubuğu ışığı var |
+
+⛔ "Dynamic Island" (Apple markası) ve mevcut adlar (NotchNook, Alcove, DynamicLake, MediaMate, NotchPop, Islet,
+Pulse Island, MacNotch, Crest, boring.notch, Atoll, NotchDrop, MewNotch, Halo) kullanılmaz.
 
 ## Lisans notu
 
