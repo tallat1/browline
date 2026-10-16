@@ -601,17 +601,53 @@ Pulse Island, MacNotch, Crest, boring.notch, Atoll, NotchDrop, MewNotch, Halo) k
 `App/Browline.icon` (Icon Composer; Xcode › Open Developer Tool › Icon Composer ile açılır). Fikir adın kendisi:
 ekranın üst kenarı çentiğin etrafından dolanan sıcak bir çizgi, kaş gibi.
 
+![Altı görünüm](images/icon-appearances.jpg)
+
 - Dolgu: üstten alta koyu kahve-siyah geçiş (`#2A2420` → `#0E0D0F`).
 - Ön grup `rim.svg`: kenar çizgisi (52 birim, sarıdan turuncu-kırmızıya), Liquid Glass vurgusu bu katmanda.
 - Arka grup `bezel.svg` (çentik ve çerçeve şeridi, kamera noktası) ve `glow.svg` (çizginin altında sıcak ışık, camsız).
 - Katman SVG'leri 1024'lük tuvalde, `viewBox="100 100 824 824"`: tasarım eski 824'lük gövde ölçüsünde çizildi,
   maske sistemden gelir.
 
-Derlemede `ASSETCATALOG_COMPILER_APPICON_NAME: Browline`; actool `Assets.car` (macOS 26+ cam görünüm, koyu/renkli/şeffaf
-kipler) ve macOS 14/15 için `Browline.icns` üretir. XcodeGen `.icon`'u `wrapper.icon` olarak kaynaklara ekliyor.
-Sistemin çizdiği hâli `NSWorkspace.shared.icon(forFile:)` ile 512/32/16 px denendi (macOS 27); 16 px'te 44 birimlik
-çizgi sönük kaldığı için 52'ye kalınlaştı. Ayarlar › Hakkında'da simge, ad ve sürüm. Simge paketi DMG'yi 4,2'den 5,9 MB'a
-büyüttü (`Assets.car` ≈ 1,7 MB).
+Apple kuralları (HIG "App icons", "Creating your app icon using Icon Composer", WWDC25 220/361, WWDC26 grup
+laboratuvarı; 2026-10-16 araştırması) karşısında durum. 2026-10-16'da kurallara tam uyan tek çizgilik bir sürüm
+denendi; kullanıcı bu tasarımı daha iyi buldu ve bu tasarımda kalındı.
+
+| Kural | Durum |
+|---|---|
+| 1024'lük maskesiz tuval, şekli sistem verir (macOS 26+ zorunlu; uymayan simge gri kutuya girer) | ✓ |
+| Zemin belge dolgusunda, en çok 4 grup | ✓ (dolgu + 2 grup) |
+| Kaynak çizim düz ve opak; ışıma, gölge, bulanıklık gömülmez | ⚠️ bilerek değil: `glow.svg` gömülü ışıma; şeffaf görünümlerde hafif leke bırakıyor |
+| "Don't use replicas of Apple hardware products" | ⚠️ çerçeve şeridi ve kamera noktası stilize; birebir kopya değil |
+| Koyu ve Mono (şeffaf + renkli) görünüm ayarlanır, Mono'da en az bir öğe beyaz | ⚠️ ayar yok, sistem türetiyor: renkli koyuda çizgi koyu mor ve zor seçiliyor; şeffafta çerçeve şeridi kayboluyor |
+| Kalın çizgi, küçük boyutta okunur | ✓ 16 px'te çizgi okunuyor, kamera noktası kayboluyor |
+
+Varsayılan ve Koyu görünümü değiştirmeden düzeltilebilecekler (kullanıcı 2026-10-16'da istemedi; simge böyle kalıyor): `rim.svg` için Mono'da beyaz dolgu
+(`fill-specializations`, `"appearance" : "tinted"`, `extended-gray:1,1`), `glow.svg`'yi Mono'da gizlemek
+(`hidden-specializations`), açık `stroke` yolunu dolu şekle çevirmek (Icon Composer açık yolu kapalı şekil sayıp
+çentiğin ağzına ince bir kenar çiziyor; şeffaf görünümde görünür).
+
+Görünümleri komut satırından çizmek (Icon Composer'ın aracı, Xcode'la gelir):
+
+```sh
+ICTOOL="/Applications/Xcode.app/Contents/Applications/Icon Composer.app/Contents/Executables/ictool"
+for r in Default Dark ClearLight ClearDark TintedLight TintedDark; do
+  "$ICTOOL" "$PWD/App/Browline.icon" --export-image --output-file "$r.png" --platform macOS --rendition $r --width 512 --height 512 --scale 1
+done
+```
+
+Derlemede `ASSETCATALOG_COMPILER_APPICON_NAME: Browline`; actool `Assets.car` (açık, koyu ve renklendirilebilir
+yığınlar + eski macOS için 16–1024 px bitmapler) ve `Browline.icns` üretir. XcodeGen `.icon`'u `wrapper.icon` olarak
+kaynaklara ekliyor. Ayarlar › Hakkında'da simge, ad ve sürüm. Simge paketi DMG'yi büyütüyor (`Assets.car` ≈ 1,7 MB).
+
+⚠️ Tuzaklar:
+- `ictool` bir `icon.json`'ı sorunsuz çizip `actool` aynı dosyada "attempt to insert nil object" ile çökebilir:
+  `color-space-for-untagged-svg-colors` anahtarı (Xcode 26.5) ve var olmayan `image-name` bunu yapıyor. Her
+  değişiklikten sonra `actool` ile derle.
+- `actool`'a MUTLAK yol ver: arka plandaki `ibtoold` göreli yolu kendi klasörüne göre çözebiliyor (hata
+  mesajında başka bir projenin yolu göründü).
+- `NSWorkspace.shared.icon(forFile:)` LaunchServices'in tanımadığı paket için genel belge simgesi döndürür; README
+  görseli paketteki `.icns`'ten (`iconutil -c iconset`, 128@2x) alınır.
 
 ## Lisans notu
 
