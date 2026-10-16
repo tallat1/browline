@@ -222,8 +222,8 @@ extension HUDController.Mode {
     var title: String {
         switch self {
         case .off: String(localized: "Kapalı")
-        case .overlay: String(localized: "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)")
-        case .replace: String(localized: "Sistem göstergesinin yerine geç (Erişilebilirlik izni)")
+        case .overlay: String(localized: "Sistem göstergesine ek")
+        case .replace: String(localized: "Sistem göstergesinin yerine")
         }
     }
 }

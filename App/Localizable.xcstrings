@@ -483,22 +483,32 @@
         }
       }
     },
-    "Anımsatıcılar (Takvim sekmesinde)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Reminders (in the Calendar tab)"
-          }
-        }
-      }
-    },
     "Anımsatıcıları göster": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Show Reminders"
+          }
+        }
+      }
+    },
+    "Ara": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "Aramayı temizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Search"
           }
         }
       }
@@ -533,22 +543,12 @@
         }
       }
     },
-    "Ayar verilmemiş ekranlar": {
+    "Ayarları aç": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Displays without a choice"
-          }
-        }
-      }
-    },
-    "Ayarlar › Modüller › CI durumu'ndan depo ekleyin (ör. sahip/depo).": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add repositories in Settings › Modules › CI status (e.g. owner/repo)."
+            "value": "Open Settings"
           }
         }
       }
@@ -563,6 +563,16 @@
         }
       }
     },
+    "Aygıt Denetimi ve Veri Erişimi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device Control and Data Access"
+          }
+        }
+      }
+    },
     "Ayna": {
       "localizations": {
         "en": {
@@ -573,12 +583,12 @@
         }
       }
     },
-    "Ayna (kamera izni yalnız ilk kullanımda istenir)": {
+    "Ayna sayfası; görüntü kaydedilmez": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mirror (camera access is asked only on first use)"
+            "value": "Mirror page; nothing is recorded"
           }
         }
       }
@@ -623,22 +633,62 @@
         }
       }
     },
+    "Açık özellikler için": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For features that are on"
+          }
+        }
+      }
+    },
+    "Açık özelliklerin hiçbiri izin istemiyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of the features that are on need a permission."
+          }
+        }
+      }
+    },
+    "Açık özelliklerin istediği izinler. Uygulama başka izin istemez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissions the features you turned on need. The app asks for nothing else."
+          }
+        }
+      }
+    },
+    "Açılma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening"
+          }
+        }
+      }
+    },
+    "Açılma, hareket, sağ üstteki durum alanı ve gizleme.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening, motion, the status area at the top right, and hiding."
+          }
+        }
+      }
+    },
     "Ağ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network"
-          }
-        }
-      }
-    },
-    "Bantta beş bölüm durur: Şimdi, Raf, Takvim, Araçlar, Durum. Birden çok sayfası olan bölümde içeriğin üstünde küçük bir seçici çıkar; her bölüm son açtığınız sayfayı hatırlar.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The band holds five sections: Now, Shelf, Calendar, Tools and Status. A section with more than one page shows a small picker above its content; each section remembers the page you last opened."
           }
         }
       }
@@ -663,6 +713,16 @@
         }
       }
     },
+    "Bağlanınca, ayrılınca ve pil %20 ile %10'un altına inince kısa gösterge; Sistem sayfasında pil kartı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A short indicator on connect, disconnect and when battery drops below 20% and 10%; a battery card on the System page."
+          }
+        }
+      }
+    },
     "Başarılı": {
       "localizations": {
         "en": {
@@ -679,6 +739,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Failed"
+          }
+        }
+      }
+    },
+    "Başlangıç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup"
+          }
+        }
+      }
+    },
+    "Başlangıç ve hangi ekranda notch görüneceği.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup and which displays show the notch."
           }
         }
       }
@@ -733,6 +813,16 @@
         }
       }
     },
+    "Belgelenmemiş macOS işlevleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undocumented macOS Functions"
+          }
+        }
+      }
+    },
     "Bellek": {
       "localizations": {
         "en": {
@@ -743,12 +833,22 @@
         }
       }
     },
-    "Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) notch'a etkinlik gönderebilir: notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız erişebilir.": {
+    "Betik ve AI ajanı etkinlikleri": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Scripts, AI agents and Shortcuts (Run Shell Script) can send activities to the notch: notch push --id build --title Build --progress 40%. Only your user account can connect."
+            "value": "Script and AI agent activities"
+          }
+        }
+      }
+    },
+    "Betikler, AI ajanları ve Kestirmeler (Kabuk Betiği Çalıştır) yerel soketle etkinlik gönderir: notch push --id build --title Derleme --progress 40%. Yalnız sizin kullanıcınız bağlanabilir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scripts, AI agents and Shortcuts (Run Shell Script) send activities over a local socket: notch push --id build --title Build --progress 40%. Only your user account can connect."
           }
         }
       }
@@ -759,6 +859,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Scripts, AI agents, and Shortcuts can send activities here."
+          }
+        }
+      }
+    },
+    "Bilinmiyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
           }
         }
       }
@@ -793,6 +903,16 @@
         }
       }
     },
+    "Biten indirmeleri göstermek (İndirilenler klasörü)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show finished downloads (Downloads folder)"
+          }
+        }
+      }
+    },
     "Bitti": {
       "localizations": {
         "en": {
@@ -813,12 +933,12 @@
         }
       }
     },
-    "Bluetooth aygıtları (bağlanınca, ayrılınca ve pili azalınca göster)": {
+    "Bluetooth aygıtları": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bluetooth devices (show on connect, disconnect and low battery)"
+            "value": "Bluetooth devices"
           }
         }
       }
@@ -833,12 +953,12 @@
         }
       }
     },
-    "Bu macOS sürümünde kullanılamıyor (SkyLight sembolleri yok).": {
+    "Bu macOS sürümünde kullanılamıyor.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not available on this macOS version (SkyLight symbols missing)."
+            "value": "Not available on this macOS version."
           }
         }
       }
@@ -883,6 +1003,26 @@
         }
       }
     },
+    "Bugünün anımsatıcıları": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's reminders"
+          }
+        }
+      }
+    },
+    "Bugünün anımsatıcıları Takvim'de": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's reminders in Calendar"
+          }
+        }
+      }
+    },
     "Bul": {
       "localizations": {
         "en": {
@@ -893,32 +1033,22 @@
         }
       }
     },
-    "Bölüm seçicisinde göster": {
+    "Bunlar çalışma anında aranır; bulunamazsa ilgili özellik kapanır, uygulama çökmez.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show in the section picker"
+            "value": "These are looked up at run time; if one is missing, its feature turns off and the app keeps running."
           }
         }
       }
     },
-    "Bölümler": {
+    "CI": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sections"
-          }
-        }
-      }
-    },
-    "CI durumu (GitHub Actions, kendi gh oturumunuzla)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "CI status (GitHub Actions, via your own gh session)"
+            "value": "CI"
           }
         }
       }
@@ -933,22 +1063,22 @@
         }
       }
     },
+    "Claude Code izin istemlerini notch'ta yanıtla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer Claude Code permission prompts in the notch"
+          }
+        }
+      }
+    },
     "Claude Code oturumu bulunamadı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No Claude Code sign-in found"
-          }
-        }
-      }
-    },
-    "Claude Code'un Anahtar Zinciri'ndeki oturum anahtarıyla 5 dakikada bir sorulur; anahtar yalnız bu istekte kullanılır, saklanmaz. Uç nokta haber vermeden değişebilir. Önce terminalde claude auth login gerekir.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Queried every 5 minutes with Claude Code's sign-in token from the Keychain; the token is used only for this request and never stored. The endpoint can change without notice. Run claude auth login in a terminal first."
           }
         }
       }
@@ -969,6 +1099,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude Code's active account · profile %@"
+          }
+        }
+      }
+    },
+    "Claude Code'un oturumuyla 5 dakikada bir sorulur; belgelenmemiş bir uç nokta, haber vermeden değişebilir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checked every 5 minutes with Claude Code's session; an undocumented endpoint that may change without notice."
           }
         }
       }
@@ -1003,6 +1143,16 @@
         }
       }
     },
+    "Claude yüzdeleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude percentages"
+          }
+        }
+      }
+    },
     "Claude çok fazla istek dedi": {
       "localizations": {
         "en": {
@@ -1023,6 +1173,26 @@
         }
       }
     },
+    "Depo ekle…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Repository…"
+          }
+        }
+      }
+    },
+    "Derleme ilerlemesi, Claude oturumları ve Kestirmeler Şimdi'de kart olarak görünür. Komut satırı ayrıntıları Gelişmiş'te.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build progress, Claude sessions and Shortcuts show as cards in Now. Command-line details are in Advanced."
+          }
+        }
+      }
+    },
     "Dinliyor: %@": {
       "localizations": {
         "en": {
@@ -1033,12 +1203,22 @@
         }
       }
     },
-    "Dokunsal geri bildirim (Force Touch trackpad)": {
+    "Diğer": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Haptic feedback (Force Touch trackpad)"
+            "value": "Other"
+          }
+        }
+      }
+    },
+    "Dokunsal geri bildirim": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haptic feedback"
           }
         }
       }
@@ -1053,12 +1233,32 @@
         }
       }
     },
-    "Dosya rafı ve AirDrop": {
+    "Dosya rafı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "File shelf and AirDrop"
+            "value": "File shelf"
+          }
+        }
+      }
+    },
+    "Dosyalar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files"
+          }
+        }
+      }
+    },
+    "Dosyalar ve Klasörler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files & Folders"
           }
         }
       }
@@ -1069,6 +1269,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drop files here"
+          }
+        }
+      }
+    },
+    "Dosyaları notch'a bırakın, sonra istediğiniz yere sürükleyin. Kopyaladıklarınız da burada.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop files on the notch, then drag them wherever you need. What you copy is here too."
           }
         }
       }
@@ -1123,22 +1333,22 @@
         }
       }
     },
-    "Düşük Güç Modu'nda hareketi durdur (çubuklar, kayan yazı, müzik dinleyicisi)": {
+    "Düşük Güç Modu'nda hareketi durdur": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pause motion in Low Power Mode (bars, scrolling text, music listener)"
+            "value": "Pause motion in Low Power Mode"
           }
         }
       }
     },
-    "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)": {
+    "Dış etkinlikler": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Additional indicator (no permission; the system indicator also appears)"
+            "value": "External activities"
           }
         }
       }
@@ -1153,6 +1363,22 @@
         }
       }
     },
+    "Ekran görüntüsü küçük resimleri %@ klasörüne kaydedilir. Rafta %lld öğe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot thumbnails are saved to the %@ folder. Items on the shelf: %lld."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Ekran görüntüsü küçük resimleri %1$@ klasörüne kaydedilir. Rafta %2$lld öğe."
+          }
+        }
+      }
+    },
     "Ekran kaydediliyor ya da paylaşılıyor": {
       "localizations": {
         "en": {
@@ -1163,7 +1389,17 @@
         }
       }
     },
-    "Ekran kaydı ve ekran paylaşımında gizle": {
+    "Ekran kaydı göstergesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen recording indicator"
+          }
+        }
+      }
+    },
+    "Ekran kaydı ve paylaşımında gizle": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -1173,22 +1409,12 @@
         }
       }
     },
-    "Ekran kaydı ve paylaşım göstergesi (macOS'un belgelenmemiş bir işleviyle)": {
+    "Ekran ve Sistem Sesi Kaydı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Screen recording and sharing indicator (uses an undocumented macOS function)"
-          }
-        }
-      }
-    },
-    "Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Kapak kapalıyken yerleşik ekran yerine ana ekran kullanılır, çentiksiz ekranlarda hap görünür. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The choice is saved per display and kept when you unplug and reconnect it. With the lid closed the main display is used instead of the built-in one, and displays without a notch show a pill. The floating card sits below the menu bar and appears only when there is something to show."
+            "value": "Screen & System Audio Recording"
           }
         }
       }
@@ -1213,42 +1439,32 @@
         }
       }
     },
-    "Erişilebilirlik ayarlarını aç": {
+    "Erişilebilirlik": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Open Accessibility Settings"
+            "value": "Accessibility"
           }
         }
       }
     },
-    "Erişilebilirlik izni bekleniyor; izin verince kendiliğinden başlar": {
+    "Etkinlik API'si kapalı; Ayarlar › Şimdi › Dış etkinlikler'den açın.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Waiting for Accessibility permission; starts automatically once granted"
+            "value": "The activity API is off; turn it on in Settings › Now › External activities."
           }
         }
       }
     },
-    "Etkinlik API'si (yerel soket ve notch komutu)": {
+    "Etkinlik API'si ve notch komutu": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Activity API (local socket and notch command)"
-          }
-        }
-      }
-    },
-    "Etkinlik API'si kapalı; Ayarlar › Modüller'den açın.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The Activity API is off; turn it on in Settings › Modules."
+            "value": "Activity API and notch Command"
           }
         }
       }
@@ -1273,12 +1489,32 @@
         }
       }
     },
+    "Force Touch trackpad'de sekmeler arasında gezerken hafif tık.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A light tap on a Force Touch trackpad as you move between tabs."
+          }
+        }
+      }
+    },
     "Gelişmiş": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Advanced"
+          }
+        }
+      }
+    },
+    "Geliştiriciler için ayrıntılar ve belgelenmemiş macOS işlevleri.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Details for developers and undocumented macOS functions."
           }
         }
       }
@@ -1309,6 +1545,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Launch at login"
+          }
+        }
+      }
+    },
+    "GitHub Actions durumu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub Actions status"
           }
         }
       }
@@ -1353,6 +1599,16 @@
         }
       }
     },
+    "Gizlilik göstergeleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Indicators"
+          }
+        }
+      }
+    },
     "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan NotchMVP'ye izin verin.": {
       "localizations": {
         "en": {
@@ -1387,22 +1643,32 @@
         }
       }
     },
-    "Görünüm": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Appearance"
-          }
-        }
-      }
-    },
     "Görüşmeye dön": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Return to the call"
+          }
+        }
+      }
+    },
+    "Gösterge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicator"
+          }
+        }
+      }
+    },
+    "Göstergeler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indicators"
           }
         }
       }
@@ -1457,22 +1723,22 @@
         }
       }
     },
-    "Hangi uygulama öndeyse olsun çalışır; izin istemez.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Works whichever app is in front; needs no permission."
-          }
-        }
-      }
-    },
     "Hap (menü çubuğunda)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Pill (in the menu bar)"
+          }
+        }
+      }
+    },
+    "Hareket": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Motion"
           }
         }
       }
@@ -1487,12 +1753,12 @@
         }
       }
     },
-    "Hava durumu (Open-Meteo)": {
+    "Hava durumu": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Weather (Open-Meteo)"
+            "value": "Weather"
           }
         }
       }
@@ -1513,16 +1779,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nothing copied yet"
-          }
-        }
-      }
-    },
-    "Hepsini göster": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show All"
           }
         }
       }
@@ -1567,6 +1823,16 @@
         }
       }
     },
+    "Kamera": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera"
+          }
+        }
+      }
+    },
     "Kamera izni gerekiyor. Görüntü kaydedilmez, hiçbir yere gönderilmez.": {
       "localizations": {
         "en": {
@@ -1597,12 +1863,12 @@
         }
       }
     },
-    "Kamera ve mikrofon göstergesi": {
+    "Kamera ve mikrofon kullanımda": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Camera and microphone indicator"
+            "value": "Camera and microphone in use"
           }
         }
       }
@@ -1627,6 +1893,16 @@
         }
       }
     },
+    "Kapalı notch'ta kısa bildirimler ve gizlilik göstergeleri.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short notices and privacy indicators on the closed notch."
+          }
+        }
+      }
+    },
     "Kapat": {
       "localizations": {
         "en": {
@@ -1643,6 +1919,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Until Turned Off"
+          }
+        }
+      }
+    },
+    "Kapatınca açık kabuk sonlanır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning it off ends the open shell."
           }
         }
       }
@@ -1667,52 +1953,82 @@
         }
       }
     },
-    "Kilit ekranı Space'i kurulamadı; özellik bu oturumda çalışmıyor.": {
+    "Kaynak": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not set up the lock screen Space; the feature is not working this session."
+            "value": "Source"
           }
         }
       }
     },
-    "Kilit ekranında göster (deneysel)": {
+    "Kilit ekranı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show on the lock screen (experimental)"
+            "value": "Lock Screen"
           }
         }
       }
     },
-    "Kilit ekranında notch genişler: solda çalan şarkı, sağda pil (müzik yoksa pil ve kalan süre). Kilitte tıklanamaz; macOS'un saatini örtmemek için kapalı notch yüksekliğinde.": {
+    "Kilit ekranı alanı kurulamadı; özellik bu oturumda çalışmıyor.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On the lock screen the notch widens: the playing song on the left, battery on the right (battery and time left when nothing plays). It can't be clicked while locked and stays at closed-notch height so it never covers the macOS clock."
+            "value": "The lock screen space could not be set up; the feature is off for this session."
           }
         }
       }
     },
-    "Kilitliyken müzik ve pil şeridi": {
+    "Kilit ekranı paneli": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Music and battery strip while locked"
+            "value": "Lock screen panel"
           }
         }
       }
     },
-    "Kilitliyken yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Private SkyLight API kullanır: bir sorun WindowServer'ı yeniden başlatıp oturumu kapatabilir.": {
+    "Kilit ekranında ayrı panel": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "While locked, only music, charging, camera/microphone and the volume indicator appear; the shelf, calendar and external activities do not. Uses the private SkyLight API: a problem can restart WindowServer and log you out."
+            "value": "Separate panel on the lock screen"
+          }
+        }
+      }
+    },
+    "Kilit ekranında ayrı panel (deneysel)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separate panel on the lock screen (experimental)"
+          }
+        }
+      }
+    },
+    "Kilitliyken notch genişler: solda çalan şarkı, sağda pil. Tıklanamaz; macOS'un saatini örtmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While locked the notch widens: the playing song on the left, battery on the right. It can't be clicked and never covers the macOS clock."
+          }
+        }
+      }
+    },
+    "Kilitliyken notch'ta ne görüneceği.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the notch shows while the Mac is locked."
           }
         }
       }
@@ -1757,6 +2073,16 @@
         }
       }
     },
+    "Kullanılmayan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not in Use"
+          }
+        }
+      }
+    },
     "Küçült (en çok %lld px)": {
       "comment": "Integrations paketinden (String(localized:), ana paket tablosu)",
       "extractionState": "manual",
@@ -1769,12 +2095,32 @@
         }
       }
     },
+    "Kısa bildirimler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Short Notices"
+          }
+        }
+      }
+    },
     "Kısa mola": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Short break"
+          }
+        }
+      }
+    },
+    "Kısayol": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcut"
           }
         }
       }
@@ -1821,12 +2167,42 @@
         }
       }
     },
-    "Medya (Now Playing)": {
+    "Mac'in durumu, Bluetooth aygıtları, Claude limitleri ve CI.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Media (Now Playing)"
+            "value": "Your Mac's status, Bluetooth devices, Claude limits and CI."
+          }
+        }
+      }
+    },
+    "MediaRemote çalışmazsa Spotify ve Music denetimi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spotify and Music control if MediaRemote fails"
+          }
+        }
+      }
+    },
+    "Medya": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media"
+          }
+        }
+      }
+    },
+    "Medya kaynağı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media Source"
           }
         }
       }
@@ -1841,22 +2217,12 @@
         }
       }
     },
-    "Medya tuşları yakalanıyor": {
+    "Medya, toplantı ve o an önemli olanlar.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Capturing media keys"
-          }
-        }
-      }
-    },
-    "Medya ve o an önemli olanlar; etkinlik kartından tüm etkinlikler açılır.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Media and what matters right now; an activity card opens all activities."
+            "value": "Media, meetings and what matters right now."
           }
         }
       }
@@ -1901,6 +2267,16 @@
         }
       }
     },
+    "Mikrofon kullanımdayken Şimdi'de kart; hangi uygulama öndeyse olsun kısayolla da.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A card in Now while the microphone is in use; the shortcut works in any app."
+          }
+        }
+      }
+    },
     "Mikrofonu aç": {
       "localizations": {
         "en": {
@@ -1931,6 +2307,16 @@
         }
       }
     },
+    "Mikrofonu sistem genelinde sessize alma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute the microphone system-wide"
+          }
+        }
+      }
+    },
     "Mission Control'de gizle": {
       "localizations": {
         "en": {
@@ -1941,22 +2327,22 @@
         }
       }
     },
-    "Modül kapalı": {
+    "Müzik ve pil şeridi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Module off"
+            "value": "Music and battery strip"
           }
         }
       }
     },
-    "Modüller": {
+    "Müziğe tepki veren çubuklar; ses kaydedilmez": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Modules"
+            "value": "Bars that react to music; audio is never recorded"
           }
         }
       }
@@ -1977,6 +2363,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Take a note… (click to type; ⌘C and ⌘V work)"
+          }
+        }
+      }
+    },
+    "Not, zamanlayıcı, terminal ve ayna.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes, timer, terminal and mirror."
+          }
+        }
+      }
+    },
+    "Notch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch"
+          }
+        }
+      }
+    },
+    "Notch bölümleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch Sections"
           }
         }
       }
@@ -2031,22 +2447,22 @@
         }
       }
     },
+    "Notch'ta göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in notch"
+          }
+        }
+      }
+    },
     "Notch'ta kısa bildirim göster": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Show Brief Notification in Notch"
-          }
-        }
-      }
-    },
-    "NotchMVP %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "NotchMVP %@"
           }
         }
       }
@@ -2131,12 +2547,12 @@
         }
       }
     },
-    "Onay sorularını notch'ta yanıtla (ör. Claude Code izin istemleri)": {
+    "Otomasyon": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Answer approval questions in the notch (e.g. Claude Code permission prompts)"
+            "value": "Automation"
           }
         }
       }
@@ -2147,6 +2563,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The sign-in token has expired"
+          }
+        }
+      }
+    },
+    "Oturum ve hafta yüzdeleri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session and weekly percentages"
           }
         }
       }
@@ -2201,12 +2627,12 @@
         }
       }
     },
-    "Pano geçmişi (yalnız bellekte; parola yöneticilerinin gizli kopyaları alınmaz)": {
+    "Pano geçmişi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Clipboard history (memory only; password managers' concealed copies are skipped)"
+            "value": "Clipboard history"
           }
         }
       }
@@ -2231,22 +2657,12 @@
         }
       }
     },
-    "Parlaklık: bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır.": {
+    "Parlaklık bu Mac'te ayarlanamıyor; parlaklık tuşları sisteme bırakılır.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brightness: not adjustable on this Mac; brightness keys are left to the system."
-          }
-        }
-      }
-    },
-    "Parlaklık: yerleşik ekranda ayarlanıyor (private DisplayServices).": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Brightness: adjusted on the built-in display (private DisplayServices)."
+            "value": "Brightness can't be set on this Mac; brightness keys stay with the system."
           }
         }
       }
@@ -2291,6 +2707,16 @@
         }
       }
     },
+    "Pil yüzdesi; şarj takılıp çıkarılınca ve pil azalınca kısa gösterge.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery percentage; a short indicator when charging starts or stops and when battery is low."
+          }
+        }
+      }
+    },
     "Pomodoro": {
       "localizations": {
         "en": {
@@ -2307,28 +2733,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shelf"
-          }
-        }
-      }
-    },
-    "Rafta %lld öğe": {
-      "localizations": {
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld item on the shelf"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld items on the shelf"
-                }
-              }
-            }
           }
         }
       }
@@ -2423,12 +2827,32 @@
         }
       }
     },
+    "Sağ üstteki durum alanı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status Area at the Top Right"
+          }
+        }
+      }
+    },
     "Ses": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Volume"
+          }
+        }
+      }
+    },
+    "Ses ve parlaklık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume and Brightness"
           }
         }
       }
@@ -2443,6 +2867,16 @@
         }
       }
     },
+    "Ses ve parlaklık tuşlarını notch'a almak (yalnız \"sistemin yerine\" seçiliyse)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show volume and brightness keys in the notch (only when \"instead of the system\" is chosen)"
+          }
+        }
+      }
+    },
     "Ses çıkışı": {
       "localizations": {
         "en": {
@@ -2453,12 +2887,12 @@
         }
       }
     },
-    "Ses çıkışı değişince göster (AirPods, hoparlör)": {
+    "Ses çıkışı değişince": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show audio output changes (AirPods, speakers)"
+            "value": "When the audio output changes"
           }
         }
       }
@@ -2525,6 +2959,16 @@
         }
       }
     },
+    "Seçim ekrana bağlı saklanır; çıkarıp takınca korunur. Çentiksiz ekranda hap, istenirse menü çubuğunun altında yüzen kart görünür.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The choice is saved per display and kept when you reconnect it. Displays without a notch show a pill, or a floating card below the menu bar if you choose."
+          }
+        }
+      }
+    },
     "Sistem": {
       "localizations": {
         "en": {
@@ -2545,42 +2989,42 @@
         }
       }
     },
-    "Sistem durumu (işlemci, bellek, ağ)": {
+    "Sistem geneli Now Playing macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. Çalışmazsa yalnız Music ve Spotify, AppleScript ile.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "System status (CPU, memory, network)"
+            "value": "System-wide Now Playing has not been public since macOS 15.4; mediaremote-adapter is used. If it fails, only Music and Spotify work, through AppleScript."
           }
         }
       }
     },
-    "Sistem geneli kaynak macOS 15.4'ten beri public değil; mediaremote-adapter kullanılıyor. Çalışmazsa yalnız Music ve Spotify desteklenir.": {
+    "Sistem göstergesine ek": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The system-wide source has not been public since macOS 15.4; mediaremote-adapter is used. If it fails, only Music and Spotify are supported."
+            "value": "In addition to the system indicator"
           }
         }
       }
     },
-    "Sistem göstergesinin yerine geç (Erişilebilirlik izni)": {
+    "Sistem göstergesinin yerine": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replace the system indicator (Accessibility permission)"
+            "value": "Instead of the system indicator"
           }
         }
       }
     },
-    "Sistem sesinin anlık frekans dağılımı okunur; ilk açılışta macOS sistem sesi kaydı izni ister. Ses kaydedilmez, hiçbir yere gönderilmez. İzin verilmezse çubuklar eski hareketine döner.": {
+    "Son 50 kopya, yalnız bellekte. Parola yöneticilerinin gizli kopyaları alınmaz.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reads the live frequency balance of system audio; macOS asks for system audio recording permission the first time. Audio is never recorded or sent anywhere. Without permission the bars keep their usual motion."
+            "value": "The last 50 copies, in memory only. Password managers' concealed copies are skipped."
           }
         }
       }
@@ -2615,12 +3059,42 @@
         }
       }
     },
+    "Sonradan takılan ekranlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Displays connected later"
+          }
+        }
+      }
+    },
     "Sonraki": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Next"
+          }
+        }
+      }
+    },
+    "Sonuç yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Results"
+          }
+        }
+      }
+    },
+    "Sonuçlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Results"
           }
         }
       }
@@ -2635,12 +3109,22 @@
         }
       }
     },
-    "SwiftTerm (Miguel de Icaza), MIT. Terminal sekmesi.": {
+    "Spotify, Music, tarayıcı ve diğer oynatıcılar; birden çok oynatıcı varsa seçilebilir.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "SwiftTerm (Miguel de Icaza), MIT. Terminal tab."
+            "value": "Spotify, Music, browsers and other players; pick one when several are playing."
+          }
+        }
+      }
+    },
+    "SwiftTerm (Miguel de Icaza), MIT": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SwiftTerm (Miguel de Icaza), MIT"
           }
         }
       }
@@ -2685,6 +3169,36 @@
         }
       }
     },
+    "Sürüm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
+    "Sürüm ve lisanslar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version and licenses"
+          }
+        }
+      }
+    },
+    "Sürüm ve üçüncü taraf yazılımlar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version and third-party software."
+          }
+        }
+      }
+    },
     "Sıkıştır": {
       "localizations": {
         "en": {
@@ -2725,6 +3239,16 @@
         }
       }
     },
+    "Takvim sayfasının sağ sütununda; daireye basınca tamamlanır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the right column of the Calendar page; click the circle to complete one."
+          }
+        }
+      }
+    },
     "Takvim ve toplantılar": {
       "localizations": {
         "en": {
@@ -2741,6 +3265,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow Calendar Access"
+          }
+        }
+      }
+    },
+    "Takvimler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendars"
           }
         }
       }
@@ -2815,16 +3349,6 @@
         }
       }
     },
-    "Terminal (kapatınca açık kabuk sonlanır)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Terminal (turning it off ends the open shell)"
-          }
-        }
-      }
-    },
     "Terminalde claude auth login ile oturum açın; Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
       "localizations": {
         "en": {
@@ -2855,12 +3379,12 @@
         }
       }
     },
-    "Toplantı denetimi (mikrofonu sistem genelinde sessize al)": {
+    "Toplantı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Meeting controls (mute the microphone system-wide)"
+            "value": "Meetings"
           }
         }
       }
@@ -2955,6 +3479,26 @@
         }
       }
     },
+    "Verildi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed"
+          }
+        }
+      }
+    },
+    "Verilmedi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Allowed"
+          }
+        }
+      }
+    },
     "Yaklaşan": {
       "localizations": {
         "en": {
@@ -2965,12 +3509,32 @@
         }
       }
     },
+    "Yaklaşan toplantı ve Katıl düğmesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming meeting and the Join button"
+          }
+        }
+      }
+    },
     "Yaklaşan toplantılar": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Upcoming meetings"
+          }
+        }
+      }
+    },
+    "Yaklaşan toplantılar ve bugünün anımsatıcıları.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upcoming meetings and today's reminders."
           }
         }
       }
@@ -3015,12 +3579,22 @@
         }
       }
     },
-    "Yalnız seçtiğiniz şehrin koordinatları open-meteo.com'a gönderilir; konum izni istenmez. Yarım saatte bir güncellenir.": {
+    "Yalnız müzik, şarj, kamera/mikrofon ve ses göstergesi görünür; raf, takvim ve dış etkinlikler görünmez. Bir sorun oturumu kapatabilir.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only the coordinates of the city you choose are sent to open-meteo.com; no location permission is asked. Updated every half hour."
+            "value": "Only music, charging, camera/microphone and the volume indicator appear; shelf, calendar and external activities don't. A problem can log you out."
+          }
+        }
+      }
+    },
+    "Yalnız seçtiğiniz şehrin koordinatları Open-Meteo'ya gider; konum izni istenmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the chosen city's coordinates go to Open-Meteo; no location permission is asked."
           }
         }
       }
@@ -3065,16 +3639,6 @@
         }
       }
     },
-    "Yüzdeleri kullanım uç noktasından al (belgelenmemiş)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Get percentages from the usage endpoint (undocumented)"
-          }
-        }
-      }
-    },
     "Yüzen kart (menü çubuğunun altında)": {
       "localizations": {
         "en": {
@@ -3091,6 +3655,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Timer"
+          }
+        }
+      }
+    },
+    "Zamanlayıcı ve Pomodoro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer and Pomodoro"
           }
         }
       }
@@ -3211,12 +3785,12 @@
         }
       }
     },
-    "mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.": {
+    "mediaremote-adapter (ungive), BSD-3-Clause": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "mediaremote-adapter (ungive), BSD-3-Clause. Used unmodified, as a separate process."
+            "value": "mediaremote-adapter (ungive), BSD-3-Clause"
           }
         }
       }
@@ -3271,12 +3845,22 @@
         }
       }
     },
-    "Çalarken hareketli çubuklar (az miktarda enerji harcar)": {
+    "Çalan müzik ve video": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Animated bars while playing (uses a little energy)"
+            "value": "Playing music and video"
+          }
+        }
+      }
+    },
+    "Çalarken hareketli çubuklar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moving bars while playing"
           }
         }
       }
@@ -3327,6 +3911,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bars react to the music"
+          }
+        }
+      }
+    },
+    "Çubuklar, kayan yazılar ve müzik dinleyicisi durur; kısa geçişler sürer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bars, scrolling text and the music listener pause; short transitions stay."
           }
         }
       }
@@ -3431,12 +4025,22 @@
         }
       }
     },
-    "Üzerine gelince açılma gecikmesi": {
+    "Özellik kapalı": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hover delay before opening"
+            "value": "Feature off"
+          }
+        }
+      }
+    },
+    "Üzerine gelince açılma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open on hover"
           }
         }
       }
@@ -3461,12 +4065,12 @@
         }
       }
     },
-    "İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. Takvim ve Automation izinleri yalnız ilgili özelliği kullandığınızda istenir.": {
+    "İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. İzinler yalnız ilgili özelliği kullandığınızda istenir.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move the pointer over the notch to open it; click to keep it open. A two-finger swipe down also opens it. Drag files onto the notch to put them on the shelf. Calendar and Automation permissions are requested only when you use the related feature."
+            "value": "Move the pointer over the notch to open it; click to keep it open. A two-finger swipe down also opens it. Drag files onto the notch to put them on the shelf. Permissions are asked only when you use the feature that needs them."
           }
         }
       }
@@ -3481,12 +4085,12 @@
         }
       }
     },
-    "İndirmeler (İndirilenler klasörü izni ister)": {
+    "İndirme bitince": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Downloads (asks for Downloads folder access)"
+            "value": "When a download finishes"
           }
         }
       }
@@ -3501,22 +4105,22 @@
         }
       }
     },
-    "İzin henüz istenmedi": {
+    "İstenmedi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Permission not requested yet"
+            "value": "Not Asked"
           }
         }
       }
     },
-    "İzin var · %lld yaklaşan etkinlik": {
+    "İzin her özelliğin kendi sayfasında da görünür. Sistem Ayarları'ndan dönünce durum kendiliğinden yenilenir.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Allowed · %lld upcoming events"
+            "value": "Each permission also appears on its feature's page. The status refreshes when you come back from System Settings."
           }
         }
       }
@@ -3531,12 +4135,12 @@
         }
       }
     },
-    "İzin verilmedi": {
+    "İzinler": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Not allowed"
+            "value": "Permissions"
           }
         }
       }
@@ -3547,6 +4151,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stop Watching"
+          }
+        }
+      }
+    },
+    "İzlenecek GitHub depolarını ayarlardan ekleyin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the GitHub repositories to watch in Settings."
           }
         }
       }
@@ -3571,6 +4185,16 @@
         }
       }
     },
+    "İşlemci, bellek ve ağ": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processor, memory and network"
+          }
+        }
+      }
+    },
     "Şarj tamam": {
       "localizations": {
         "en": {
@@ -3581,12 +4205,12 @@
         }
       }
     },
-    "Şarkı değişince kısa göster": {
+    "Şarkı değişince": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Briefly show the new song"
+            "value": "When the song changes"
           }
         }
       }

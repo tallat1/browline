@@ -136,6 +136,9 @@ final class NotchUIState {
     var micShortcutUnavailable = false
     /// Son biten CI çalışması (kısa bildirimde gösterilir).
     var lastFinishedRun: CIMonitor.Run?
+    /// Ayarlar penceresinde açık sayfa ve vurgulanacak ayar (arama ya da notch'tan doğrudan gelince).
+    var settingsPage: SettingsPage = .general
+    var settingsHighlight: String?
 }
 
 /// Bluetooth kısa bildirimi: hangi aygıt, ne oldu.
@@ -239,7 +242,20 @@ final class AppCoordinator {
     private var shownQuestionIDs: Set<String> = []
     /// Ayar penceresini uygulama temsilcisi açar (notch'taki Diğer menüsünden "Sekmeleri düzenle").
     var openSettings: (() -> Void)?
+
+    /// Ayarları belirli sayfada ve isteğe bağlı olarak bir ayar vurgulanmış açar.
+    func showSettings(_ page: SettingsPage, highlight: String? = nil) {
+        ui.settingsPage = page
+        ui.settingsHighlight = highlight
+        openSettings?()
+    }
+
+    /// İzin durumları (yalnız ayarlar açılınca kurulur).
+    private(set) lazy var permissions = PermissionCenter(coordinator: self)
     var closeSettings: (() -> Void)?
+    #if DEBUG
+    var showStatusMenuForCapture: (() -> Void)?
+    #endif
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -709,7 +725,7 @@ final class AppCoordinator {
     func handleExternal(_ request: ActivityRequest, source: String) -> ActivityResponse {
         guard settings.activityAPIEnabled else {
             AppLog.coordinator.notice("\(source, privacy: .public) \(request.op.rawValue, privacy: .public): API kapalı")
-            return .failure(String(localized: "Etkinlik API'si kapalı; Ayarlar › Modüller'den açın."))
+            return .failure(String(localized: "Etkinlik API'si kapalı; Ayarlar › Şimdi › Dış etkinlikler'den açın."))
         }
         let response = externalActivities.handle(request)
         // Başlık kişisel olabilir; günlüğe yalnız işlem ve sonuç.

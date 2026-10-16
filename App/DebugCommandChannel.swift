@@ -33,6 +33,15 @@ final class DebugCommandChannel {
     private func handle(_ command: String) {
         let models = coordinator.panels.models
         switch command {
+        case let page where page.hasPrefix("settings:page:"):
+            // settings:page:<sayfa>[:<vurgu>]
+            let parts = page.dropFirst(14).split(separator: ":").map(String.init)
+            if let value = parts.first.flatMap(SettingsPage.init(rawValue:)) {
+                coordinator.ui.settingsPage = value
+                coordinator.ui.settingsHighlight = parts.count > 1 ? parts[1] : nil
+            }
+        case "menu:show":
+            coordinator.showStatusMenuForCapture?()
         case "settings:open":
             coordinator.openSettings?()
         case "settings:close":

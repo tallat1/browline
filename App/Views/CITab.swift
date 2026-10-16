@@ -6,6 +6,8 @@ import SwiftUI
 struct CITab: View {
     let ci: CIMonitor
     let hasRepositories: Bool
+    /// Ayarlar › Durum › CI'ı açar ve satırı vurgular.
+    let openSettings: () -> Void
 
     var body: some View {
         ZStack {
@@ -23,7 +25,10 @@ struct CITab: View {
                            message: "GitHub Actions durumu kendi gh oturumunuzla okunur: Terminal'de brew install gh, sonra gh auth login.")
         } else if !hasRepositories {
             EmptyStateView(symbol: "hammer", title: "İzlenen depo yok",
-                           message: "Ayarlar › Modüller › CI durumu'ndan depo ekleyin (ör. sahip/depo).")
+                           message: "İzlenecek GitHub depolarını ayarlardan ekleyin.") {
+                Button("Depo ekle…", action: openSettings)
+                    .buttonStyle(QuietButtonStyle())
+            }
         } else if ci.runs.isEmpty {
             if case let .failed(repository) = ci.status {
                 EmptyStateView(symbol: "exclamationmark.triangle", title: "Çalışmalar okunamadı",

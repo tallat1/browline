@@ -22,6 +22,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         trackFrontmostApplication()
         coordinator.openSettings = { [weak self] in self?.settingsWindow.show() }
         coordinator.closeSettings = { [weak self] in self?.settingsWindow.close() }
+        #if DEBUG
+        // Görüntü için: menüyü açar, 3 sn sonra kapatır (menü izleme döngüsünde ana kuyruk işler).
+        coordinator.showStatusMenuForCapture = { [weak self] in
+            guard let item = self?.statusItem, let menu = item.menu else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { menu.cancelTracking() }
+            item.button?.performClick(nil)
+        }
+        #endif
         if !coordinator.settings.hasCompletedOnboarding { settingsWindow.show() }
     }
 

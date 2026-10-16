@@ -115,7 +115,12 @@ public final class SpectrumLevels: Sendable {
     private struct State {
         var values = [Float](repeating: 0, count: SpectrumLevels.bandCount)
         var lastSignal: CFTimeInterval = 0
+        /// Bu oturumda hiç sinyal geldi mi: sistem sesi kaydı izninin tek dolaylı kanıtı (izin
+        /// durumunu okuyan public API yok).
+        var everHadSignal = false
     }
+
+    public var everHadSignal: Bool { state.withLock(\.everHadSignal) }
 
     private let state = OSAllocatedUnfairLock(initialState: State())
 
@@ -128,12 +133,19 @@ public final class SpectrumLevels: Sendable {
     func write(_ values: [Float], signal: Bool, now: CFTimeInterval = CACurrentMediaTimeShim.now()) {
         state.withLock {
             $0.values = values
-            if signal { $0.lastSignal = now }
+            if signal {
+                $0.lastSignal = now
+                $0.everHadSignal = true
+            }
         }
     }
 
     func reset() {
-        state.withLock { $0 = State() }
+        state.withLock {
+            let ever = $0.everHadSignal
+            $0 = State()
+            $0.everHadSignal = ever
+        }
     }
 }
 

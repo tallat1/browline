@@ -32,8 +32,13 @@ final class SettingsWindowController {
     }
 
     private func makeWindow() -> NSWindow {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 480),
-                              styleMask: [.titled, .closable], backing: .buffered, defer: false)
+        // Sistem Ayarları gibi: kenar çubuğu başlık çubuğunun altına uzanır.
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 560),
+                              styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+                              backing: .buffered, defer: false)
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.contentMinSize = NSSize(width: 760, height: 540)
         window.title = String(localized: "NotchMVP Ayarları")
         window.isReleasedWhenClosed = false
         // Başka Space'te açık kalmışsa oraya geçmek yerine bulunulan Space'e gelsin.

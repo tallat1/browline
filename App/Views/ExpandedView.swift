@@ -115,7 +115,8 @@ struct ExpandedView: View {
         case .claude: ClaudeTab(usage: coordinator.claudeUsage)
         case .terminal: TerminalTab(session: coordinator.terminal, model: model)
         case .clipboard: ClipboardTab(history: coordinator.clipboard)
-        case .ci: CITab(ci: coordinator.ci, hasRepositories: !coordinator.settings.ciRepositories.isEmpty)
+        case .ci: CITab(ci: coordinator.ci, hasRepositories: !coordinator.settings.ciRepositories.isEmpty,
+                        openSettings: { coordinator.showSettings(.status, highlight: "ci") })
         }
     }
 }

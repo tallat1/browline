@@ -104,9 +104,9 @@ Kapalı notch'taki tek sürekli animasyon olduğu için ölçülerek seçildi (2
 | **Core Animation katmanı (`EqualizerBars`)** | **%0,33** | **0,71 mW** |
 
 SwiftUI her karede büyük saydam paneli yeniden çizdiriyor; Core Animation animasyonu pencere sunucusunda
-yürür, uygulama uyanmaz. Duraklatınca, azaltılmış harekette ya da Ayarlar › Modüller'den kapatılınca durur.
+yürür, uygulama uyanmaz. Duraklatınca, azaltılmış harekette ya da Ayarlar › Notch › Hareket'ten kapatılınca durur.
 
-**Müziğe tepki (isteğe bağlı, varsayılan kapalı).** Ayarlar › Modüller › "Çubuklar müziğe tepki versin".
+**Müziğe tepki (isteğe bağlı, varsayılan kapalı).** Ayarlar › Notch › Hareket › "Çubuklar müziğe tepki versin".
 `AudioSpectrum` sistem sesinin kopyasını Core Audio süreç dinleyicisinden alır (`CATapDescription`, macOS
 14.2+, özel küme aygıtı), 1024 örnekte bir FFT ile dört banda böler (40–160 / 160–640 / 640–2500 /
 2500–10000 Hz). Her bant kendi yakın geçmiş tepesine göre 15 dB aralıkta ölçeklenir (ses düzeyinden
@@ -212,7 +212,7 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     Orada yanıtlanırsa kanca süreci kapanır, soket bağlantısı kopar, soru notch'tan düşer.
   - Notch soru gelince kendiliğinden açılır; karar düğmeleri ilk 0,8 sn pasif (yanlışlıkla tıklama).
   - Genel API: `notch ask --id ID --title … [--detail …] [--timeout SN]` yanıtı yazar (`allow` | `deny`), yanıt
-    yoksa çıkış 4. Ayarlar › Modüller › "Onay sorularını notch'ta yanıtla" kapalıysa hemen yanıtsız döner.
+    yoksa çıkış 4. Ayarlar › Şimdi › "Claude Code izin istemlerini notch'ta yanıtla" kapalıysa hemen yanıtsız döner.
   - ⚠️ Terminal CLI'de Claude'un kendi penceresinin kanca beklerken görünüp görünmediği belgelenmemiş; denenmedi.
 - **Codex CLI** (`Examples/codex/notch-notify.sh`): tur bitince "Codex bitti". `~/.codex/config.toml`:
   `notify = ["/bin/bash", "/YOL/notch-notify.sh"]`. Codex bildirim alanları sürüme göre değişebilir; betik yalnız
@@ -263,7 +263,7 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
   Sistem | Claude | CI. Birden çok sayfalı bölümde içeriğin üstünde ince bir seçici (`PagePicker`, kayan zemin); her
   bölüm son sayfasını hatırlar (`ui.lastPage`), aynı bölüm simgesine basmak ayrıntı sayfasından döndürür.
   Etkinlikler Şimdi'nin ayrıntı sayfası: etkinlik kartından açılır ("‹ Şimdi · Etkinlikler"), sığmayanlar son
-  kartta "+N". Ayarlar › Bölümler: sayfa başına göster/gizle; sayfası kalmayan bölüm bantta görünmez. Yeni
+  kartta "+N". Her özelliğin ayar sayfasında "Notch'ta göster"; sayfası kalmayan bölüm bantta görünmez. Yeni
   özellik bandı büyütmez, bir bölüme sayfa olur. Debug `section:<now|shelf|calendar|tools|status>`.
 - **Sabit genişlik** 640 pt (`NotchDesign.openWidth`); sekmeye göre yalnız boy değişir (`NotchTab.bodyHeight`).
 - **Sakin boş durumlar**: Takvim'de etkinlik de anımsatıcı da yoksa tek satır; medya boşken kaynak adı
@@ -272,6 +272,35 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
   düğmeleri; görünümlerde sabit ölçü yazılmaz. Yüzdeler yerele göre (`NowFormat.percent`).
 - ⚠️ İlerleme çubuğu `TimelineView(.animation(minimumInterval: 1))` ile her ekran karesinde uyanıyordu: medya
   açıkken ana iş parçacığı ≈ %12 meşgul. `.periodic(by: 1)` (duraklatılmışken 1 saat) ile ≈ %0,4.
+
+### Ayarlar penceresi (2026-10-16 tasarım denetimi)
+
+Denetim (https://claude.ai/artifact/7viiuKRrodepFPuSLK3m6P): dört üst sekmede 31 seçenek başlıksız tek listedeydi,
+bir özellik iki yerde (Modüller + Bölümler) açılıp kapanıyordu, iç ayrıntılar kullanıcıya görünüyordu, izinler beş
+yere dağınıktı. Rakip araştırması (Atoll 21 sayfa/8 grup, DynamicNotch 16/4, boring.notch 10–12; hepsi kenar
+çubuğu, ayrı izin sayfası yok, izin satır içi) yönü doğruladı.
+
+- **Kenar çubuğu** (`SettingsPage`, `NavigationSplitView`, 760 × 560, başlık çubuğu saydam): başlıksız Genel ·
+  Notch · İzinler, "Notch bölümleri" Şimdi · Raf · Takvim · Araçlar · Durum (notch'un kendi bölümleri; rakiplerde
+  gruplar özellik türüne göre), "Diğer" Göstergeler · Kilit ekranı · Gelişmiş, en altta Hakkında.
+- **Sayfa**: renkli simge + ad + tek cümle başlık satırı, adlandırılmış gruplar, ana düğme üstte, alt seçenekler
+  girintili ve yalnız açıkken. "Notch'ta göster" özelliğin kendi grubunda (eski Bölümler sekmesi kalktı).
+  Notch'un genel davranışı (açılma, durum alanı, hareket, gizleme) tek "Notch" sayfasında (boring.notch 2.8 gibi).
+- **Arama**: kenar çubuğunun üstünde; ad ve iki dilde anahtar sözcük dizini (`SettingsSearch`). Sonuca basınca
+  sayfa açılır, satıra kaydırılır, 1,8 sn vurgulanır (`settingsAnchor`; gruplu formda `listRowBackground` etkisiz,
+  vurgu satırın arkasında). Notch'tan da: `coordinator.showSettings(.status, highlight: "ci")` (CI boş durumunda
+  "Depo ekle…").
+- **İzinler** (`PermissionCenter`): her izin ihtiyaç duyan sayfada satır içi (`PermissionRow`: sistem adı, neden,
+  durum, "İzin ver" ya da "Ayarları aç" → tam bölme); İzinler sayfası açık özellikler için özet + kullanılmayanlar.
+  Zamanlayıcı yok: uygulama etkinleşince ve sayfa açılınca yenilenir. Durum kaynakları: EventKit, AVCaptureDevice,
+  `AXIsProcessTrusted`, `AEDeterminePermissionToAutomateTarget` (pencere açmadan; Spotify/Music kapalıysa okunamaz),
+  İndirilenler izleyicisinin açılabilmesi, sistem sesi kaydı için spektrumda hiç sinyal gelmiş olması (public API yok).
+- **İzin adları sistemden**: `SecurityPrivacyExtension.appex` › `Localizable.loctable` (`ACCESSIBILITY`,
+  `CALENDARS`, `SCREENANDAUDIOCAPTURE`…), uygulamanın dilinde. ⚠️ macOS 27'de Erişilebilirlik bölmesinin adı
+  "Aygıt Denetimi ve Veri Erişimi" / "Device Control and Data Access"; okunamazsa sürüme göre yedek ad.
+- **Gelişmiş**: Etkinlik API'si durumu ve CLI yolu, Now Playing kaynağı, belgelenmemiş macOS işlevlerinin listesi.
+  Hakkında: lisanslar açılır ayrıntıda.
+- Debug: `settings:open|close`, `settings:page:<sayfa>[:<vurgu>]`, `menu:show` (menüyü 3 sn açar).
 
 ### Tasarım sistemi ve etkileşim (2026-10-16 modernizasyon turu)
 
@@ -289,11 +318,11 @@ yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yaln�
   (kullanıcı 2026-10-16). Doğrulama: pencere sırası (CGWindowList) açınca NotchMVP en önde.
 - Menü çubuğu menüsü: başlık bölümü, simgeli öğeler, Uyanık tut'ta kalan süre ve seçim işareti; teknik Now
   Playing satırı ve "Paneli yeniden kur" yalnız menü Option ile açılınca ("Gelişmiş"). Now Playing kaynağı ayrıca
-  Ayarlar › Hakkında'da.
+  Ayarlar › Gelişmiş'te.
 - Trackpad: açıkken dikey kaydırma içeriğe ait (not, terminal, liste kaydırınca notch kapanmıyor; yalnız bant
   üzerinde yukarı kaydırma kapatır), atalet olayları yok sayılır (yatayda ikinci parça geçişi yok), fare tekerleği
   0,35 sn'de bir eylem (eskiden ilk tıktan sonra kilitleniyordu). `ScrollGestureTests` gerçek CGEvent'lerle.
-- Dokunsal geri bildirim (Force Touch trackpad, Ayarlar › Genel'deki düğmeye bağlı): imleç sekme simgelerinin ve
+- Dokunsal geri bildirim (Force Touch trackpad, Ayarlar › Notch › Açılma'daki düğmeye bağlı): imleç sekme simgelerinin ve
   sayfa seçicisinin üzerinden geçerken her simgede hafif çentik (`.alignment`), sekme seçilince belirgin tık
   (`.levelChange`, sekme hangi yoldan değişirse); art arda en az 40 ms. Parmak yüzeydeyken hissedilir.
 - Ses: CoreAudio okuma/yazma ayrı kuyrukta, dinleyici bildirimleri birleşik, sürüklerken yalnız son değer yazılır
@@ -338,7 +367,7 @@ yüzdesi yok, yalnız limit dolduğunda dönen hata satırında `apiErrorParams.
 dışında. Sekmede "5 saatlik oturum limiti doldu · 03:42'de sıfırlanır · 2 sa 14 dk sonra"; yoksa "Dolmuş bir
 limit yok". Debug: `claude:limit-preview` (yalnız bellekte örnek).
 
-Yüzdeler (isteğe bağlı, BELGELENMEMİŞ): Ayarlar › Modüller › "Yüzdeleri kullanım uç noktasından al" açılınca
+Yüzdeler (isteğe bağlı, BELGELENMEMİŞ): Ayarlar › Durum › Claude › "Oturum ve hafta yüzdeleri" açılınca
 `ClaudeUsageAPI` 5 dakikada bir `GET https://api.anthropic.com/api/oauth/usage` sorar (`five_hour`/`seven_day`
 `utilization` + `resets_at`). Kimlik Claude Code'un Anahtar Zinciri kaydı ("Claude Code-credentials") ya da
 `~/.claude/.credentials.json`; anahtar yalnız istek başlığında ve süresi dolana kadar bellekte, diske ve günlüğe
@@ -359,7 +388,7 @@ Belgelenmemiş OAuth kullanım uç noktası (Anahtar Zinciri'ndeki oturum anahta
 
 ## Rakiplerden gelen küçük modüller
 
-Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken arka plan işi yok.
+Hepsi public API (ekran kaydı göstergesi hariç), hepsi ayarlarda kendi sayfasından kapatılabilir; kapalıyken arka plan işi yok.
 
 | Modül | Esin | Nasıl | Enerji / izin |
 |---|---|---|---|
@@ -370,7 +399,7 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 | Ekran kaydı göstergesi | Atoll | Ekran kaydedilirken ya da paylaşılırken (QuickTime, ⌘⇧5, toplantıda ekran paylaşımı, AirPlay) kapalı notch'ta mor kayıt simgesi ve geçen süre, açık notch'ta mor nokta. Kamera/mikrofonun önünde, müziğin arkasında | ⚠️ Belgelenmemiş SkyLight `CGSIsScreenWatcherPresent` (`PrivateBridges/ScreenWatcher`, sembol yoksa kapalı); 2 sn'de bir, esnek zamanlayıcı. Doğrulama: 1×1 piksellik 2 sn'lik `screencapture -v` boyunca 1 |
 | CI durumu | Pulse Island | Durum › CI: izlenen depolarda son GitHub Actions çalışmaları (durum simgesi, iş akışı · commit, depo · dal · zaman; basınca tarayıcıda). Süren çalışma kapalı notch'ta (öncelik 12: müzik ve Claude etkinliklerinin arkasında) ve Şimdi'de kart + süre; bitince 4 sn ✓ Başarılı / ✗ Başarısız. Ayarlar: depo ekle (sahip/depo ya da adres), "son çalıştığım depoları öner" (`~/GitHub` altında son 14 günde commit alan GitHub depoları), yalnız benimkiler | Kullanıcının kendi `gh` aracı (`gh run list -R … --json`, `-u <login>`); uygulama anahtar görmez. Süren varken 30 sn, yoksa 3 dk. İzin yok |
 | Kilit ekranı şeridi | Alcove, Atoll | Kilitliyken kapalı notch genişler: solda kapak + şarkı adı, sağda pil; müzik yoksa pil ve kalan/dolma süresi | Kilitte panel tıklama almıyor ve büyük kart macOS'un saatine biner: bu yüzden kompakt yükseklikte, etkileşimsiz. Öncelik 32 (Now Playing'in önünde, zamanlayıcının arkasında). `lock:on` benzetimiyle görsel doğrulandı |
-| Düşük Güç Modu | Crest | Sistem Düşük Güç Modu'ndayken (Ayarlar › Modüller, varsayılan açık) sürekli hareket durur: çubuklar durağan, kayan yazılar üç noktayla kesilir, müziğe tepki dinleyicisi kapanır. Kısa geçişler sürer | `NSProcessInfoPowerStateDidChange`, yoklama yok; SwiftUI ortam değeri `pausesContinuousMotion` (kilit ekranı dahil). Debug `power:low-on|off|auto` sistemi değiştirmeden benzetir |
+| Düşük Güç Modu | Crest | Sistem Düşük Güç Modu'ndayken (Ayarlar › Notch › Hareket, varsayılan açık) sürekli hareket durur: çubuklar durağan, kayan yazılar üç noktayla kesilir, müziğe tepki dinleyicisi kapanır. Kısa geçişler sürer | `NSProcessInfoPowerStateDidChange`, yoklama yok; SwiftUI ortam değeri `pausesContinuousMotion` (kilit ekranı dahil). Debug `power:low-on|off|auto` sistemi değiştirmeden benzetir |
 | Pano geçmişi | Maccy, Paste | Raf bölümünde Pano sayfası: son 50 kopya (metin, bağlantı, dosya, görsel ≤ 8 MB), uygulama ve zaman; basınca yeniden kopyalanır, sabitle / sil / temizle (sabitler kalır) | Yalnız bellekte, diske yazılmaz. `changeCount` 0,75 sn'de bir. nspasteboard.org gizli/geçici türler (parola yöneticileri) hiç alınmaz. macOS "diğer uygulamalardan yapıştırma" iznini engellerse sekme söyler |
 | Raf derinliği | Dropover, Yoink | Raf bölümünde Dosyalar sayfası. Altta Paylaş (sistem paylaşım menüsü), Sıkıştır (`ditto`; tek öğe yanına, çoklu İndirilenler'e tarihli zip) ve Temizle. Öğede: üzerine gelince göz (Quick Look, `qlmanage -p`), çift tık açar; sağ tık Aç, Önizle, Paylaş…, AirDrop, Sıkıştır, Yolu kopyala, Finder'da göster, Raftan kaldır | **Dönüştür** (sağ tık): görselde JPEG / PNG / HEIC olarak kaydet ve küçült (en uzun kenar 2048 ya da 1280 px, `sips`); videoda MP4 1080p / 720p ve sesi ayıkla (M4A, `avconvert`, ffmpeg gerekmez). Sonuç kaynağın yanına (yazılamıyorsa İndirilenler'e) yeni dosya, rafa da eklenir; özgün dosyaya dokunulmaz; sürerken karoda ilerleme. **Bırakma** AppKit katmanında (`FileDropView`, panelin en üstünde, yalnız dosya sürüklenirken isabet alır): Finder dosyası, **dosya sözü** (ekran görüntüsü/kaydının sağ alttaki küçük resmi, Fotoğraflar, Mail eki; `NSFilePromiseReceiver`) ve yalnız görsel verisi (PNG yazılır). Sözle gelen dosya macOS'un ekran görüntüsü klasörüne (`com.apple.screencapture location`, yoksa Masaüstü) yazılır: küçük resim sürüklenince macOS dosyayı kendisi kaydetmiyor. Geçici klasördeki adresler (/var/folders) oraya kopyalanır. ⚠️ Eskiden SwiftUI `onDrop(of: [.fileURL])` ve algılayıcı yalnız adrese bakıyordu: küçük resim notch'u açmıyordu. ⛔ `receivePromisedFiles` yalnız `performDragOperation` içinde eşzamanlı çağrılabilir. Kendi raf öğemizi notch'a geri bırakmak eklemez. Sıkıştırma ve dönüşüm arka planda; ad çakışırsa "ad 2.zip". Aynı dosya iki kez eklenmez: karşılaştırma dosya kimliğiyle (`ShelfStore.identity`: dosya başvurusu URL'si yola, `/private/tmp` ↔ `/tmp`). Raf 124 pt (104'te kesikli çerçeve gövdeden taşıyordu), ad tek satır, ortadan kısalır |
 | Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
@@ -428,7 +457,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (357 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (420 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 
