@@ -180,9 +180,15 @@ struct MediaTab: View {
         .help(help)
     }
 
-    static func appName(for bundleIdentifier: String) -> String? {
-        NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier)
+    /// Uygulama adı önbellekte: başlık alt satırı her çizimde Launch Services'e (diske) gitmesin.
+    @MainActor private static var appNames: [String: String?] = [:]
+
+    @MainActor static func appName(for bundleIdentifier: String) -> String? {
+        if let cached = appNames[bundleIdentifier] { return cached }
+        let name = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier)
             .map { FileManager.default.displayName(atPath: $0.path).replacingOccurrences(of: ".app", with: "") }
+        appNames[bundleIdentifier] = name
+        return name
     }
 }
 

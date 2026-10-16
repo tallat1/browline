@@ -186,8 +186,9 @@ final class AppSettings {
 extension PanelManager.ScreenPolicy {
     var title: String {
         switch self {
-        case .builtInOrMain: String(localized: "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)")
-        case .allScreens: String(localized: "Tüm ekranlar (çentiksiz ekranda hap)")
+        // Kısa seçenek adları (ayar satırında kesilmesin); ayrıntı bölümün açıklamasında.
+        case .builtInOrMain: String(localized: "Yalnız yerleşik ekran")
+        case .allScreens: String(localized: "Tüm ekranlar")
         }
     }
 }

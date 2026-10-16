@@ -32,7 +32,7 @@ struct TerminalTab: View {
         .background(Color.black)
         .clipShape(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous)
-            .strokeBorder(NotchDesign.cardFill, lineWidth: 1))
+            .strokeBorder(NotchDesign.hairline, lineWidth: 0.5))
         .notchAnimation(value: session.exitStatus)
         .onAppear {
             model.wantsKeyboard = true

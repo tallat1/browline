@@ -250,6 +250,28 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
 - ⚠️ İlerleme çubuğu `TimelineView(.animation(minimumInterval: 1))` ile her ekran karesinde uyanıyordu: medya
   açıkken ana iş parçacığı ≈ %12 meşgul. `.periodic(by: 1)` (duraklatılmışken 1 saat) ile ≈ %0,4.
 
+### Tasarım sistemi ve etkileşim (2026-10-16 modernizasyon turu)
+
+`App/Views/NotchDesign.swift` tek kaynak: yazı ölçeği (24 yuvarlak büyük rakam · 13 · 12 · 11 · 10), boşluk
+(2/4/6/8/12/16), köşe (7 satır/simge · 10 yan kart · 12 kart), simge (11/13/15, orta ağırlık), kontrol yüksekliği
+(22/26/32), yüzeyler (kart 0,06 · üzerine gelme 0,10 · seçili 0,14 · basılı 0,18 beyaz) ve 0,5 pt ince kenar
+(`hairline`), pasif %40. Bileşenler: `notchCard`, `MetricCard` (etiket + sağda bağlam, büyük değer + birim,
+4 pt çubuk), `CapsuleButtonStyle`, `IconButtonStyle`, `QuietButtonStyle` (yönetim eylemleri), `PressScaleStyle`;
+hepsinde üzerine gelme, basılı ve pasif durumları. Hareket (`NotchMotion`): açılış 0,32 · kapanış 0,28 · boy 0,3
+yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yalnız saydamlık.
+
+- ••• artık sistem menüsü değil: bandın altına kayan çip şeridi (diğer sekmeler simge + adla, sığmazsa yalnız
+  simge), "Sekmeleri düzenle…" sağda ikincil renkte. Notch'tan taşmaz, notch şerit boyu kadar uzar.
+- Menü çubuğu menüsü: başlık bölümü, simgeli öğeler, Uyanık tut'ta kalan süre ve seçim işareti; teknik Now
+  Playing satırı ve "Paneli yeniden kur" yalnız menü Option ile açılınca ("Gelişmiş"). Now Playing kaynağı ayrıca
+  Ayarlar › Hakkında'da.
+- Trackpad: açıkken dikey kaydırma içeriğe ait (not, terminal, liste kaydırınca notch kapanmıyor; yalnız bant
+  üzerinde yukarı kaydırma kapatır), atalet olayları yok sayılır (yatayda ikinci parça geçişi yok), fare tekerleği
+  0,35 sn'de bir eylem (eskiden ilk tıktan sonra kilitleniyordu). `ScrollGestureTests` gerçek CGEvent'lerle.
+- Ses: CoreAudio okuma/yazma ayrı kuyrukta, dinleyici bildirimleri birleşik, sürüklerken yalnız son değer yazılır
+  (eskiden kaydırıcı sürüklenirken ana iş parçacığı ≈ %35 meşguldü). HUD dinleyicisi de birleşik.
+- Ölçüm (etkileşimsiz, `sample` ana iş parçacığı): kapalı %0; Şimdi açık %0,2, uzun başlık kayarken ≈ %4.
+
 ## Terminal sekmesi
 
 Gerçek kabuk, SwiftTerm (MIT) ile: kullanıcının giriş kabuğu (Dizin Hizmetleri'ndeki; bu makinede bash) ev

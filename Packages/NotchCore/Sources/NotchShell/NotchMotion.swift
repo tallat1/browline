@@ -4,20 +4,23 @@ import SwiftUI
 /// bir animasyon sürerken yenisi gelirse SwiftUI yayı hızı devralarak birleştirir, sıçrama olmaz.
 /// Boring.notch'ta 0,8 sönümün aşması şikâyet topladı; açılış ve kapanış kritik sönümlü.
 public enum NotchMotion {
-    /// Açılış: kritik sönümlü, 0,4 sn.
-    public static let open = Animation.spring(duration: 0.4, bounce: 0)
-    /// Kapanış: biraz daha uzun ve yumuşak; açılışla aynı aile.
-    public static let close = Animation.spring(duration: 0.45, bounce: 0)
+    // Süreler 2026-10-16 modernizasyonunda kısaltıldı (100–250 ms hedefi; yaylar algısal süre).
+    /// Açılış: kritik sönümlü, 0,32 sn.
+    public static let open = Animation.spring(duration: 0.32, bounce: 0)
+    /// Kapanış: açılıştan biraz kısa; kapanan şey dikkat çekmesin.
+    public static let close = Animation.spring(duration: 0.28, bounce: 0)
     /// Kompakt kanat genişliği ve sekmeye göre boy değişimi: çok hafif esnek.
-    public static let resize = Animation.spring(duration: 0.38, bounce: 0.06)
-    /// İçerik değişimi (şarkı, etkinlik, kapak): kısa çapraz geçiş.
-    public static let content = Animation.easeInOut(duration: 0.28)
+    public static let resize = Animation.spring(duration: 0.3, bounce: 0.04)
+    /// İçerik değişimi (şarkı, etkinlik, kapak, sekme): kısa çapraz geçiş.
+    public static let content = Animation.easeInOut(duration: 0.2)
     /// Hareketi azalt açıkken boyut animasyonu yerine yalnız saydamlık.
-    public static let reducedMotion = Animation.easeInOut(duration: 0.18)
+    public static let reducedMotion = Animation.easeInOut(duration: 0.15)
     /// Üzerine gelme geri bildirimi (düğme zemini, kalınlaşan çubuk): anlık ama sert değil.
     public static let hover = Animation.easeOut(duration: 0.12)
+    /// Basılma: en kısa geri bildirim.
+    public static let press = Animation.easeOut(duration: 0.08)
     /// Panel görünür/gizli (yüzen kart, boştaki hap, tam ekran, kilit): pencere saydamlığı.
-    public static let panelFadeDuration: TimeInterval = 0.2
+    public static let panelFadeDuration: TimeInterval = 0.16
 
     /// Kayan yazı: sabit hız (pt/sn), başlamadan ve sonda bekleme.
     public static let marqueeSpeed: Double = 30
@@ -45,7 +48,7 @@ public enum NotchTransition: Sendable {
 
     var transition: AnyTransition {
         switch self {
-        case .swap: .opacity.combined(with: .scale(scale: 0.97))
+        case .swap: .opacity.combined(with: .scale(scale: 0.98))
         case .listItem: .opacity.combined(with: .move(edge: .top))
         case .fade: .opacity
         }

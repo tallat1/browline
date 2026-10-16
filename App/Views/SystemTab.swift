@@ -24,17 +24,17 @@ struct SystemTab: View {
             if let snapshot = stats.snapshot {
                 HStack(alignment: .top, spacing: 10) {
                     let cpu = snapshot.cpu ?? 0
-                    gauge(title: "İşlemci", value: cpu, tint: cpu > 0.8 ? .red : .green,
-                          detail: snapshot.cpu == nil ? Text(verbatim: "–") : Text("%\(Int((cpu * 100).rounded()))"))
+                    MetricCard(title: "İşlemci", value: snapshot.cpu == nil ? "–" : NowFormat.percent(cpu * 100),
+                               level: cpu, tint: cpu > 0.8 ? .red : .green)
                     let memory = snapshot.memoryTotal > 0 ? Double(snapshot.memoryUsed) / Double(snapshot.memoryTotal) : 0
-                    gauge(title: "Bellek", value: memory, tint: memory > 0.85 ? .orange : .blue,
-                          detail: Text(verbatim: Self.gigabytes(snapshot.memoryUsed) + " / " + Self.gigabytes(snapshot.memoryTotal) + " GB"))
-                    VStack(alignment: .leading, spacing: 6) {
+                    MetricCard(title: "Bellek", value: Self.gigabytes(snapshot.memoryUsed),
+                               unit: "/ " + Self.gigabytes(snapshot.memoryTotal) + " GB",
+                               level: memory, tint: memory > 0.85 ? .orange : .blue)
+                    VStack(alignment: .leading, spacing: NotchDesign.Space.s) {
                         CardLabel("Ağ")
-                        Label(SystemStats.formatRate(snapshot.download), systemImage: "arrow.down")
-                        Label(SystemStats.formatRate(snapshot.upload), systemImage: "arrow.up")
+                        rate(SystemStats.formatRate(snapshot.download), symbol: "arrow.down")
+                        rate(SystemStats.formatRate(snapshot.upload), symbol: "arrow.up")
                     }
-                    .font(NotchDesign.bodyEmphasized.monospacedDigit())
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                     .notchCard()
                 }
@@ -45,19 +45,14 @@ struct SystemTab: View {
         }
     }
 
-    private func gauge(title: LocalizedStringKey, value: Double, tint: Color, detail: Text) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            CardLabel(title)
-            detail
-                .font(.system(size: 20, weight: .semibold).monospacedDigit())
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
+    private func rate(_ text: String, symbol: String) -> some View {
+        HStack(spacing: NotchDesign.Space.xs) {
+            Image(systemName: symbol)
+                .font(.system(size: NotchDesign.Icon.small, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(verbatim: text).font(NotchDesign.bodyEmphasized.monospacedDigit())
                 .contentTransition(.numericText())
-                .notchAnimation(value: value)
-            LevelBar(level: value, tint: tint).frame(height: 5)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .notchCard()
     }
 
     private static func gigabytes(_ bytes: UInt64) -> String {

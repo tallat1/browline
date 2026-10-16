@@ -21,6 +21,16 @@ public final class VolumeController {
     public private(set) var currentDeviceID: AudioObjectID?
 
     @ObservationIgnored private var listeners: [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
+    /// CoreAudio sorguları coreaudiod'a gider (her biri milisaniyeler): ana iş parçacığında yapılınca
+    /// kaydırıcı sürüklenirken ana iş parçacığı %35'e kadar meşgul oluyordu (2026-10-16 örneklemesi).
+    @ObservationIgnored private let audioQueue = DispatchQueue(label: "com.talatozcoban.notchmvp.volume", qos: .userInitiated)
+    @ObservationIgnored private var readPending = false
+    @ObservationIgnored private var pendingVolume: Float?
+    @ObservationIgnored private var unmuteBeforeWrite = false
+    @ObservationIgnored private var writeInFlight = false
+    @ObservationIgnored private var lastLocalWrite = Date.distantPast
+    /// Kendi yazdığımız değerin dinleyiciden dönen yankısı bu süre içinde kaydırıcıyı geri çekmez.
+    static let echoWindow: TimeInterval = 0.4
 
     public init() {}
 
@@ -46,14 +56,43 @@ public final class VolumeController {
         listeners.removeAll()
     }
 
+    /// Arayüz hemen güncellenir; yazma ayrı kuyrukta ve birleşik: sürüklerken yalnız son değer yazılır.
     public func setVolume(_ value: Double) {
         let clamped = min(max(value, 0), 1)
-        if clamped > 0, isMuted { SystemVolume.setMuted(false) }
-        if SystemVolume.setVolume(Float(clamped)) {
-            volume = clamped
-            Log.integrations.notice("Ses ayarlandı: %\(Int((clamped * 100).rounded()))")
-        } else {
-            Log.integrations.error("Ses ayarlanamadı")
+        volume = clamped
+        lastLocalWrite = .now
+        if clamped > 0, isMuted {
+            isMuted = false
+            unmuteBeforeWrite = true
+        }
+        pendingVolume = Float(clamped)
+        if !writeInFlight { flushWrite() }
+    }
+
+    private func flushWrite() {
+        guard let target = pendingVolume else {
+            writeInFlight = false
+            return
+        }
+        pendingVolume = nil
+        writeInFlight = true
+        let unmute = unmuteBeforeWrite
+        unmuteBeforeWrite = false
+        audioQueue.async { [weak self] in
+            if unmute { _ = SystemVolume.setMuted(false) }
+            let succeeded = SystemVolume.setVolume(target)
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    if !succeeded { Log.integrations.error("Ses ayarlanamadı") }
+                    if self.pendingVolume != nil {
+                        self.flushWrite()
+                    } else {
+                        self.writeInFlight = false
+                        Log.integrations.notice("Ses ayarlandı: %\(Int((target * 100).rounded()))")
+                    }
+                }
+            }
         }
     }
 
@@ -87,16 +126,34 @@ public final class VolumeController {
         currentDeviceID = SystemVolume.defaultOutputDevice()
         if let device = currentDeviceID {
             for address in [SystemVolume.volumeAddress, SystemVolume.muteAddress] {
-                addListener(device, address) { [weak self] in self?.readLevel() }
+                addListener(device, address) { [weak self] in self?.scheduleRead() }
             }
         }
-        readLevel()
+        // Ayarlanabilirlik cihaza bağlı: yalnız cihaz değişince sorulur, her ses değişiminde değil.
+        isSettable = Self.isVolumeSettable()
+        scheduleRead()
     }
 
-    private func readLevel() {
-        volume = Double(SystemVolume.volume() ?? 0)
-        isMuted = SystemVolume.isMuted()
-        isSettable = Self.isVolumeSettable()
+    /// Dinleyici bir değişimde kanal başına birkaç kez çağrılır; okumalar tek işte birleşir ve ayrı
+    /// kuyrukta yapılır.
+    private func scheduleRead() {
+        guard !readPending else { return }
+        readPending = true
+        audioQueue.async { [weak self] in
+            let level = SystemVolume.volume()
+            let muted = SystemVolume.isMuted()
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.readPending = false
+                    // Kendi sürüklememizin yankısı kaydırıcıyı geri çekmesin.
+                    if Date.now.timeIntervalSince(self.lastLocalWrite) > Self.echoWindow, !self.writeInFlight {
+                        self.volume = Double(level ?? 0)
+                    }
+                    self.isMuted = muted
+                }
+            }
+        }
     }
 
     private func addListener(_ object: AudioObjectID, _ address: AudioObjectPropertyAddress,

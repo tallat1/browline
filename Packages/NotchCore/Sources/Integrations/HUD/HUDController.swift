@@ -33,6 +33,8 @@ public final class HUDController {
     @ObservationIgnored public var onShow: (() -> Void)?
     @ObservationIgnored private let tap = MediaKeyTap()
     @ObservationIgnored private var volumeListeners: [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
+    /// Bir ses değişiminde dinleyici kanal başına birkaç kez çağrılır; okuma bir kez yapılır.
+    @ObservationIgnored private var volumeReadPending = false
     @ObservationIgnored private var trustObserver: NSObjectProtocol?
 
     nonisolated static let step = 1.0 / 16
@@ -157,9 +159,7 @@ public final class HUDController {
         volumeListeners = Array(volumeListeners.prefix(1))
         guard let device = SystemVolume.defaultOutputDevice() else { return }
         for address in [SystemVolume.volumeAddress, SystemVolume.muteAddress] {
-            addListener(device, address) { [weak self] in
-                self?.show(.volume, level: Double(SystemVolume.volume() ?? 0), muted: SystemVolume.isMuted())
-            }
+            addListener(device, address) { [weak self] in self?.scheduleVolumeRead() }
         }
     }
 
@@ -169,6 +169,19 @@ public final class HUDController {
         let block: AudioObjectPropertyListenerBlock = { _, _ in MainActor.assumeIsolated { handler() } }
         if AudioObjectAddPropertyListenerBlock(object, &address, .main, block) == noErr {
             volumeListeners.append((object, address, block))
+        }
+    }
+
+    /// Aynı döngüdeki bildirimler (ana, sol, sağ kanal) tek okumada birleşir.
+    private func scheduleVolumeRead() {
+        guard !volumeReadPending else { return }
+        volumeReadPending = true
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.volumeReadPending = false
+                self.show(.volume, level: Double(SystemVolume.volume() ?? 0), muted: SystemVolume.isMuted())
+            }
         }
     }
 

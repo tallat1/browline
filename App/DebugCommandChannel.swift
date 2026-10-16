@@ -37,6 +37,8 @@ final class DebugCommandChannel {
             models.forEach { $0.tapped() }
         case "close":
             models.forEach { $0.dismiss() }
+        case "tab:more":
+            coordinator.ui.isMoreTabsOpen.toggle()
         case let tab where tab.hasPrefix("tab:"):
             // "media" eski ad: Şimdi.
             let name = String(tab.dropFirst(4))

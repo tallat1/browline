@@ -26,6 +26,8 @@ struct NotesTab: View {
         }
         .padding(8)
         .background(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous).fill(NotchDesign.cardFill))
+        .overlay(RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous)
+            .strokeBorder(NotchDesign.hairline, lineWidth: 0.5))
         .onAppear { model.wantsKeyboard = true }
         .onDisappear {
             model.wantsKeyboard = false

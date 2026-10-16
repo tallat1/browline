@@ -31,12 +31,14 @@ struct ClaudeTab: View {
             TimelineView(.everyMinute) { timeline in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) {
-                        WindowCard(title: "Oturum (5 saat)", window: current.fiveHour, now: timeline.currentDate, relative: true)
+                        WindowCard(title: "Oturum · 5 saat", window: current.fiveHour, now: timeline.currentDate, relative: true)
                         WindowCard(title: "Haftalık", window: current.sevenDay, now: timeline.currentDate, relative: false)
                     }
-                    Text(updatedText(current.capturedAt, now: timeline.currentDate))
+                    .fixedSize(horizontal: false, vertical: true)
+                    Label(updatedText(current.capturedAt, now: timeline.currentDate), systemImage: "clock")
                         .font(NotchDesign.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(NotchDesign.metadata)
+                        .labelStyle(MetadataLabelStyle())
                 }
             }
         } else if let problem = apiProblem, usage.activeLimits.isEmpty {
@@ -111,29 +113,27 @@ private struct WindowCard: View {
     let relative: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            CardLabel(title)
-            if let window {
-                let percent = Int(window.usedPercentage.rounded())
-                // Yerele göre: Türkçe "%22", İngilizce "22%".
-                Text(verbatim: NowFormat.percent(Double(percent)))
-                    .font(.system(size: 22, weight: .semibold).monospacedDigit())
-                    .contentTransition(.numericText())
-                    .notchAnimation(value: percent)
-                LevelBar(level: window.usedPercentage / 100, tint: tint(for: window.usedPercentage)).frame(height: 5)
-                if let reset = window.resetsAt, reset > now {
-                    Text(resetText(reset)).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(1)
-                }
-            } else {
-                Text("Veri yok").font(NotchDesign.body).foregroundStyle(.secondary)
-            }
+        if let window {
+            MetricCard(title: title, value: NowFormat.percent(window.usedPercentage.rounded()),
+                       unit: String(localized: "kullanıldı"), level: window.usedPercentage / 100,
+                       tint: tint(for: window.usedPercentage),
+                       context: window.resetsAt.flatMap { $0 > now ? shortReset($0) : nil },
+                       contextSymbol: "arrow.counterclockwise",
+                       contextHelp: window.resetsAt.flatMap { $0 > now ? resetText($0) : nil })
+        } else {
+            MetricCard(title: title, value: "–", unit: String(localized: "veri yok"))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .notchCard()
     }
 
     private func tint(for percent: Double) -> Color {
         percent >= 90 ? .red : (percent >= 75 ? .orange : Color(red: 0.85, green: 0.47, blue: 0.34))
+    }
+
+    /// Kartın sağ üstü için kısa biçim: "3 sa 9 dk", "42 dk", "Salı 12:00".
+    private func shortReset(_ reset: Date) -> String {
+        guard relative else { return reset.formatted(.dateTime.weekday(.wide).hour().minute()) }
+        let minutes = Int((reset.timeIntervalSince(now) / 60).rounded(.up))
+        return minutes < 60 ? String(localized: "\(minutes) dk") : String(localized: "\(minutes / 60) sa \(minutes % 60) dk")
     }
 
     private func resetText(_ reset: Date) -> String {

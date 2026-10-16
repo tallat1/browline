@@ -14,7 +14,7 @@ struct SettingsView: View {
                 .tabItem { Label("Modüller", systemImage: "square.grid.2x2") }
             TabSettings(coordinator: coordinator, settings: settings)
                 .tabItem { Label("Sekmeler", systemImage: "rectangle.split.3x1") }
-            AboutSettings()
+            AboutSettings(coordinator: coordinator)
                 .tabItem { Label("Hakkında", systemImage: "info.circle") }
         }
         .frame(width: 560, height: 480)
@@ -57,7 +57,7 @@ private struct GeneralSettings: View {
                         ForEach(PanelManager.NotchlessVisibility.allCases, id: \.self) { Text($0.title).tag($0) }
                     }
                 }
-                Text("Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.")
+                Text("Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Kapak kapalıyken yerleşik ekran yerine ana ekran kullanılır, çentiksiz ekranlarda hap görünür. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -245,6 +245,8 @@ private struct ModuleSettings: View {
 }
 
 private struct AboutSettings: View {
+    let coordinator: AppCoordinator
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
     }
@@ -262,6 +264,11 @@ private struct AboutSettings: View {
             Text("NotchMVP \(version)").font(.headline)
             Text("Çalışma adı; ürün adı henüz belirlenmedi.")
                 .foregroundStyle(.secondary)
+            // Tanılama: menü çubuğundan kaldırıldı (Option ile açılan menüde de var).
+            Text(verbatim: coordinator.nowPlayingSourceDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
             Divider()
             Text("Üçüncü taraf yazılım").font(.subheadline.weight(.semibold))
             Text("mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.")

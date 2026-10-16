@@ -185,6 +185,22 @@
         }
       }
     },
+    "%lld sa %lld dk": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld h %2$lld min"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld sa %2$lld dk"
+          }
+        }
+      }
+    },
     "%lld sa %lld dk sonra": {
       "localizations": {
         "en": {
@@ -891,12 +907,12 @@
         }
       }
     },
-    "Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.": {
+    "Ekran seçimi ekranın kendisine bağlı saklanır; çıkarıp takınca korunur. Kapak kapalıyken yerleşik ekran yerine ana ekran kullanılır, çentiksiz ekranlarda hap görünür. Yüzen kart menü çubuğunun altında durur ve yalnız gösterecek bir şey olduğunda belirir.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The choice is saved per display and kept when you unplug and reconnect it. The floating card sits below the menu bar and appears only when there is something to show."
+            "value": "The choice is saved per display and kept when you unplug and reconnect it. With the lid closed the main display is used instead of the built-in one, and displays without a notch show a pill. The floating card sits below the menu bar and appears only when there is something to show."
           }
         }
       }
@@ -977,6 +993,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show in Finder"
+          }
+        }
+      }
+    },
+    "Gelişmiş": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Advanced"
           }
         }
       }
@@ -1621,22 +1647,22 @@
         }
       }
     },
-    "Oturum (5 saat)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Session (5 hours)"
-          }
-        }
-      }
-    },
     "Oturum anahtarının süresi dolmuş": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "The sign-in token has expired"
+          }
+        }
+      }
+    },
+    "Oturum · 5 saat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session · 5 hours"
           }
         }
       }
@@ -2141,12 +2167,12 @@
         }
       }
     },
-    "Tüm ekranlar (çentiksiz ekranda hap)": {
+    "Tüm ekranlar": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "All displays (pill on displays without a notch)"
+            "value": "All displays"
           }
         }
       }
@@ -2231,16 +2257,6 @@
         }
       }
     },
-    "Veri yok": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No data"
-          }
-        }
-      }
-    },
     "Yaklaşan": {
       "localizations": {
         "en": {
@@ -2301,12 +2317,12 @@
         }
       }
     },
-    "Yalnız yerleşik ekran (kapak kapalıysa ana ekran)": {
+    "Yalnız yerleşik ekran": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Built-in display only (main display when the lid is closed)"
+            "value": "Built-in display only"
           }
         }
       }
@@ -2427,6 +2443,16 @@
         }
       }
     },
+    "kullanıldı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "used"
+          }
+        }
+      }
+    },
     "mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.": {
       "localizations": {
         "en": {
@@ -2443,6 +2469,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "in progress"
+          }
+        }
+      }
+    },
+    "veri yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no data"
           }
         }
       }

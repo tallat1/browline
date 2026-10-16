@@ -45,6 +45,11 @@ public final class NotchSurfaceModel {
     @ObservationIgnored private var hoverTask: Task<Void, Never>?
     @ObservationIgnored private var isPointerInside = false
     @ObservationIgnored private var scrollHandledInGesture = false
+    /// Fare tekerleği aşamasız gelir; tık başına bir eylem, art arda tıklar birleşir.
+    @ObservationIgnored private var lastWheelAction = Date.distantPast
+    static let wheelActionInterval: TimeInterval = 0.35
+    /// İmleç konumu (global); testler sabit bir nokta verir.
+    @ObservationIgnored var pointerLocation: () -> CGPoint = { NSEvent.mouseLocation }
 
     init(layout: NotchLayout, displayID: CGDirectDisplayID, screenName: String) {
         self.layout = layout
@@ -116,23 +121,45 @@ public final class NotchSurfaceModel {
         setOpen(false)
     }
 
-    /// İki parmakla aşağı kaydırma açar ve sabitler, yukarı kaydırma kapatır. Jest başına bir kez.
+    /// İki parmakla (ya da tekerlekle) aşağı kaydırma açar ve sabitler, yukarı kaydırma kapatır.
+    /// Jest başına bir kez. Açıkken dikey kaydırma içeriğe aittir (not, terminal, liste): yalnız bant
+    /// (sekme/durum satırı) üzerindeyken kapatır. Eskiden içerikte yukarı kaydırmak notch'u kapatıyordu.
     func scrolled(_ event: NSEvent) {
-        if event.phase == .began || event.phase == .mayBegin { scrollHandledInGesture = false }
-        if event.phase == .ended || event.phase == .cancelled { scrollHandledInGesture = false; return }
-        guard !scrollHandledInGesture else { return }
-        // Açıkken yatay kaydırma: uygulama karar verir (medya sekmesinde parça geçişi).
+        // Atalet (parmak kalktıktan sonra süren kaydırma) jest değil: yatayda ikinci parça geçişi ya da
+        // dikeyde ikinci aç/kapa olmasın.
+        guard event.momentumPhase.isEmpty else { return }
+        let isWheel = event.phase.isEmpty
+        if isWheel {
+            guard Date.now.timeIntervalSince(lastWheelAction) > Self.wheelActionInterval else { return }
+        } else {
+            if event.phase.contains(.began) || event.phase.contains(.mayBegin) { scrollHandledInGesture = false }
+            if event.phase.contains(.ended) || event.phase.contains(.cancelled) { scrollHandledInGesture = false; return }
+            guard !scrollHandledInGesture else { return }
+        }
+        // Açıkken yatay kaydırma: uygulama karar verir (Şimdi sekmesinde parça geçişi).
         if isOpen, let forward = Self.horizontalSwipe(deltaX: event.scrollingDeltaX, deltaY: event.scrollingDeltaY,
                                                        inverted: event.isDirectionInvertedFromDevice) {
-            scrollHandledInGesture = true
+            markScrollHandled(isWheel: isWheel)
             onHorizontalSwipe?(forward)
             return
         }
-        guard abs(event.scrollingDeltaY) > 4 else { return }
+        guard abs(event.scrollingDeltaY) > (isWheel ? 0.5 : 4) else { return }
+        if isOpen, !isPointerOverBand { return }
         // Doğal kaydırmada içerik parmakla aynı yöne gider; deltaY işareti buna göre çevrilir.
         let fingersDown = event.isDirectionInvertedFromDevice ? event.scrollingDeltaY > 0 : event.scrollingDeltaY < 0
-        scrollHandledInGesture = true
+        markScrollHandled(isWheel: isWheel)
         if fingersDown { tapped() } else if isOpen { dismiss() }
+    }
+
+    private func markScrollHandled(isWheel: Bool) {
+        if isWheel { lastWheelAction = .now } else { scrollHandledInGesture = true }
+    }
+
+    /// İmleç açık şeklin üst bandında mı (sekmeler ve durum satırı).
+    private var isPointerOverBand: Bool {
+        let rect = openShapeRect
+        let band = CGRect(x: rect.minX, y: rect.maxY - layout.bandHeight, width: rect.width, height: layout.bandHeight)
+        return band.contains(pointerLocation())
     }
 
     /// Yatay ağırlıklı iki parmak kaydırması: parmaklar sola → ileri (true), sağa → geri.

@@ -27,13 +27,14 @@ struct QuestionView: View {
                 }
                 .frame(height: 52)
                 .padding(8)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(NotchDesign.cardFill))
+                .background(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
+                    .fill(NotchDesign.cardFill))
+                .overlay(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
+                    .strokeBorder(NotchDesign.hairline, lineWidth: 0.5))
             }
             HStack(spacing: 8) {
                 Button(isClaude ? "Claude'da yanıtla" : "Atla") { answer(nil) }
-                    .buttonStyle(.plain)
-                    .font(NotchDesign.caption)
-                    .foregroundStyle(.secondary)
+                    .buttonStyle(QuietButtonStyle())
                     .help("Soruyu bırakır; karar uygulamanın kendi penceresinde verilir")
                 Spacer(minLength: 8)
                 Button("Reddet") { answer(.deny) }

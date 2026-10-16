@@ -58,6 +58,8 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
 @Observable
 final class NotchUIState {
     var selectedTab: NotchTab = .now
+    /// ••• şeridi (diğer sekmeler) açık mı.
+    var isMoreTabsOpen = false
     var activityAPIStatus = String(localized: "Kapalı")
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""

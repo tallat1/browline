@@ -112,8 +112,10 @@ private struct NowCard<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+            .background(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
                 .fill(isHovering && open != nil ? NotchDesign.cardHoverFill : NotchDesign.cardFill))
+            .overlay(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
+                .strokeBorder(NotchDesign.hairline, lineWidth: 0.5))
             .contentShape(Rectangle())
             .onTapGesture { open?() }
             .onHover { isHovering = $0 }

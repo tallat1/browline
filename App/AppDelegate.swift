@@ -83,18 +83,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem = item
     }
 
+    /// Native kalıp: başlık bölümü, simgeli öğeler. Teknik durum ve "Paneli yeniden kur" yalnız menü
+    /// Option ile açılınca (gelişmiş öğeler); günlük kullanımda gürültü olmasın.
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        let title = NSMenuItem(title: "NotchMVP", action: nil, keyEquivalent: "")
-        title.isEnabled = false
-        menu.addItem(title)
-        let source = NSMenuItem(title: coordinator.nowPlayingSourceDescription, action: nil, keyEquivalent: "")
-        source.isEnabled = false
-        menu.addItem(source)
-        menu.addItem(.separator())
-        menu.addItem(action(String(localized: "Ayarlar…"), key: ",") { [weak self] in self?.settingsWindow.show() })
-        menu.addItem(action(String(localized: "Paneli yeniden kur")) { [weak self] in self?.coordinator.panels.rebuild(trigger: "menü") })
+        menu.addItem(.sectionHeader(title: "NotchMVP"))
+        menu.addItem(action(String(localized: "Ayarlar…"), key: ",", symbol: "gearshape") { [weak self] in
+            self?.settingsWindow.show()
+        })
         if coordinator.settings.keepAwakeEnabled { menu.addItem(keepAwakeMenu()) }
+        if NSEvent.modifierFlags.contains(.option) {
+            menu.addItem(.separator())
+            menu.addItem(.sectionHeader(title: String(localized: "Gelişmiş")))
+            let source = NSMenuItem(title: coordinator.nowPlayingSourceDescription, action: nil, keyEquivalent: "")
+            source.isEnabled = false
+            menu.addItem(source)
+            menu.addItem(action(String(localized: "Paneli yeniden kur"), symbol: "arrow.clockwise") { [weak self] in
+                self?.coordinator.panels.rebuild(trigger: "menü")
+            })
+        }
         menu.addItem(.separator())
         menu.addItem(action(String(localized: "Çık"), key: "q") { NSApp.terminate(nil) })
     }
@@ -103,6 +110,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func keepAwakeMenu() -> NSMenuItem {
         let awake = coordinator.keepAwake
         let item = NSMenuItem(title: Self.keepAwakeTitle(awake), action: nil, keyEquivalent: "")
+        item.image = NSImage(systemSymbolName: awake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer",
+                             accessibilityDescription: nil)
         let submenu = NSMenu()
         let reason = String(localized: "NotchMVP: uyanık tut")
         for (title, duration) in [(String(localized: "30 dakika"), Duration.seconds(30 * 60)),
@@ -110,10 +119,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                   (String(localized: "2 saat"), .seconds(2 * 60 * 60))] {
             submenu.addItem(action(title) { awake.start(for: duration, reason: reason) })
         }
-        submenu.addItem(action(String(localized: "Kapatana kadar")) { awake.start(reason: reason) })
+        let forever = action(String(localized: "Kapatana kadar")) { awake.start(reason: reason) }
+        forever.state = awake.isActive && awake.endsAt == nil ? .on : .off
+        submenu.addItem(forever)
         if awake.isActive {
             submenu.addItem(.separator())
-            submenu.addItem(action(String(localized: "Kapat")) { awake.stop() })
+            submenu.addItem(action(String(localized: "Kapat"), symbol: "xmark") { awake.stop() })
         }
         item.submenu = submenu
         return item
@@ -127,8 +138,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return String(localized: "Uyanık tutuluyor · \(minutes) dk kaldı")
     }
 
-    private func action(_ title: String, key: String = "", _ handler: @escaping () -> Void) -> NSMenuItem {
+    private func action(_ title: String, key: String = "", symbol: String? = nil,
+                        _ handler: @escaping () -> Void) -> NSMenuItem {
         let item = NSMenuItem(title: title, action: #selector(MenuAction.run), keyEquivalent: key)
+        item.image = symbol.flatMap { NSImage(systemSymbolName: $0, accessibilityDescription: nil) }
         let target = MenuAction(handler)
         item.target = target
         item.representedObject = target  // hedef zayıf tutulur; nesneyi öğe yaşatır
