@@ -111,12 +111,16 @@ public struct ExternalActivity: Codable, Equatable, Sendable, Identifiable {
 
     public enum ValidationError: Error, Equatable, CustomStringConvertible {
         case missing(String)
-        case invalid(String)
+        /// Alan ve dilden bağımsız kural ("≤ 80", "0…50", "#RRGGBB", "1…86400 s").
+        case invalid(String, rule: String? = nil)
 
-        public var description: String {
+        public var description: String { description(in: .current) }
+
+        public func description(in language: APILanguage) -> String {
             switch self {
-            case let .missing(field): "\(field) gerekli"
-            case let .invalid(field): "\(field) geçersiz"
+            case let .missing(field): language.text("\(field) gerekli", "\(field) is required")
+            case let .invalid(field, rule?): language.text("\(field) geçersiz (\(rule))", "\(field) is invalid (\(rule))")
+            case let .invalid(field, nil): language.text("\(field) geçersiz", "\(field) is invalid")
             }
         }
     }
@@ -128,28 +132,28 @@ public struct ExternalActivity: Codable, Equatable, Sendable, Identifiable {
         if requireID {
             guard let given = request.id else { throw .missing("id") }
             guard given.range(of: #"^[A-Za-z0-9._-]{1,64}$"#, options: .regularExpression) != nil else {
-                throw .invalid("id")
+                throw .invalid("id", rule: "[A-Za-z0-9._-]{1,64}")
             }
         }
         guard let title = request.title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty else {
             throw .missing("title")
         }
-        guard title.count <= 80 else { throw .invalid("title (en çok 80 karakter)") }
-        if let subtitle = request.subtitle, subtitle.count > 120 { throw .invalid("subtitle (en çok 120 karakter)") }
+        guard title.count <= 80 else { throw .invalid("title", rule: "≤ 80") }
+        if let subtitle = request.subtitle, subtitle.count > 120 { throw .invalid("subtitle", rule: "≤ 120") }
         if let progress = request.progress, !(0...1).contains(progress) || progress.isNaN {
-            throw .invalid("progress (0…1)")
+            throw .invalid("progress", rule: "0…1")
         }
         if let symbol = request.symbol,
            symbol.range(of: #"^[a-z0-9.]{1,64}$"#, options: .regularExpression) == nil {
-            throw .invalid("symbol")
+            throw .invalid("symbol", rule: "[a-z0-9.]{1,64}")
         }
         if let tint = request.tint, tint.range(of: #"^#[0-9A-Fa-f]{6}$"#, options: .regularExpression) == nil {
-            throw .invalid("tint (#RRGGBB)")
+            throw .invalid("tint", rule: "#RRGGBB")
         }
         let priority = request.priority ?? defaultPriority
-        guard priorityRange.contains(priority) else { throw .invalid("priority (0…50)") }
+        guard priorityRange.contains(priority) else { throw .invalid("priority", rule: "0…50") }
         let ttl = request.ttl ?? defaultTTL
-        guard ttlRange.contains(ttl) else { throw .invalid("ttl (1…86400 sn)") }
+        guard ttlRange.contains(ttl) else { throw .invalid("ttl", rule: "1…86400 s") }
         return ExternalActivity(id: id, title: title, subtitle: request.subtitle, progress: request.progress,
                                 symbol: request.symbol, tint: request.tint, priority: priority,
                                 updatedAt: now, expiresAt: now.addingTimeInterval(ttl))

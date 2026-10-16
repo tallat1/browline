@@ -22,10 +22,10 @@ public struct ExternalQuestion: Equatable, Sendable, Identifiable {
         throws(ExternalActivity.ValidationError) -> ExternalQuestion {
         let base = try ExternalActivity.validated(from: request, now: now)
         if let detail = request.detail, detail.count > maximumDetailLength {
-            throw .invalid("detail (en çok \(maximumDetailLength) karakter)")
+            throw .invalid("detail", rule: "≤ \(maximumDetailLength)")
         }
         let ttl = request.ttl ?? defaultTTL
-        guard ttlRange.contains(ttl) else { throw .invalid("ttl (1…590 sn)") }
+        guard ttlRange.contains(ttl) else { throw .invalid("ttl", rule: "1…590 s") }
         return ExternalQuestion(id: base.id, title: base.title, subtitle: base.subtitle, detail: request.detail,
                                 symbol: base.symbol, tint: base.tint, askedAt: now,
                                 expiresAt: now.addingTimeInterval(ttl))
@@ -72,8 +72,8 @@ public final class QuestionStore {
         } catch {
             return .failure(error.description)
         }
-        guard !questions.contains(where: { $0.id == question.id }) else { return .failure("\(question.id) zaten bekliyor") }
-        guard questions.count < Self.maximumQuestions else { return .failure("en çok \(Self.maximumQuestions) soru bekleyebilir") }
+        guard !questions.contains(where: { $0.id == question.id }) else { return .failure(APILanguage.current.text("\(question.id) zaten bekliyor", "\(question.id) is already waiting")) }
+        guard questions.count < Self.maximumQuestions else { return .failure(APILanguage.current.text("en çok \(Self.maximumQuestions) soru bekleyebilir", "at most \(Self.maximumQuestions) questions can wait")) }
         questions.append(question)
         onQuestionsChanged?(questions)
         let id = question.id

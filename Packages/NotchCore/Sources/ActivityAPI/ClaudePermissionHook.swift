@@ -69,13 +69,13 @@ public enum ClaudePermissionHook {
     }
 
     /// Notch'a gidecek soru. Kimlik oturuma ve isteğe özgü; başlık sistem diline göre.
-    public static func request(for input: Input, timeout: TimeInterval, turkish: Bool) -> ActivityRequest {
+    public static func request(for input: Input, timeout: TimeInterval, language: APILanguage) -> ActivityRequest {
         let suffix = String(UInt32.random(in: 0...UInt32.max), radix: 36)
         let id = "claude-perm-\(input.sessionPrefix.isEmpty ? "x" : input.sessionPrefix)-\(suffix)"
         let tool = displayName(for: input.toolName)
         let subtitle = [tool, input.project].compactMap { $0 }.joined(separator: " · ")
         return ActivityRequest(op: .ask, id: id,
-                               title: turkish ? "Claude izin istiyor" : "Claude needs permission",
+                               title: language.text("Claude izin istiyor", "Claude needs permission"),
                                subtitle: String(subtitle.prefix(120)), symbol: "hand.raised.fill",
                                tint: "#D97757", ttl: timeout, detail: input.summary)
     }
@@ -88,11 +88,11 @@ public enum ClaudePermissionHook {
     }
 
     /// Kanca çıktısı; karar yoksa nil (hiçbir şey yazılmaz).
-    public static func output(for decision: ActivityResponse.Decision?, turkish: Bool) -> String? {
+    public static func output(for decision: ActivityResponse.Decision?, language: APILanguage) -> String? {
         guard let decision else { return nil }
         var body: [String: Any] = ["behavior": decision.rawValue]
         if decision == .deny {
-            body["message"] = turkish ? "Kullanıcı bu isteği notch'tan reddetti." : "The user denied this request from the notch."
+            body["message"] = language.text("Kullanıcı bu isteği notch'tan reddetti.", "The user denied this request from the notch.")
         }
         let object: [String: Any] = ["hookSpecificOutput": ["hookEventName": "PermissionRequest", "decision": body]]
         guard let data = try? JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]) else { return nil }

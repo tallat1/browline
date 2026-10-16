@@ -13,12 +13,18 @@ public enum ActivityURL {
         case unknownParameter(String)
         case number(String)
 
-        public var description: String {
+        public var description: String { description(in: .current) }
+
+        public func description(in language: APILanguage) -> String {
             switch self {
-            case .scheme: "şema \(ActivityURL.scheme):// olmalı"
-            case let .operation(name): "bilinmeyen işlem: \(name) (push, end, flash)"
-            case let .unknownParameter(name): "bilinmeyen parametre: \(name)"
-            case let .number(name): "\(name) sayı olmalı"
+            case .scheme:
+                language.text("şema \(ActivityURL.scheme):// olmalı", "the scheme must be \(ActivityURL.scheme)://")
+            case let .operation(name):
+                language.text("bilinmeyen işlem: \(name) (push, end, flash)", "unknown operation: \(name) (push, end, flash)")
+            case let .unknownParameter(name):
+                language.text("bilinmeyen parametre: \(name)", "unknown parameter: \(name)")
+            case let .number(name):
+                language.text("\(name) sayı olmalı", "\(name) must be a number")
             }
         }
     }

@@ -2,6 +2,11 @@
 
 All notable changes to Browline are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org).
 
+## [Unreleased]
+
+### Changed
+- The `notch` command-line tool and the activity API answer in English or Turkish, following the first language in your system's language list.
+
 ## [0.9.0] - 2026-10-16
 
 First public beta.

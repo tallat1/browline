@@ -22,7 +22,8 @@ public final class ExternalActivityStore {
     /// `isInternal`: uygulamanın kendi çağrısı; soket, URL ve Kestirmeler ayrılmış kimliklere dokunamaz.
     public func handle(_ request: ActivityRequest, now: Date = .now, isInternal: Bool = false) -> ActivityResponse {
         if !isInternal, let id = request.id, id.hasPrefix(Self.reservedPrefix) {
-            return .failure("\(Self.reservedPrefix) ile başlayan kimlikler uygulamaya ayrılmış")
+            return .failure(APILanguage.current.text("\(Self.reservedPrefix) ile başlayan kimlikler uygulamaya ayrılmış",
+                                                  "ids starting with \(Self.reservedPrefix) are reserved for the app"))
         }
         do {
             switch request.op {
@@ -36,26 +37,29 @@ public final class ExternalActivityStore {
                     activities[index] = activity
                 } else {
                     guard activities.count < Self.maximumActivities else {
-                        return .failure("en çok \(Self.maximumActivities) etkinlik; önce birini bitirin")
+                        return .failure(APILanguage.current.text("en çok \(Self.maximumActivities) etkinlik; önce birini bitirin",
+                                                                  "at most \(Self.maximumActivities) activities; end one first"))
                     }
                     activities.append(activity)
                 }
                 changed()
                 return .success
             case .end:
-                guard let id = request.id else { return .failure("id gerekli") }
-                guard activities.contains(where: { $0.id == id }) else { return .failure("\(id) bulunamadı") }
+                guard let id = request.id else { return .failure(ExternalActivity.ValidationError.missing("id").description) }
+                guard activities.contains(where: { $0.id == id }) else {
+                    return .failure(APILanguage.current.text("\(id) bulunamadı", "\(id) not found"))
+                }
                 activities.removeAll { $0.id == id }
                 changed()
                 return .success
             case .ask:
                 // Yanıt beklemek bağlantı ister; soket sunucusu bunu QuestionStore'a yönlendirir.
-                return .failure("ask yalnız soket üzerinden ve soru deposuyla")
+                return .failure(APILanguage.current.text("ask yalnız soket üzerinden çalışır", "ask only works over the socket"))
             case .flash:
                 let activity = try ExternalActivity.validated(from: request, now: now, requireID: false)
                 let seconds = request.duration ?? 3
                 guard ExternalActivity.flashDurationRange.contains(seconds) else {
-                    return .failure("duration (0,5…15 sn)")
+                    return .failure(ExternalActivity.ValidationError.invalid("duration", rule: "0.5…15 s").description)
                 }
                 flash = activity
                 onFlash?(activity, .milliseconds(Int(seconds * 1000)))

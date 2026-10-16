@@ -94,7 +94,7 @@ struct ClaudePermissionHookTests {
 
     @Test func requestIsAValidQuestion() throws {
         let input = try #require(ClaudePermissionHook.parse(Data(Self.bashInput.utf8)))
-        let request = ClaudePermissionHook.request(for: input, timeout: 110, turkish: true)
+        let request = ClaudePermissionHook.request(for: input, timeout: 110, language: .turkish)
         #expect(request.op == .ask)
         #expect(request.subtitle == "Bash · proje")
         let question = try ExternalQuestion.validated(from: request)
@@ -102,10 +102,10 @@ struct ClaudePermissionHookTests {
     }
 
     @Test func outputMatchesDocumentedShape() throws {
-        #expect(ClaudePermissionHook.output(for: nil, turkish: true) == nil)
-        let allow = try #require(ClaudePermissionHook.output(for: .allow, turkish: true))
+        #expect(ClaudePermissionHook.output(for: nil, language: .turkish) == nil)
+        let allow = try #require(ClaudePermissionHook.output(for: .allow, language: .turkish))
         #expect(allow == #"{"hookSpecificOutput":{"decision":{"behavior":"allow"},"hookEventName":"PermissionRequest"}}"#)
-        let deny = try #require(ClaudePermissionHook.output(for: .deny, turkish: false))
+        let deny = try #require(ClaudePermissionHook.output(for: .deny, language: .english))
         let object = try #require(try JSONSerialization.jsonObject(with: Data(deny.utf8)) as? [String: Any])
         let decision = (object["hookSpecificOutput"] as? [String: Any])?["decision"] as? [String: Any]
         #expect(decision?["behavior"] as? String == "deny")

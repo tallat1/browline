@@ -9,9 +9,9 @@ enum UnixSocket {
 
         var description: String {
             switch self {
-            case .pathTooLong: "soket yolu çok uzun"
+            case .pathTooLong: APILanguage.current.text("soket yolu çok uzun", "the socket path is too long")
             case let .system(call, code): "\(call): \(String(cString: strerror(code)))"
-            case .alreadyRunning: "başka bir örnek bu soketi dinliyor"
+            case .alreadyRunning: APILanguage.current.text("başka bir örnek bu soketi dinliyor", "another instance is listening on this socket")
             }
         }
     }
@@ -74,11 +74,15 @@ public enum ActivitySocketClient {
         case io(String)
         case badResponse
 
-        public var description: String {
+        public var description: String { description(in: .current) }
+
+        public func description(in language: APILanguage) -> String {
             switch self {
-            case .notRunning: "Browline çalışmıyor ya da etkinlik API'si kapalı"
-            case let .io(message): "iletişim hatası: \(message)"
-            case .badResponse: "uygulamadan anlaşılmayan yanıt"
+            case .notRunning:
+                language.text("Browline çalışmıyor ya da etkinlik API'si kapalı (Ayarlar › Şimdi)",
+                              "Browline isn't running or its activity API is off (Settings › Now)")
+            case let .io(message): language.text("iletişim hatası: \(message)", "communication error: \(message)")
+            case .badResponse: language.text("uygulamadan anlaşılmayan yanıt", "unreadable response from the app")
             }
         }
     }
@@ -94,7 +98,7 @@ public enum ActivitySocketClient {
         defer { close(fd) }
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        guard var line = try? encoder.encode(request) else { throw .io("istek kodlanamadı") }
+        guard var line = try? encoder.encode(request) else { throw .io(APILanguage.current.text("istek kodlanamadı", "the request could not be encoded")) }
         line.append(0x0A)
         guard UnixSocket.writeAll(line, to: fd) else { throw .io(String(cString: strerror(errno))) }
 
@@ -103,7 +107,8 @@ public enum ActivitySocketClient {
         while !buffer.contains(0x0A) {
             let count = read(fd, &chunk, chunk.count)
             if count < 0, errno == EINTR { continue }
-            guard count > 0 else { throw .io(count == 0 ? "bağlantı kapandı" : "zaman aşımı") }
+            guard count > 0 else { throw .io(count == 0 ? APILanguage.current.text("bağlantı kapandı", "connection closed")
+                                              : APILanguage.current.text("zaman aşımı", "timed out")) }
             buffer.append(contentsOf: chunk[0..<count])
             guard buffer.count <= ActivityAPI.maximumLineBytes * 4 else { throw .badResponse }
         }
@@ -256,7 +261,8 @@ public final class ActivitySocketServer: @unchecked Sendable {
             guard !line.isEmpty else { continue }
             let decoder = JSONDecoder()
             guard let request = try? decoder.decode(ActivityRequest.self, from: Data(line)) else {
-                write(.failure("geçersiz istek: satır başına bir JSON nesnesi bekleniyor"), to: connection)
+                write(.failure(APILanguage.current.text("geçersiz istek: satır başına bir JSON nesnesi bekleniyor",
+                                                         "invalid request: expected one JSON object per line")), to: connection)
                 continue
             }
             connection.pendingResponses += 1
@@ -277,7 +283,7 @@ public final class ActivitySocketServer: @unchecked Sendable {
             }
         }
         if connection.buffer.count > ActivityAPI.maximumLineBytes {
-            write(.failure("satır çok uzun"), to: connection)
+            write(.failure(APILanguage.current.text("satır çok uzun", "line too long")), to: connection)
             connection.buffer.removeAll()
             markReadClosed(connection)
         }

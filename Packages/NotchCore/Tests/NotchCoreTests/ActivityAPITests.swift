@@ -151,3 +151,22 @@ struct ActivityURLTests {
         #expect(ActivityRequest.number(from: "çeyrek") == nil)
     }
 }
+
+struct APILanguageTests {
+    @Test func firstPreferredLanguageDecides() {
+        #expect(APILanguage.of(["tr-TR", "en-US"]) == .turkish)
+        #expect(APILanguage.of(["en-TR", "tr-TR"]) == .english)
+        #expect(APILanguage.of(["de-DE"]) == .english)
+        #expect(APILanguage.of([]) == .english)
+    }
+
+    @Test func errorsReadInBothLanguages() {
+        let tooLong = ExternalActivity.ValidationError.invalid("title", rule: "≤ 80")
+        #expect(tooLong.description(in: .english) == "title is invalid (≤ 80)")
+        #expect(tooLong.description(in: .turkish) == "title geçersiz (≤ 80)")
+        #expect(ExternalActivity.ValidationError.missing("id").description(in: .english) == "id is required")
+        #expect(ActivityURL.ParseError.number("ttl").description(in: .english) == "ttl must be a number")
+        #expect(ActivityURL.ParseError.number("ttl").description(in: .turkish) == "ttl sayı olmalı")
+        #expect(ActivitySocketClient.ClientError.notRunning.description(in: .english).hasPrefix("Browline isn't running"))
+    }
+}

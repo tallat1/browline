@@ -176,6 +176,9 @@ notch list
 - Sınırlar: en çok 8 etkinlik; id `[A-Za-z0-9._-]{1,64}`; başlık 80, alt başlık 120 karakter; öncelik 0–50
   (yerleşikler: Now Playing 30, toplantı 40); güncellenmeyen etkinlik `--ttl` (varsayılan 600 sn) sonunda düşer.
 - Çıkış kodları: 0 tamam, 1 uygulama hatası (doğrulama), 2 kullanım, 3 uygulama çalışmıyor.
+- Dil: `notch` aracının kullanım/hata çıktıları ve API yanıt metinleri dil sırasının ilkine göre Türkçe ya da
+  İngilizce (`APILanguage`; ilk dil `en-TR` ise İngilizce, uygulamanın kendisi gibi). Doğrulama hataları alan ve
+  dilden bağımsız kural taşır (`invalid("title", rule: "≤ 80")`); testler metne değil türe bakar.
 - Dış etkinlik öne çıkınca kompakt kanatlar genişler (128 pt): solda sembol ve başlık, sağda ilerleme ya da alt başlık.
 - Ham protokol: `echo '{"op":"ping"}' | nc -U "$HOME/Library/Application Support/com.talatozcoban.browline/activity.sock"`
 
