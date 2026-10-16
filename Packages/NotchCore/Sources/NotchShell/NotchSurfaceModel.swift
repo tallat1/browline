@@ -51,6 +51,11 @@ public final class NotchSurfaceModel {
 
     /// Açıkken yatay kaydırma; true ileri. Uygulama bağlar.
     @ObservationIgnored public var onHorizontalSwipe: ((_ forward: Bool) -> Void)?
+    /// Açık notch'a dosya bırakıldı (adres, dosya sözü ya da görsel); uygulama `FileDrop.receive` ile
+    /// alır. Kabul ettiyse true. Atanmamışsa bırakma reddedilir.
+    @ObservationIgnored public var onFileDrop: ((NSPasteboard) -> Bool)?
+    /// Bırakılabilir bir şey notch'un üstünde (raf çerçevesi aydınlanır).
+    public internal(set) var isDropTargeted = false
 
     @ObservationIgnored private var hoverTask: Task<Void, Never>?
     @ObservationIgnored private var isPointerInside = false

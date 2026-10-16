@@ -7,7 +7,9 @@ import UniformTypeIdentifiers
 /// sıkıştırılır, dönüştürülür ya da önizlenir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
 struct ShelfTab: View {
     let shelf: ShelfStore
-    @State private var isTargeted = false
+    /// Bırakılabilir bir şey notch'un üstünde. Bırakma AppKit katmanında (`FileDropView`): dosya sözleri
+    /// (ekran görüntüsü küçük resmi) SwiftUI `onDrop` ile alınamıyordu.
+    let isTargeted: Bool
     @State private var isCompressing = false
     /// Dönüştürülmekte olan öğeler (karo üstünde ilerleme).
     @State private var converting: Set<ShelfStore.Item.ID> = []
@@ -64,17 +66,6 @@ struct ShelfTab: View {
         // Rafa dosya eklenince/kaldırılınca öğeler ve boş durum geçişle.
         .notchAnimation(value: shelf.items.map(\.id))
         .notchAnimation(value: isCompressing)
-        .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
-            for provider in providers {
-                _ = provider.loadObject(ofClass: URL.self) { url, _ in
-                    guard let url else { return }
-                    DispatchQueue.main.async {
-                        MainActor.assumeIsolated { shelf.add([url]) }
-                    }
-                }
-            }
-            return true
-        }
     }
 
     /// Sonuç kaynağın yanına yazılır ve rafa eklenir; başarısızsa uyarı sesi.

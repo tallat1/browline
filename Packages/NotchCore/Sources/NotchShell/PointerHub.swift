@@ -68,9 +68,9 @@ final class PointerHub {
             dragChangeCountAtMouseDown = pasteboard.changeCount
         case .leftMouseDragged:
             if !isFileDragging {
+                // Dosya sözü de sayılır: ekran görüntüsü küçük resmi adres taşımaz.
                 guard pasteboard.changeCount != dragChangeCountAtMouseDown,
-                      pasteboard.canReadObject(forClasses: [NSURL.self],
-                                               options: [.urlReadingFileURLsOnly: true]) else { return }
+                      FileDrop.carriesFiles(pasteboard) else { return }
                 isFileDragging = true
             }
             onFileDrag?(true, NSEvent.mouseLocation)

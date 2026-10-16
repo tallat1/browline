@@ -298,7 +298,16 @@ private final class PanelController {
         host.sizingOptions = []
         host.frame = NSRect(origin: .zero, size: panel.frame.size)
         host.autoresizingMask = [.width, .height]
-        panel.contentView = host
+        // Dosya bırakma SwiftUI'da değil AppKit'te: dosya sözleri (ekran görüntüsü küçük resmi) yalnız
+        // NSFilePromiseReceiver ile alınabiliyor. Katman en üstte ama yalnız sürüklerken isabet alır.
+        let container = NSView(frame: host.frame)
+        container.autoresizingMask = [.width, .height]
+        container.addSubview(host)
+        let drop = FileDropView(frame: host.frame)
+        drop.autoresizingMask = [.width, .height]
+        drop.model = model
+        container.addSubview(drop)
+        panel.contentView = container
         panel.onScroll = { [weak model] event in model?.scrolled(event) }
         panel.onCancel = { [weak model] in model?.dismiss() }
         model.onKeyboardChanged = { [weak panel] wants in panel?.setTextInput(wants) }

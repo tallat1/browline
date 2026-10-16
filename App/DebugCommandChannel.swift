@@ -33,6 +33,10 @@ final class DebugCommandChannel {
     private func handle(_ command: String) {
         let models = coordinator.panels.models
         switch command {
+        case "settings:open":
+            coordinator.openSettings?()
+        case "settings:close":
+            coordinator.closeSettings?()
         case "open":
             models.forEach { $0.tapped() }
         case "close":

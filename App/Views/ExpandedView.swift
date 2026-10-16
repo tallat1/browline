@@ -105,7 +105,7 @@ struct ExpandedView: View {
         case .now: NowView(coordinator: coordinator, model: model)
         case .calendar: CalendarTab(calendar: coordinator.calendar,
                                     reminders: coordinator.settings.remindersEnabled ? coordinator.reminders : nil)
-        case .shelf: ShelfTab(shelf: coordinator.shelf)
+        case .shelf: ShelfTab(shelf: coordinator.shelf, isTargeted: model.isDropTargeted)
         case .activities: ActivitiesTab(store: coordinator.externalActivities)
         case .notes: NotesTab(notes: coordinator.notes, model: model)
         case .timer: TimerTab(coordinator: coordinator)

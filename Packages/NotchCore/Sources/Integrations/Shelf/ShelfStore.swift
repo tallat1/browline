@@ -109,6 +109,19 @@ public final class ShelfStore {
         }
     }
 
+    /// Dosya sözüyle gelenlerin (ekran görüntüsü küçük resmi, Fotoğraflar) yazıldığı yer: macOS'un ekran
+    /// görüntülerini kaydettiği klasör (`com.apple.screencapture location`), yoksa Masaüstü. Küçük resim
+    /// rafa sürüklenince macOS dosyayı kendi yerine yazmaz; böylece yine aynı yerde durur.
+    public nonisolated static func promiseDestination() -> URL {
+        let fileManager = FileManager.default
+        if let path = UserDefaults(suiteName: "com.apple.screencapture")?.string(forKey: "location") {
+            let url = URL(fileURLWithPath: (path as NSString).expandingTildeInPath, isDirectory: true)
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory), isDirectory.boolValue { return url }
+        }
+        return fileManager.urls(for: .desktopDirectory, in: .userDomainMask)[0]
+    }
+
     /// Ad çakışırsa "ad 2.uzantı", "ad 3.uzantı"…
     nonisolated static func unique(_ base: URL) -> URL {
         let fileManager = FileManager.default

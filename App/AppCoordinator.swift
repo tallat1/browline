@@ -239,6 +239,7 @@ final class AppCoordinator {
     private var shownQuestionIDs: Set<String> = []
     /// Ayar penceresini uygulama temsilcisi açar (notch'taki Diğer menüsünden "Sekmeleri düzenle").
     var openSettings: (() -> Void)?
+    var closeSettings: (() -> Void)?
     let ui = NotchUIState()
     private(set) var panels: PanelManager!
     private(set) var lockScreen: LockScreenPresenter!
@@ -372,6 +373,7 @@ final class AppCoordinator {
             guard let self else { return }
             for model in models {
                 model.onHorizontalSwipe = { [weak self] forward in self?.horizontalSwipe(forward: forward) }
+                model.onFileDrop = { [weak self] pasteboard in self?.receiveDroppedFiles(pasteboard) ?? false }
             }
             updateCompactState()
         }
@@ -680,6 +682,18 @@ final class AppCoordinator {
     func cancelTimer() {
         ui.pomodoroPhase = nil
         timer.cancel()
+    }
+
+    /// Notch'a bırakılanlar rafa: adresler hemen, dosya sözleri (ekran görüntüsü küçük resmi) yazılınca.
+    private func receiveDroppedFiles(_ pasteboard: NSPasteboard) -> Bool {
+        guard settings.shelfEnabled else { return false }
+        FileDrop.receive(from: pasteboard, destination: ShelfStore.promiseDestination()) { [weak self] urls in
+            guard let self, !urls.isEmpty else { return }
+            AppLog.coordinator.notice("rafa bırakıldı: \(urls.count) dosya")
+            shelf.add(urls)
+            ui.selectedTab = .shelf
+        }
+        return true
     }
 
     /// Açık notch'ta yatay kaydırma: medya sekmesindeyken parça geçişi (Alcove).

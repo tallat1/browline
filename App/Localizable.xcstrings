@@ -1375,6 +1375,18 @@
         }
       }
     },
+    "Görsel %@.png": {
+      "comment": "NotchShell paketinden (String(localized:), ana paket tablosu): bırakılan görsel verisinin dosya adı",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image %@.png"
+          }
+        }
+      }
+    },
     "Görünüm": {
       "localizations": {
         "en": {

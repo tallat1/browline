@@ -16,9 +16,19 @@ final class SettingsWindowController {
         let window = self.window ?? makeWindow()
         self.window = window
         coordinator.settings.refreshLaunchAtLoginStatus()
-        NSApp.activate()
+        if window.isMiniaturized { window.deminiaturize(nil) }
         if !window.isVisible { window.center() }
-        window.makeKeyAndOrderFront(nil)
+        // Ajan uygulama notch'tan (etkinleştirmeyen panel) açınca macOS 14+ işbirlikçi etkinleştirmeyi
+        // reddedebiliyor: pencere öndeki uygulamanın arkasında, "en altta" açılıyordu (kullanıcı
+        // 2026-10-16). orderFrontRegardless uygulama etkin olmasa da pencereyi öne alır; ardından
+        // etkinleştirme istenir, reddedilse de pencere görünür kalır.
+        window.orderFrontRegardless()
+        window.makeKey()
+        NSApp.activate()
+    }
+
+    func close() {
+        window?.close()
     }
 
     private func makeWindow() -> NSWindow {
@@ -26,6 +36,8 @@ final class SettingsWindowController {
                               styleMask: [.titled, .closable], backing: .buffered, defer: false)
         window.title = String(localized: "NotchMVP Ayarları")
         window.isReleasedWhenClosed = false
+        // Başka Space'te açık kalmışsa oraya geçmek yerine bulunulan Space'e gelsin.
+        window.collectionBehavior = [.moveToActiveSpace]
         window.contentView = NSHostingView(rootView: SettingsView(coordinator: coordinator,
                                                                  settings: coordinator.settings))
         return window
