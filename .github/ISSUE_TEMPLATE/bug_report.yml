@@ -1,0 +1,32 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Browline version
+      description: Settings › About
+      placeholder: "0.9.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: "macOS 15.5, MacBook Pro 14-inch M3"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: "Run `log show --last 5m --predicate 'subsystem == \"com.talatozcoban.browline\"' --style compact` and paste the relevant lines. Check them for personal information first."
+      render: text
