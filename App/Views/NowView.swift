@@ -49,8 +49,8 @@ struct NowView: View {
             NowCard(open: open(.calendar)) { MeetingCardContent(event: event, now: now) }
         case .timer:
             NowCard(open: open(.timer)) { TimerCardContent(coordinator: coordinator) }
-        case let .activity(activity):
-            NowCard(open: open(.activities)) { ActivityCardContent(activity: activity) }
+        case let .activity(activity, more):
+            NowCard(open: open(.activities)) { ActivityCardContent(activity: activity, more: more) }
         case .claude:
             NowCard(open: open(.claude)) { ClaudeCardContent(usage: coordinator.claudeUsage) }
         case .call:
@@ -69,7 +69,8 @@ struct NowView: View {
 enum NowItem: Identifiable {
     case meeting(CalendarMonitor.Event)
     case timer
-    case activity(ExternalActivity)
+    /// `more`: kartlara sığmayan etkinlik sayısı (son etkinlik kartında "+N"; basınca tümü).
+    case activity(ExternalActivity, more: Int = 0)
     case claude
     case call
 
@@ -77,7 +78,7 @@ enum NowItem: Identifiable {
         switch self {
         case let .meeting(event): "meeting-\(event.id)"
         case .timer: "timer"
-        case let .activity(activity): "activity-\(activity.id)"
+        case let .activity(activity, _): "activity-\(activity.id)"
         case .claude: "claude"
         case .call: "call"
         }
@@ -103,10 +104,18 @@ enum NowItem: Identifiable {
         }
         if settings.timerEnabled, coordinator.timer.isRunning { items.append(.timer) }
         if settings.activityAPIEnabled {
-            items += coordinator.externalActivities.activities.prefix(2).map(NowItem.activity)
+            items += coordinator.externalActivities.activities.prefix(2).map { NowItem.activity($0) }
         }
         if settings.claudeUsageEnabled, coordinator.claudeUsage.usage?.fiveHour != nil { items.append(.claude) }
-        return Array(items.prefix(limit))
+        var shown = Array(items.prefix(limit))
+        // Etkinlikler sekmesi Şimdi'ye katıldı: sığmayanlar son etkinlik kartında sayı olarak.
+        let total = settings.activityAPIEnabled ? coordinator.externalActivities.activities.count : 0
+        let activityIndices = shown.indices.filter { if case .activity = shown[$0] { true } else { false } }
+        if let last = activityIndices.last, total > activityIndices.count,
+           case let .activity(activity, _) = shown[last] {
+            shown[last] = .activity(activity, more: total - activityIndices.count)
+        }
+        return shown
     }
 }
 
@@ -192,6 +201,7 @@ private struct TimerCardContent: View {
 
 private struct ActivityCardContent: View {
     let activity: ExternalActivity
+    var more = 0
 
     var body: some View {
         HStack(spacing: 8) {
@@ -205,6 +215,15 @@ private struct ActivityCardContent: View {
                 } else if let subtitle = activity.subtitle {
                     Text(subtitle).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
+            }
+            if more > 0 {
+                Spacer(minLength: 4)
+                Text(verbatim: "+\(more)")
+                    .font(NotchDesign.captionEmphasized)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Capsule().fill(NotchDesign.selectionFill))
+                    .help("Tüm etkinlikler")
             }
         }
     }

@@ -253,6 +253,25 @@ struct ClaudeLimitLogTests {
 
 /// Uç nokta biçimi topluluk raporlarından; sahte veriyle. Gerçek anahtar testlere hiç girmez.
 struct ClaudeUsageAPITests {
+    // Örnek değerler: gerçek anahtar değil.
+    @Test func decodesSecurityOutput() throws {
+        let json = #"{"claudeAiOauth":{"accessToken":"ornek-deneme","expiresAt":1760000000000}}"#
+        let plain = try #require(ClaudeUsageAPI.decodePassword(Data((json + "\n").utf8)))
+        #expect(ClaudeUsageAPI.parseCredentials(plain)?.accessToken == "ornek-deneme")
+        let hex = Data(json.utf8).map { String(format: "%02x", $0) }.joined()
+        let decoded = try #require(ClaudeUsageAPI.decodePassword(Data((hex + "\n").utf8)))
+        #expect(ClaudeUsageAPI.parseCredentials(decoded)?.accessToken == "ornek-deneme")
+        #expect(ClaudeUsageAPI.decodePassword(Data("\n".utf8)) == nil)
+    }
+
+    @Test func cacheDropsExpiredCredentials() async {
+        let cache = ClaudeUsageAPI.CredentialCache()
+        let now = Date(timeIntervalSince1970: 1_000)
+        await cache.store(.init(accessToken: "ornek", expiresAt: now.addingTimeInterval(60)))
+        #expect(await cache.current(at: now)?.accessToken == "ornek")
+        #expect(await cache.current(at: now.addingTimeInterval(61)) == nil)
+    }
+
     @Test func parsesUtilizationAndMicrosecondResets() throws {
         let body = Data(#"{"five_hour":{"utilization":23.0,"resets_at":"2026-10-16T04:59:59.943648+00:00"},"seven_day":{"utilization":41.5,"resets_at":"2026-10-20T08:00:00+00:00"},"seven_day_opus":null}"#.utf8)
         let captured = Date(timeIntervalSince1970: 1_800_000_000)

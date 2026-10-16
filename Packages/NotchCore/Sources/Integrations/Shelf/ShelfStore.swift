@@ -28,9 +28,11 @@ public final class ShelfStore {
     }
 
     public func add(_ urls: [URL]) {
-        // Hem raftakilerle hem aynı bırakmanın kendi içinde yinelenenleri ele.
-        var seen = Set(items.map(\.url.standardizedFileURL))
-        let new = urls.filter { $0.isFileURL && seen.insert($0.standardizedFileURL).inserted }.map {
+        // Hem raftakilerle hem aynı bırakmanın kendi içinde yinelenenleri ele. Aynı dosya farklı
+        // biçimde gelebiliyor: raftan sürüklenen öğe bookmark'tan çözülmüş yolla (/private/tmp)
+        // geri bırakılıyor, Finder dosya başvurusu URL'si (file:///.file/id=…) verebiliyor.
+        var seen = Set(items.map { Self.identity(of: $0.url) })
+        let new = urls.filter { $0.isFileURL && seen.insert(Self.identity(of: $0)).inserted }.map {
             Item(id: UUID(), url: $0, bookmark: try? $0.bookmarkData(), addedAt: .now)
         }
         guard !new.isEmpty else { return }
@@ -38,6 +40,12 @@ public final class ShelfStore {
         // Dosya adı kişisel; yalnız sayı.
         Log.integrations.notice("Raf: \(new.count) öğe eklendi, toplam \(self.items.count)")
         save()
+    }
+
+    /// Karşılaştırma anahtarı: dosya başvurusu yola, sembolik bağlar gerçek yola çevrilir.
+    public nonisolated static func identity(of url: URL) -> String {
+        let path = (url as NSURL).filePathURL ?? url
+        return path.resolvingSymlinksInPath().standardizedFileURL.path
     }
 
     public func remove(_ id: Item.ID) {

@@ -43,7 +43,9 @@ final class DebugCommandChannel {
             try? "NotchMVP raf denemesi".write(to: file, atomically: true, encoding: .utf8)
             coordinator.shelf.add([file])
         case "shelf:remove-test":
-            for item in coordinator.shelf.items where item.url.path.hasPrefix("/tmp/notch-raf-deneme") {
+            // Raf çözülmüş yolu (/private/tmp) tutabiliyor: önekle değil dosya kimliğiyle.
+            let test = ShelfStore.identity(of: URL(fileURLWithPath: "/tmp/notch-raf-deneme.txt"))
+            for item in coordinator.shelf.items where ShelfStore.identity(of: item.url) == test {
                 coordinator.shelf.remove(item.id)
             }
         case "mic:state":
@@ -93,8 +95,8 @@ final class DebugCommandChannel {
             let running = coordinator.clipboard.isRunning
             let blocked = coordinator.clipboard.isReadingBlocked
             debugLog.info("pano geçmişi: \(kinds.count) öğe [\(kinds.joined(separator: ", "), privacy: .public)], çalışıyor \(running), engelli \(blocked)")
-        case "tab:more":
-            coordinator.ui.isMoreTabsOpen.toggle()
+        case let section where section.hasPrefix("section:"):
+            if let value = NotchSection(rawValue: String(section.dropFirst(8))) { coordinator.select(value) }
         case let tab where tab.hasPrefix("tab:"):
             // "media" eski ad: Şimdi.
             let name = String(tab.dropFirst(4))

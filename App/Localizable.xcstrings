@@ -125,6 +125,16 @@
         }
       }
     },
+    "%@'ye dön": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to %@"
+          }
+        }
+      }
+    },
     "%lld dk": {
       "localizations": {
         "en": {
@@ -439,6 +449,16 @@
         }
       }
     },
+    "Araçlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tools"
+          }
+        }
+      }
+    },
     "Atla": {
       "localizations": {
         "en": {
@@ -535,6 +555,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Network"
+          }
+        }
+      }
+    },
+    "Bantta beş bölüm durur: Şimdi, Raf, Takvim, Araçlar, Durum. Birden çok sayfası olan bölümde içeriğin üstünde küçük bir seçici çıkar; her bölüm son açtığınız sayfayı hatırlar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The band holds five sections: Now, Shelf, Calendar, Tools and Status. A section with more than one page shows a small picker above its content; each section remembers the page you last opened."
           }
         }
       }
@@ -749,6 +779,26 @@
         }
       }
     },
+    "Bölüm seçicisinde göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show in the section picker"
+          }
+        }
+      }
+    },
+    "Bölümler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sections"
+          }
+        }
+      }
+    },
     "Claude": {
       "localizations": {
         "en": {
@@ -859,36 +909,6 @@
         }
       }
     },
-    "Diğer menüsünde": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In the more menu"
-          }
-        }
-      }
-    },
-    "Diğer menüsünde göster": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show in the more menu"
-          }
-        }
-      }
-    },
-    "Diğer sekmeler": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "More tabs"
-          }
-        }
-      }
-    },
     "Dokunsal geri bildirim (Force Touch trackpad)": {
       "localizations": {
         "en": {
@@ -935,6 +955,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pause"
+          }
+        }
+      }
+    },
+    "Durum": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
           }
         }
       }
@@ -1259,22 +1289,22 @@
         }
       }
     },
+    "Hepsini göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show All"
+          }
+        }
+      }
+    },
     "Her zaman": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Always"
-          }
-        }
-      }
-    },
-    "Her zaman ilk": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Always first"
           }
         }
       }
@@ -1545,6 +1575,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Capturing media keys"
+          }
+        }
+      }
+    },
+    "Medya ve o an önemli olanlar; etkinlik kartından tüm etkinlikler açılır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media and what matters right now; an activity card opens all activities."
           }
         }
       }
@@ -2101,26 +2141,6 @@
         }
       }
     },
-    "Sekmeler": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tabs"
-          }
-        }
-      }
-    },
-    "Sekmeleri düzenle…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit tabs…"
-          }
-        }
-      }
-    },
     "Ses": {
       "localizations": {
         "en": {
@@ -2511,6 +2531,16 @@
         }
       }
     },
+    "Tüm etkinlikler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All activities"
+          }
+        }
+      }
+    },
     "Tüm gün": {
       "localizations": {
         "en": {
@@ -2577,16 +2607,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Long break"
-          }
-        }
-      }
-    },
-    "Varsayılana dön": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Restore defaults"
           }
         }
       }
@@ -3153,56 +3173,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "City not found: %@"
-          }
-        }
-      }
-    },
-    "Şeride sabitle": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pin to the bar"
-          }
-        }
-      }
-    },
-    "Şerit dolu; önce birini çıkarın": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The bar is full; unpin one first"
-          }
-        }
-      }
-    },
-    "Şeritte (en çok %lld)": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "In the bar (up to %lld)"
-          }
-        }
-      }
-    },
-    "Şeritte Şimdi ve sabitlediğiniz en çok %lld sekme durur; kalanlar notch'taki ••• menüsünde. Kapattığınız sekme menüde de görünmez.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The bar holds Now and up to %lld pinned tabs; the rest are in the notch's ••• menu. Tabs you turn off don't appear in the menu either."
-          }
-        }
-      }
-    },
-    "Şeritten çıkar, Diğer menüsüne taşı": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unpin and move to the more menu"
           }
         }
       }

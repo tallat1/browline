@@ -96,4 +96,21 @@ struct ShelfStoreTests {
         #expect(store.resolvedURLs.isEmpty)
         #expect(store.items.isEmpty)
     }
+
+    /// Raftan sürüklenip geri bırakılan öğe çözülmüş yolla, Finder'dan gelen dosya başvurusuyla gelir.
+    @Test func sameFileInOtherFormsIsNotDuplicated() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let file = directory.appendingPathComponent("b.txt")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: file)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let store = ShelfStore(directory: directory)
+        store.add([file])
+        // /var/folders → /private/var/folders
+        store.add([file.resolvingSymlinksInPath()])
+        let reference = try #require((file as NSURL).fileReferenceURL())
+        store.add([reference])
+        #expect(store.items.count == 1)
+    }
 }

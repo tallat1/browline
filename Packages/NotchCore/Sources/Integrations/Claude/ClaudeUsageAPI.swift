@@ -1,14 +1,21 @@
 import Foundation
-import Security
 
 /// ⚠️ BELGELENMEMİŞ: Claude Code'un `/usage` komutunun kullandığı plan kullanım uç noktası.
 /// Kullanıcı riskleri kabul edip açıkça istedi (2026-10-16). Haber vermeden değişebilir; sık 429
 /// döndürdüğü bildirildi.
 ///
 /// Kimlik: Claude Code'un Anahtar Zinciri kaydı ("Claude Code-credentials"), yoksa
-/// `~/.claude/.credentials.json`. Anahtar yalnız bu isteğin başlığına konur; saklanmaz, günlüğe
-/// yazılmaz, başka yere gönderilmez. Süresi dolmuş anahtar YENİLENMEZ: yenileme anahtarı döndürür,
-/// Claude Code'un kendi kaydı bozulur. Yenilemeyi Claude Code yapar (terminalde `claude` çalışınca).
+/// `~/.claude/.credentials.json`. Anahtar yalnız bu isteğin başlığına konur ve süresi dolana kadar
+/// BELLEKTE tutulur; diske yazılmaz, günlüğe yazılmaz, başka yere gönderilmez. Süresi dolmuş anahtar
+/// YENİLENMEZ: yenileme anahtarı döndürür, Claude Code'un kendi kaydı bozulur. Yenilemeyi Claude Code
+/// yapar (terminalde `claude` çalışınca).
+///
+/// Anahtar Zinciri `/usr/bin/security` ile okunur, Claude Code'un kendisi gibi (ikili dosyasında
+/// `security add-generic-password -U … -X` / `find-generic-password`, 2026-10-16). Kayıt bu araçla
+/// yazıldığı için ona güvenir, pencere çıkmaz. Doğrudan `SecItemCopyMatching` her okumada "NotchMVP
+/// anahtara erişmek istiyor" diye soruyordu; Claude Code anahtarı yeniledikçe kaydı yeniden yazdığı
+/// için "Always Allow" da siliniyordu (kullanıcı: "sürekli geliyor"). Kullanıcı bu yolu seçti; bedeli
+/// macOS'un uygulama başına onayının devreden çıkması (aynı kullanıcının her süreci zaten okuyabiliyor).
 public enum ClaudeUsageAPI {
     public enum Failure: Error, Equatable, Sendable {
         /// Terminalde oturum açılmamış ya da Anahtar Zinciri erişimine izin verilmedi.
@@ -26,15 +33,52 @@ public enum ClaudeUsageAPI {
     static let endpoint = URL(string: "https://api.anthropic.com/api/oauth/usage")!
     static let keychainService = "Claude Code-credentials"
 
-    struct Credentials {
+    struct Credentials: Equatable, Sendable {
         let accessToken: String
         let expiresAt: Date?
+
+        func isValid(at now: Date) -> Bool { expiresAt.map { $0 > now } ?? true }
     }
 
-    /// Ağ ve Anahtar Zinciri (ilk seferde izin penceresi) beklettiği için ana iş parçacığında çağrılmaz.
+    /// Okunan anahtar süresi dolana ya da reddedilene kadar bellekte: 5 dakikalık döngü her seferinde
+    /// Anahtar Zinciri'ne gitmez.
+    actor CredentialCache {
+        private var credentials: Credentials?
+
+        func current(at now: Date) -> Credentials? {
+            guard let credentials, credentials.isValid(at: now) else { return nil }
+            return credentials
+        }
+
+        func store(_ credentials: Credentials?) { self.credentials = credentials }
+    }
+
+    static let cache = CredentialCache()
+
+    /// Ağ ve alt süreç beklettiği için ana iş parçacığında çağrılmaz.
     public static func fetch(now: Date = .now) async -> Result<ClaudeUsageMonitor.Usage, Failure> {
+        if let cached = await cache.current(at: now) {
+            let result = await request(with: cached, now: now)
+            // Claude Code anahtarı süresinden önce yenilediyse eskisi reddedilir: bir kez yeniden oku.
+            guard result == .failure(.unauthorized) else { return result }
+            await cache.store(nil)
+            guard let fresh = readCredentials(), fresh != cached else { return result }
+            return await request(validating: fresh, now: now)
+        }
         guard let credentials = readCredentials() else { return .failure(.noCredentials) }
-        if let expiresAt = credentials.expiresAt, expiresAt <= now { return .failure(.expired) }
+        return await request(validating: credentials, now: now)
+    }
+
+    private static func request(validating credentials: Credentials,
+                                now: Date) async -> Result<ClaudeUsageMonitor.Usage, Failure> {
+        guard credentials.isValid(at: now) else { return .failure(.expired) }
+        await cache.store(credentials)
+        let result = await request(with: credentials, now: now)
+        if result == .failure(.unauthorized) { await cache.store(nil) }
+        return result
+    }
+
+    private static func request(with credentials: Credentials, now: Date) async -> Result<ClaudeUsageMonitor.Usage, Failure> {
         var request = URLRequest(url: endpoint, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 15)
         request.setValue("Bearer \(credentials.accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
@@ -74,25 +118,56 @@ public enum ClaudeUsageAPI {
 
     private static func readCredentials() -> Credentials? {
         if let data = keychainData() ?? fileData(), let credentials = parseCredentials(data) {
+            Log.integrations.notice("Claude anahtarı okundu (bellekte, süresi dolana kadar)")
             return credentials
         }
         return nil
     }
 
-    /// İlk okumada macOS "NotchMVP, anahtar zincirindeki … anahtarına erişmek istiyor" diye sorar.
+    /// `security find-generic-password -s … -w`: parola stdout'a, oradan yalnız bu sürecin belleğine.
+    /// Takılırsa (beklenmedik pencere) 10 sn sonra sonlandırılır.
     private static func keychainData() -> Data? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: keychainService,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        if status != errSecSuccess, status != errSecItemNotFound {
-            Log.integrations.error("Claude Anahtar Zinciri okunamadı: \(status)")
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        process.arguments = ["find-generic-password", "-s", keychainService, "-w"]
+        let output = Pipe()
+        process.standardOutput = output
+        process.standardError = FileHandle.nullDevice
+        do { try process.run() } catch {
+            Log.integrations.error("security çalıştırılamadı: \(error.localizedDescription, privacy: .public)")
+            return nil
         }
-        return status == errSecSuccess ? result as? Data : nil
+        let watchdog = DispatchWorkItem { if process.isRunning { process.terminate() } }
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 10, execute: watchdog)
+        let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        watchdog.cancel()
+        guard process.terminationStatus == 0 else {
+            // 44: kayıt yok (oturum açılmamış).
+            if process.terminationStatus != 44 {
+                Log.integrations.error("Claude Anahtar Zinciri okunamadı: security çıkış \(process.terminationStatus)")
+            }
+            return nil
+        }
+        return decodePassword(data)
+    }
+
+    /// `-w` yazdırılabilir parolayı düz, değilse onaltılık basar; sondaki satır sonu atılır.
+    static func decodePassword(_ output: Data) -> Data? {
+        var text = String(decoding: output, as: UTF8.self)
+        while text.last?.isNewline == true { text.removeLast() }
+        guard !text.isEmpty else { return nil }
+        if text.first == "{" { return Data(text.utf8) }
+        guard text.count.isMultiple(of: 2), text.allSatisfy(\.isHexDigit) else { return Data(text.utf8) }
+        var bytes = Data(capacity: text.count / 2)
+        var index = text.startIndex
+        while index < text.endIndex {
+            let next = text.index(index, offsetBy: 2)
+            guard let byte = UInt8(text[index..<next], radix: 16) else { return nil }
+            bytes.append(byte)
+            index = next
+        }
+        return bytes
     }
 
     private static func fileData() -> Data? {

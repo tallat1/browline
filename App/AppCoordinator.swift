@@ -6,8 +6,52 @@ import NotchShell
 import Observation
 import SwiftUI
 
-/// Açık notch'un sekmeleri. "Şimdi" hep ilk ve sabit; şeritte en çok 4 sabitlenmiş sekme, kalanlar
-/// Diğer menüsünde (karmaşıklık bütçesi, 2026-10-16 tasarım turu).
+/// Açık notch'un beş ana bölümü (2026-10-16, kullanıcı seçimi: "5 ana bölüm"). Bantta yalnız bunlar;
+/// ••• şeridi yok. Bir bölümde birden çok sayfa varsa içeriğin üstünde küçük bir seçici çıkar, her
+/// bölüm son açılan sayfasını hatırlar. Özellik eklendikçe bant büyümez: yeni sayfa bir bölüme girer.
+enum NotchSection: String, CaseIterable, Identifiable, Sendable {
+    case now
+    case shelf
+    case calendar
+    case tools
+    case status
+
+    var id: String { rawValue }
+
+    /// Seçicide görünen sayfalar, sırasıyla. Etkinlikler Şimdi'nin ayrıntı sayfası: seçicide yok,
+    /// Şimdi'deki etkinlik kartından açılır.
+    var pages: [NotchTab] {
+        switch self {
+        case .now: [.now]
+        case .shelf: [.shelf, .clipboard]
+        case .calendar: [.calendar]
+        case .tools: [.notes, .timer, .terminal, .mirror]
+        case .status: [.system, .claude]
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .now: "house"
+        case .shelf: "tray.full"
+        case .calendar: "calendar"
+        case .tools: "wrench.and.screwdriver"
+        case .status: "gauge.with.dots.needle.33percent"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .now: String(localized: "Şimdi")
+        case .shelf: String(localized: "Raf")
+        case .calendar: String(localized: "Takvim")
+        case .tools: String(localized: "Araçlar")
+        case .status: String(localized: "Durum")
+        }
+    }
+}
+
+/// Açık notch'un sayfaları; her biri bir bölümde (`section`).
 enum NotchTab: String, CaseIterable, Identifiable, Sendable {
     case now
     case calendar
@@ -54,15 +98,30 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .clipboard: String(localized: "Pano")
         }
     }
+
+    var section: NotchSection {
+        switch self {
+        case .now, .activities: .now
+        case .shelf, .clipboard: .shelf
+        case .calendar: .calendar
+        case .notes, .timer, .terminal, .mirror: .tools
+        case .system, .claude: .status
+        }
+    }
+
+    /// Seçicide değil, bir karttan açılan ayrıntı sayfası (geri düğmesiyle).
+    var isDetailPage: Bool { !section.pages.contains(self) }
 }
 
 /// Açık notch'taki seçili sekme; tüm ekranlarda ortak.
 @MainActor
 @Observable
 final class NotchUIState {
-    var selectedTab: NotchTab = .now
-    /// ••• şeridi (diğer sekmeler) açık mı.
-    var isMoreTabsOpen = false
+    var selectedTab: NotchTab = .now {
+        didSet { if !selectedTab.isDetailPage { lastPage[selectedTab.section] = selectedTab } }
+    }
+    /// Bölüm başına son açılan sayfa: bölüme dönünce oradan devam edilir.
+    var lastPage: [NotchSection: NotchTab] = [:]
     var activityAPIStatus = String(localized: "Kapalı")
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""
@@ -450,19 +509,37 @@ final class AppCoordinator {
         if enabled { start() } else { stop() }
     }
 
-    /// Şeritteki sekmeler: Şimdi + kullanıcının sabitledikleri (modülü açık olanlar).
-    var stripTabs: [NotchTab] {
-        [.now] + settings.pinnedTabs.filter { $0 != .now && isModuleEnabled(for: $0) }
+    /// Açılabilen sayfalar: modülü açık ve ayarlardan gizlenmemiş. Şimdi hep var.
+    var availableTabs: [NotchTab] {
+        NotchTab.allCases.filter { $0 == .now || (isModuleEnabled(for: $0) && !settings.hiddenTabs.contains($0)) }
     }
 
-    /// Diğer menüsündekiler: sabitlenmemiş, gizlenmemiş, modülü açık sekmeler.
-    var overflowTabs: [NotchTab] {
-        NotchTab.allCases.filter {
-            $0 != .now && !settings.pinnedTabs.contains($0) && !settings.hiddenTabs.contains($0) && isModuleEnabled(for: $0)
+    /// Bölümün seçicideki açık sayfaları.
+    func pages(in section: NotchSection) -> [NotchTab] {
+        let available = availableTabs
+        return section.pages.filter(available.contains)
+    }
+
+    /// Bantta görünen bölümler: en az bir sayfası açık olanlar.
+    var availableSections: [NotchSection] {
+        NotchSection.allCases.filter { !pages(in: $0).isEmpty }
+    }
+
+    /// Bölüm simgesine basınca: başka bölümden geliniyorsa son sayfasına, aynı bölümdeyse (ayrıntı
+    /// sayfasından dönüş) ilk sayfasına.
+    func select(_ section: NotchSection) {
+        let pages = pages(in: section)
+        guard let first = pages.first else { return }
+        if ui.selectedTab.section == section {
+            if ui.selectedTab.isDetailPage { ui.selectedTab = first }
+            return
+        }
+        if let last = ui.lastPage[section], pages.contains(last) {
+            ui.selectedTab = last
+        } else {
+            ui.selectedTab = first
         }
     }
-
-    var availableTabs: [NotchTab] { stripTabs + overflowTabs }
 
     func isModuleEnabled(for tab: NotchTab) -> Bool {
         switch tab {

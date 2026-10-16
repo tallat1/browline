@@ -110,12 +110,14 @@ private struct ShelfTile: View {
                         .notchTransition(.fade)
                     }
                 }
-            Text(item.name)
+            // Tek satır, ortadan kısaltılır (uzantı görünür); tam ad üzerine gelince.
+            Text(verbatim: item.name)
                 .font(NotchDesign.caption)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .truncationMode(.middle)
                 .frame(width: 66)
         }
+        .help(item.name)
         .padding(6)
         .background(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
             .fill(isHovering ? NotchDesign.cardHoverFill : .clear))

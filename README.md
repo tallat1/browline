@@ -257,9 +257,14 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
 - **Şimdi** (`NowView`, hep ilk ve sabit): solda oynatıcı, sağda yalnız o an önemli olanlar, en çok 3 kart:
   4 saat içindeki toplantı (Katıl), çalışan zamanlayıcı (iptal), canlı dış etkinlik, Claude oturum/hafta.
   Hiçbiri yoksa oynatıcı tüm genişlikte. Karta basınca ayrıntı sekmesi açılır.
-- **Sekme bütçesi**: şeritte Şimdi + en çok 4 sabit sekme (varsayılan Raf, Not, Terminal, Takvim); kalanlar
-  "•••" menüsünde (NSMenu, imleçte). Menüden açılan sekme geçici olarak şeride eklenir; sığmayan sabit sekme
-  menüye kayar, seçili olan hep kalır (`TabBarLayout`). Ayarlar › Sekmeler: sabitle/çıkar, sırala, menüden gizle.
+- **Beş bölüm** (2026-10-16 ikinci tur; kullanıcı "özellik ekledikçe karmaşıklaşıyor" dedi, 11 sekmeydi):
+  bantta yalnız Şimdi · Raf · Takvim · Araçlar · Durum (`NotchSection`), ••• şeridi ve ikinci satır yok. Sayfalar
+  (`NotchTab`) bölümlere girer: Raf = Dosyalar | Pano, Araçlar = Not | Zamanlayıcı | Terminal | Ayna, Durum =
+  Sistem | Claude. Birden çok sayfalı bölümde içeriğin üstünde ince bir seçici (`PagePicker`, kayan zemin); her
+  bölüm son sayfasını hatırlar (`ui.lastPage`), aynı bölüm simgesine basmak ayrıntı sayfasından döndürür.
+  Etkinlikler Şimdi'nin ayrıntı sayfası: etkinlik kartından açılır ("‹ Şimdi · Etkinlikler"), sığmayanlar son
+  kartta "+N". Ayarlar › Bölümler: sayfa başına göster/gizle; sayfası kalmayan bölüm bantta görünmez. Yeni
+  özellik bandı büyütmez, bir bölüme sayfa olur. Debug `section:<now|shelf|calendar|tools|status>`.
 - **Sabit genişlik** 640 pt (`NotchDesign.openWidth`); sekmeye göre yalnız boy değişir (`NotchTab.bodyHeight`).
 - **Sakin boş durumlar**: Takvim'de etkinlik de anımsatıcı da yoksa tek satır; medya boşken kaynak adı
   ("MediaRemote…") gösterilmez, yalnız yedeğe düşüldüyse nedeniyle.
@@ -278,8 +283,7 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
 hepsinde üzerine gelme, basılı ve pasif durumları. Hareket (`NotchMotion`): açılış 0,32 · kapanış 0,28 · boy 0,3
 yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yalnız saydamlık.
 
-- ••• artık sistem menüsü değil: bandın altına kayan çip şeridi (diğer sekmeler simge + adla, sığmazsa yalnız
-  simge), "Sekmeleri düzenle…" sağda ikincil renkte. Notch'tan taşmaz, notch şerit boyu kadar uzar.
+- (Bu turdaki ••• çip şeridi beş bölüme geçişte kaldırıldı.)
 - Menü çubuğu menüsü: başlık bölümü, simgeli öğeler, Uyanık tut'ta kalan süre ve seçim işareti; teknik Now
   Playing satırı ve "Paneli yeniden kur" yalnız menü Option ile açılınca ("Gelişmiş"). Now Playing kaynağı ayrıca
   Ayarlar › Hakkında'da.
@@ -287,7 +291,7 @@ yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yaln�
   üzerinde yukarı kaydırma kapatır), atalet olayları yok sayılır (yatayda ikinci parça geçişi yok), fare tekerleği
   0,35 sn'de bir eylem (eskiden ilk tıktan sonra kilitleniyordu). `ScrollGestureTests` gerçek CGEvent'lerle.
 - Dokunsal geri bildirim (Force Touch trackpad, Ayarlar › Genel'deki düğmeye bağlı): imleç sekme simgelerinin ve
-  ••• çiplerinin üzerinden geçerken her simgede hafif çentik (`.alignment`), sekme seçilince belirgin tık
+  sayfa seçicisinin üzerinden geçerken her simgede hafif çentik (`.alignment`), sekme seçilince belirgin tık
   (`.levelChange`, sekme hangi yoldan değişirse); art arda en az 40 ms. Parmak yüzeydeyken hissedilir.
 - Ses: CoreAudio okuma/yazma ayrı kuyrukta, dinleyici bildirimleri birleşik, sürüklerken yalnız son değer yazılır
   (eskiden kaydırıcı sürüklenirken ana iş parçacığı ≈ %35 meşguldü). HUD dinleyicisi de birleşik.
@@ -333,8 +337,13 @@ limit yok". Debug: `claude:limit-preview` (yalnız bellekte örnek).
 
 Yüzdeler (isteğe bağlı, BELGELENMEMİŞ): Ayarlar › Modüller › "Yüzdeleri kullanım uç noktasından al" açılınca
 `ClaudeUsageAPI` 5 dakikada bir `GET https://api.anthropic.com/api/oauth/usage` sorar (`five_hour`/`seven_day`
-`utilization` + `resets_at`). Kimlik Claude Code'un Anahtar Zinciri kaydı ("Claude Code-credentials"; ilk seferde
-macOS izin ister) ya da `~/.claude/.credentials.json`; anahtar yalnız istek başlığında, saklanmaz, günlüğe yazılmaz.
+`utilization` + `resets_at`). Kimlik Claude Code'un Anahtar Zinciri kaydı ("Claude Code-credentials") ya da
+`~/.claude/.credentials.json`; anahtar yalnız istek başlığında ve süresi dolana kadar bellekte, diske ve günlüğe
+yazılmaz; 401'de bir kez yeniden okunur. Kayıt `/usr/bin/security find-generic-password` ile okunur, Claude
+Code'un kendisi gibi (ikili dosyasında `security add-generic-password -U … -X`). ⚠️ Önce `SecItemCopyMatching`
+vardı: her 5 dakikalık okumada "NotchMVP wants to access key…" parola penceresi çıkıyordu ve Claude Code anahtarı
+yeniledikçe kaydı yeniden yazdığı için "Always Allow" da siliniyordu. Kullanıcı `security` yolunu seçti
+(2026-10-16); bedeli macOS'un uygulama başına onayının devreden çıkması (kayıt zaten bu araca güveniyor).
 Süresi dolmuş anahtar yenilenmez (yenileme Claude Code'un işi; terminalde `claude` çalışınca). 429'da Retry-After
 ya da 15 dk beklenir, sekme açılınca en çok dakikada bir. Önce terminalde `claude auth login` gerekir. Kullanıcı
 riskleri kabul edip istedi (2026-10-16); varsayılan kapalı.
@@ -355,8 +364,8 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 | Ses çıkışı değişince göster | Alcove, DynamicLake | CoreAudio varsayılan çıkış dinleyicisi; AirPods türünü addan seçer, yanında ses düzeyi | İzin yok. Az önce Bluetooth bildirimi çıkan kulaklık (6 sn) ikinci kez duyurulmaz |
 | Bluetooth aygıtları | Alcove, DynamicLake | Bağlanınca, ayrılınca ve pil %20 / %10 eşiğinin altına inince geniş kanat: aygıt simgesi, kısa ad ("Talat (AirPods Pro)" → "AirPods Pro"), pil. Sistem sekmesinde kart (tek aygıtta büyük yüzde ve çubuk, fazlasında iki satır); sol/sağ/kutu üzerine gelince | İzin yok: bağlantı olayı IOKit `IOBluetoothDevice` eşleşme bildirimi (IOBluetooth API'si izin penceresi açtırırdı), ad ve pil `system_profiler -json SPBluetoothDataType` (≈ 0,1 sn, 0,02 sn CPU), olaydan 1,5 sn sonra ve bağlıyken 5 dk'da bir. Kulaklıkta uyarı kutuyu saymaz |
 | Toplantı denetimi | MeetingBar, Mutify | Mikrofon kullanımdayken ya da sessizdeyken Şimdi'de en üstte kart: kullanan uygulama, sessize al / aç, "Görüşmeye dön" (o uygulamayı öne getirir; tarayıcıdaki toplantıda tarayıcı). Sessizken kapalı notch'ta kırmızı mikrofon, Now Playing'in ve toplantının önünde. Menü çubuğunda da | İzin yok: varsayılan girişin `kAudioDevicePropertyMute`'u (yoksa giriş düzeyi 0, eskisi saklanır), kullanan uygulama `kAudioProcessPropertyIsRunningInput` (yardımcı süreç en dıştaki `.app`'e çevrilir). Giriş aygıtı değişince sessizlik yeni aygıta taşınır; uygulama kapanırken bizim kapattığımız mikrofon açılır. Kamera kapatma ve ayrılma uygulamaya özgü (Erişilebilirlik), yok |
-| Pano geçmişi | Maccy, Paste | Pano sekmesi: son 50 kopya (metin, bağlantı, dosya, görsel ≤ 8 MB), uygulama ve zaman; basınca yeniden kopyalanır, sabitle / sil / temizle (sabitler kalır) | Yalnız bellekte, diske yazılmaz. `changeCount` 0,75 sn'de bir. nspasteboard.org gizli/geçici türler (parola yöneticileri) hiç alınmaz. macOS "diğer uygulamalardan yapıştırma" iznini engellerse sekme söyler |
-| Raf derinliği | Dropover, Yoink | Rafın altında Paylaş (sistem paylaşım menüsü), Sıkıştır (`ditto`; tek öğe yanına, çoklu İndirilenler'e tarihli zip) ve Temizle. Öğede: üzerine gelince göz (Quick Look, `qlmanage -p`), çift tık açar; sağ tık Aç, Önizle, Paylaş…, AirDrop, Sıkıştır, Yolu kopyala, Finder'da göster, Raftan kaldır | Sıkıştırma arka planda; ad çakışırsa "ad 2.zip" |
+| Pano geçmişi | Maccy, Paste | Raf bölümünde Pano sayfası: son 50 kopya (metin, bağlantı, dosya, görsel ≤ 8 MB), uygulama ve zaman; basınca yeniden kopyalanır, sabitle / sil / temizle (sabitler kalır) | Yalnız bellekte, diske yazılmaz. `changeCount` 0,75 sn'de bir. nspasteboard.org gizli/geçici türler (parola yöneticileri) hiç alınmaz. macOS "diğer uygulamalardan yapıştırma" iznini engellerse sekme söyler |
+| Raf derinliği | Dropover, Yoink | Raf bölümünde Dosyalar sayfası. Altta Paylaş (sistem paylaşım menüsü), Sıkıştır (`ditto`; tek öğe yanına, çoklu İndirilenler'e tarihli zip) ve Temizle. Öğede: üzerine gelince göz (Quick Look, `qlmanage -p`), çift tık açar; sağ tık Aç, Önizle, Paylaş…, AirDrop, Sıkıştır, Yolu kopyala, Finder'da göster, Raftan kaldır | Sıkıştırma arka planda; ad çakışırsa "ad 2.zip". Aynı dosya iki kez eklenmez: karşılaştırma dosya kimliğiyle (`ShelfStore.identity`: dosya başvurusu URL'si yola, `/private/tmp` ↔ `/tmp`). Raf 124 pt (104'te kesikli çerçeve gövdeden taşıyordu), ad tek satır, ortadan kısalır |
 | Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
 | Zamanlayıcı | NotchFlow, Atoll | Hazır süreler, +1 dk, iptal; bitince "Süre doldu" ve ses. Kilit ekranında da görünür | Tek uyuyan Task; saniyelik çizim yalnız kanat ya da sekme ekrandayken |
 | Pil uyarıları | Alcove, boring.notch | Fişte değilken %20 ve %10 eşiği aşağı geçilince, fişteyken %100 olunca 4 sn; kilit ekranında da | Ek iş yok |
@@ -412,7 +421,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (318 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (315 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

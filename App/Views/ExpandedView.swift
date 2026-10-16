@@ -4,8 +4,9 @@ import Integrations
 import NotchShell
 import SwiftUI
 
-/// Açık notch: tek satır başlık (bantta, çentiğin solunda sekmeler, sağında durum) ve altında sekmenin
-/// içeriği. Genişlik tüm sekmelerde aynı (geçişte yana zıplama yok), yalnız boy içeriğe göre değişir.
+/// Açık notch: tek satır başlık (bantta, çentiğin solunda beş bölüm, sağında durum), gerekirse bölümün
+/// sayfa seçicisi ve altında sayfanın içeriği. Genişlik tüm sayfalarda aynı (geçişte yana zıplama
+/// yok), yalnız boy içeriğe göre değişir.
 struct ExpandedView: View {
     let context: NotchContext
     let model: NotchSurfaceModel
@@ -14,61 +15,55 @@ struct ExpandedView: View {
     var body: some View {
         let ui = coordinator.ui
         let tabs = coordinator.availableTabs
+        let page = ui.selectedTab
+        let sectionPages = coordinator.pages(in: page.section)
         let sideWidth = max(0, (context.size.width - context.notchGapWidth) / 2 - context.horizontalInset)
-        let bar = TabBarLayout(strip: coordinator.stripTabs, overflow: coordinator.overflowTabs,
-                               selected: ui.selectedTab, width: sideWidth)
+        let question = coordinator.questions.current
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                TabBar(layout: bar, selected: ui.selectedTab, isMoreOpen: coordinator.ui.isMoreTabsOpen,
-                       onHoverIcon: { model.haptic(.detent) },
-                       toggleMore: {
-                           // Şerit açıkken notch sabit kalsın (imleç kayınca kapanmasın).
-                           if !coordinator.ui.isMoreTabsOpen { model.tapped() }
-                           coordinator.ui.isMoreTabsOpen.toggle()
-                       }) { tab in
-                    ui.selectedTab = tab
-                    coordinator.ui.isMoreTabsOpen = false
-                }
-                .frame(width: sideWidth, alignment: .leading)
+                SectionBar(sections: coordinator.availableSections, selected: page.section,
+                           onHoverIcon: { model.haptic(.detent) }) { coordinator.select($0) }
+                    .frame(width: sideWidth, alignment: .leading)
                 Spacer(minLength: context.notchGapWidth)
                 StatusArea(coordinator: coordinator).frame(width: sideWidth, alignment: .trailing)
             }
             .frame(height: context.bandHeight)
 
-            if coordinator.ui.isMoreTabsOpen {
-                MoreTabsRow(tabs: bar.menu, selected: ui.selectedTab, onHoverChip: { model.haptic(.detent) },
-                            edit: {
-                                coordinator.ui.isMoreTabsOpen = false
-                                coordinator.openSettings?()
-                            }) { tab in
-                    ui.selectedTab = tab
-                    coordinator.ui.isMoreTabsOpen = false
+            // Bölüm seçicisi içerikle birlikte kaymaz: sayfa değişince yalnız seçim zemini kayar.
+            if question == nil {
+                if page.isDetailPage {
+                    DetailHeader(title: page.title, back: page.section.title) { coordinator.select(page.section) }
+                        .padding(.top, NotchDesign.headerSpacing)
+                        .notchTransition(.fade)
+                } else if sectionPages.count > 1 {
+                    PagePicker(pages: sectionPages, selected: page, onHoverSegment: { model.haptic(.detent) }) {
+                        ui.selectedTab = $0
+                    }
+                    .padding(.top, NotchDesign.headerSpacing)
+                    .notchTransition(.fade)
                 }
-                .padding(.top, NotchDesign.headerSpacing)
-                .notchTransition(.listItem)
             }
 
-            // Bekleyen onay sorusu sekmenin önüne geçer; yanıtlanınca sekme geri gelir.
+            // Bekleyen onay sorusu sayfanın önüne geçer; yanıtlanınca sayfa geri gelir.
             Group {
-                if let question = coordinator.questions.current {
+                if let question {
                     QuestionView(question: question, waitingCount: coordinator.questions.questions.count) { decision in
                         AppLog.coordinator.notice("onay sorusu yanıtlandı: \(decision?.rawValue ?? "uygulamaya bırakıldı", privacy: .public)")
                         coordinator.questions.answer(question.id, with: decision)
                     }
                 } else {
-                    content(ui.selectedTab)
+                    content(page)
                 }
             }
             .padding(.top, NotchDesign.headerSpacing)
             .padding(.bottom, context.bottomInset)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .id(coordinator.questions.current?.id ?? ui.selectedTab.rawValue)
+            .id(question?.id ?? page.rawValue)
             .notchTransition(.swap)
         }
-        // Sekme hangi yoldan değişirse değişsin (şerit, Diğer menüsü, dosya sürükleme, ayar, debug)
-        // içerik ve seçim zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar.
-        .notchAnimation(NotchMotion.resize, value: ui.selectedTab)
-        .notchAnimation(NotchMotion.resize, value: coordinator.ui.isMoreTabsOpen)
+        // Sayfa hangi yoldan değişirse değişsin (bant, seçici, kart, dosya sürükleme, debug) içerik ve
+        // seçim zemini aynı yayla geçer; şekil boyu kabukta aynı yayla akar.
+        .notchAnimation(NotchMotion.resize, value: page)
         .notchAnimation(value: tabs)
         .padding(.horizontal, context.horizontalInset)
         .foregroundStyle(.white)
@@ -76,30 +71,29 @@ struct ExpandedView: View {
         .onChange(of: model.isFileDragActive, initial: true) { _, dragging in
             if dragging, tabs.contains(.shelf) { ui.selectedTab = .shelf }
         }
-        .onChange(of: ui.selectedTab, initial: true) { _, tab in
+        .onChange(of: page, initial: true) { _, tab in
             model.preferredOpenSize = openSize(for: tab)
         }
-        // Sekme hangi yoldan değişirse değişsin (tıklama, şerit, dosya sürükleme) belirgin tık.
-        .onChange(of: ui.selectedTab) { _, _ in model.haptic(.selection) }
-        .onChange(of: coordinator.questions.current?.id) { _, _ in
-            model.preferredOpenSize = openSize(for: ui.selectedTab)
+        // Sayfa hangi yoldan değişirse değişsin belirgin tık.
+        .onChange(of: page) { _, _ in model.haptic(.selection) }
+        .onChange(of: question?.id) { _, _ in
+            model.preferredOpenSize = openSize(for: page)
         }
-        .onChange(of: coordinator.ui.isMoreTabsOpen) { _, _ in
-            model.preferredOpenSize = openSize(for: ui.selectedTab)
+        // Seçicinin görünüp kaybolması (bir modül açılıp kapanınca) boyu da değiştirir.
+        .onChange(of: sectionPages) { _, _ in
+            model.preferredOpenSize = openSize(for: page)
         }
-        // Notch kapanınca şerit de kapanır; bir dahaki açılış temiz başlasın.
-        .onChange(of: model.isOpen) { _, open in
-            if !open { coordinator.ui.isMoreTabsOpen = false }
-        }
-        .notchAnimation(NotchMotion.resize, value: coordinator.questions.current?.id)
+        .notchAnimation(NotchMotion.resize, value: question?.id)
     }
 
-    /// İstenen tüm açık boyut: bant + boşluk + içerik (soru varsa soru) + alt boşluk; genişlik sabit.
+    /// İstenen tüm açık boyut: bant + (seçici) + boşluk + içerik (soru varsa soru) + alt boşluk.
     private func openSize(for tab: NotchTab) -> CGSize {
-        let body = coordinator.questions.current != nil ? QuestionView.height : tab.bodyHeight
-        let moreRow = coordinator.ui.isMoreTabsOpen ? NotchDesign.headerSpacing + NotchDesign.Control.regular : 0
+        let hasQuestion = coordinator.questions.current != nil
+        let body = hasQuestion ? QuestionView.height : tab.bodyHeight
+        let hasHeader = !hasQuestion && (tab.isDetailPage || coordinator.pages(in: tab.section).count > 1)
+        let header = hasHeader ? NotchDesign.headerSpacing + NotchDesign.Control.small : 0
         return CGSize(width: NotchDesign.openWidth,
-                      height: context.bandHeight + moreRow + NotchDesign.headerSpacing + body + context.bottomInset)
+                      height: context.bandHeight + header + NotchDesign.headerSpacing + body + context.bottomInset)
     }
 
     @ViewBuilder
@@ -128,7 +122,8 @@ extension NotchTab {
         switch self {
         case .now: 132
         case .calendar: 124
-        case .shelf: 104
+        // Karolar (tek satır ad) + eylem çubuğu; 104'te kesikli çerçeve gövdeden taşıyordu.
+        case .shelf: 124
         case .activities: 120
         case .notes: 196
         case .timer: 84
@@ -142,53 +137,24 @@ extension NotchTab {
     }
 }
 
-/// Bantta hangi sekme simgelerinin göründüğü. Diğer menüsünden açılan sekme geçici olarak şeride
-/// eklenir (nerede olunduğu görünsün); sığmayan sabit sekmeler menüye kayar, seçili olan hep kalır.
-struct TabBarLayout: Equatable {
-    let shown: [NotchTab]
-    let menu: [NotchTab]
-
-    static let slotWidth: CGFloat = NotchDesign.tabIconSize + NotchDesign.tabIconSpacing
-
-    init(strip: [NotchTab], overflow: [NotchTab], selected: NotchTab, width: CGFloat) {
-        var shown = strip + (overflow.contains(selected) ? [selected] : [])
-        var moved: [NotchTab] = []
-        let capacity = max(2, Int((width + NotchDesign.tabIconSpacing) / Self.slotWidth))
-        while shown.count + (overflow.isEmpty && moved.isEmpty ? 0 : 1) > capacity,
-              let drop = shown.last(where: { $0 != selected && $0 != .now }) {
-            shown.removeAll { $0 == drop }
-            moved.append(drop)
-        }
-        self.shown = shown
-        let inMenu = Set(overflow + moved)
-        menu = NotchTab.allCases.filter { inMenu.contains($0) }
-    }
-}
-
-/// Sekme simgeleri (yalnız simge; ad üzerine gelince). İnce ağırlık; seçili olan tam beyaz ve zeminli,
+/// Bantta beş bölüm simgesi (yalnız simge; ad üzerine gelince). Seçili olan tam beyaz ve zeminli,
 /// diğerleri soluk, üzerine gelince aydınlanır. Seçim kayan bir zeminle geçer.
-private struct TabBar: View {
-    let layout: TabBarLayout
-    let selected: NotchTab
-    let isMoreOpen: Bool
+private struct SectionBar: View {
+    let sections: [NotchSection]
+    let selected: NotchSection
     let onHoverIcon: () -> Void
-    let toggleMore: () -> Void
-    let select: (NotchTab) -> Void
+    let select: (NotchSection) -> Void
     @Namespace private var selection
 
     var body: some View {
         HStack(spacing: NotchDesign.tabIconSpacing) {
-            ForEach(layout.shown) { tab in
-                TabIconButton(symbol: tab.symbol, title: tab.title, isSelected: tab == selected,
-                              namespace: selection, onHoverEnter: onHoverIcon) { select(tab) }
+            ForEach(sections) { section in
+                TabIconButton(symbol: section.symbol, title: section.title, isSelected: section == selected,
+                              namespace: selection, onHoverEnter: onHoverIcon) { select(section) }
                     .notchTransition(.fade)
             }
-            if !layout.menu.isEmpty {
-                TabIconButton(symbol: "ellipsis", title: String(localized: "Diğer sekmeler"), isSelected: isMoreOpen,
-                              namespace: nil, onHoverEnter: onHoverIcon, action: toggleMore)
-            }
         }
-        .notchAnimation(value: layout)
+        .notchAnimation(value: sections)
     }
 }
 
@@ -247,47 +213,35 @@ struct PressScaleStyle: ButtonStyle {
     }
 }
 
-/// ••• şeridi: sabitlenmemiş sekmeler simge ve adıyla çip olarak; sığmazsa yalnız simge. Yönetim
-/// eylemi ("Sekmeleri düzenle…") sağda, ikincil renkte: içerikten ayrı.
-private struct MoreTabsRow: View {
-    let tabs: [NotchTab]
+/// Bölümün sayfa seçicisi: ince bir yuva içinde simge + ad bölütleri, seçili olanın zemini kayar.
+/// Yalnız birden çok sayfası olan bölümde görünür.
+private struct PagePicker: View {
+    let pages: [NotchTab]
     let selected: NotchTab
-    let onHoverChip: () -> Void
-    let edit: () -> Void
+    let onHoverSegment: () -> Void
     let select: (NotchTab) -> Void
+    @Namespace private var selection
 
     var body: some View {
-        HStack(spacing: NotchDesign.Space.m) {
-            ViewThatFits(in: .horizontal) {
-                chips(showsTitles: true)
-                chips(showsTitles: false)
-            }
-            Spacer(minLength: NotchDesign.Space.m)
-            Button(action: edit) {
-                Label("Sekmeleri düzenle…", systemImage: "slider.horizontal.3")
-                    .labelStyle(.titleAndIcon)
-            }
-            .buttonStyle(QuietButtonStyle())
-        }
-        .frame(height: NotchDesign.Control.regular)
-    }
-
-    private func chips(showsTitles: Bool) -> some View {
-        HStack(spacing: NotchDesign.Space.xs) {
-            ForEach(tabs) { tab in
-                TabChip(tab: tab, isSelected: tab == selected, showsTitle: showsTitles, onHoverEnter: onHoverChip) {
-                    select(tab)
-                }
+        HStack(spacing: 2) {
+            ForEach(pages) { page in
+                PageSegment(page: page, isSelected: page == selected, namespace: selection,
+                            onHoverEnter: onHoverSegment) { select(page) }
             }
         }
-        .fixedSize()
+        .padding(2)
+        .background(Capsule().fill(NotchDesign.cardFill))
+        .overlay(Capsule().strokeBorder(NotchDesign.hairline, lineWidth: 0.5))
+        .frame(height: NotchDesign.Control.small)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .notchAnimation(NotchMotion.resize, value: selected)
     }
 }
 
-private struct TabChip: View {
-    let tab: NotchTab
+private struct PageSegment: View {
+    let page: NotchTab
     let isSelected: Bool
-    let showsTitle: Bool
+    let namespace: Namespace.ID
     let onHoverEnter: () -> Void
     let action: () -> Void
     @State private var isHovering = false
@@ -295,17 +249,18 @@ private struct TabChip: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
-                Image(systemName: tab.symbol)
-                    .font(.system(size: NotchDesign.Icon.small, weight: NotchDesign.Icon.weight))
-                if showsTitle {
-                    Text(tab.title).font(NotchDesign.captionEmphasized).lineLimit(1)
+                Image(systemName: page.symbol)
+                    .font(.system(size: 10, weight: NotchDesign.Icon.weight))
+                Text(page.title).font(NotchDesign.captionEmphasized).lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .frame(maxHeight: .infinity)
+            .foregroundStyle(Color.white.opacity(isSelected ? 1 : (isHovering ? 0.9 : 0.6)))
+            .background {
+                if isSelected {
+                    Capsule().fill(NotchDesign.selectionFill).matchedGeometryEffect(id: "page", in: namespace)
                 }
             }
-            .padding(.horizontal, showsTitle ? 10 : 8)
-            .frame(height: NotchDesign.Control.small + 2)
-            .foregroundStyle(Color.white.opacity(isSelected || isHovering ? 1 : 0.75))
-            .background(Capsule().fill(isSelected ? NotchDesign.selectionFill
-                                       : (isHovering ? NotchDesign.cardHoverFill : NotchDesign.cardFill)))
             .contentShape(Capsule())
         }
         .buttonStyle(PressScaleStyle())
@@ -314,7 +269,28 @@ private struct TabChip: View {
             isHovering = inside
         }
         .notchAnimation(NotchMotion.hover, value: isHovering)
-        .help(tab.title)
+        .help(page.title)
+    }
+}
+
+/// Ayrıntı sayfasının başı: bölüme dönüş ve sayfa adı (ör. "‹ Şimdi · Etkinlikler").
+private struct DetailHeader: View {
+    let title: String
+    let back: String
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: NotchDesign.Space.xs) {
+            Button(action: action) {
+                Label(back, systemImage: "chevron.left").labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(QuietButtonStyle())
+            .help("\(back)'ye dön")
+            Text(verbatim: "·").foregroundStyle(.tertiary)
+            Text(verbatim: title).font(NotchDesign.captionEmphasized)
+            Spacer()
+        }
+        .frame(height: NotchDesign.Control.small)
     }
 }
 

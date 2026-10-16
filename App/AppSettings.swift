@@ -63,12 +63,9 @@ final class AppSettings {
     /// Kamera izni yalnız Ayna sekmesinde düğmeye basınca istenir.
     var mirrorEnabled: Bool { didSet { store(mirrorEnabled, "mirrorEnabled") } }
     var hasCompletedOnboarding: Bool { didSet { store(hasCompletedOnboarding, "hasCompletedOnboarding") } }
-    /// Şeritte Şimdi'nin yanında duran sekmeler, sırasıyla; en çok `maxPinnedTabs`.
-    var pinnedTabs: [NotchTab] { didSet { store(pinnedTabs.map(\.rawValue), "pinnedTabs") } }
-    /// Modülü açık olsa da Diğer menüsünde de gösterilmeyen sekmeler.
+    /// Modülü açık olsa da bölüm seçicisinde gösterilmeyen sayfalar. (Eski "pinnedTabs" anahtarı
+    /// beş bölüme geçişte kullanılmaz oldu; okunmaz.)
     var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
-    static let maxPinnedTabs = 4
-    static let defaultPinnedTabs: [NotchTab] = [.shelf, .notes, .terminal, .calendar]
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
     var lockScreenEnabled: Bool {
         didSet {
@@ -131,9 +128,6 @@ final class AppSettings {
         weatherPlace = defaults.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherMonitor.Place.self, from: $0) }
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: "hasCompletedOnboarding")
-        pinnedTabs = defaults.stringArray(forKey: "pinnedTabs")
-            .map { Array($0.compactMap(NotchTab.init(rawValue:)).filter { $0 != .now }.prefix(Self.maxPinnedTabs)) }
-            ?? Self.defaultPinnedTabs
         hiddenTabs = Set((defaults.stringArray(forKey: "hiddenTabs") ?? []).compactMap(NotchTab.init(rawValue:)))
         if defaults.bool(forKey: Self.lockSessionKey), defaults.bool(forKey: "lockScreenEnabled") {
             defaults.set(false, forKey: "lockScreenEnabled")
