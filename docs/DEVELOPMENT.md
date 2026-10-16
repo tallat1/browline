@@ -27,6 +27,8 @@ veriyor); Xcode'da açınca eklentiye bir kez onay istenir.
 
 ## Yapı
 
+Modüller, veri akışı ve yeni özellik ekleme: [ARCHITECTURE.md](ARCHITECTURE.md) (İngilizce, 2026-10-16 mimari düzenlemesi).
+
 | Yer | İş |
 |---|---|
 | `Packages/NotchCore/Sources/NotchShell` | Panel (`NSPanel`, `.mainMenu + 3`), geometri, `NotchShape`, hover/peek/açık durumları, ekran başına yönetici, tam ekran sezgisi, sürükleme algılama |
@@ -35,7 +37,10 @@ veriyor); Xcode'da açınca eklentiye bir kez onay istenir.
 | `Packages/NotchCore/Sources/PrivateBridges` | Private API'nin tek yeri, `dlsym` ile; sembol yoksa özellik kapanır: DisplayServices parlaklığı, SkyLight kilit ekranı Space'i |
 | `Packages/NotchCore/Sources/ActivityAPI` | Dış etkinlik API'si: JSON satır protokolü, doğrulama, Unix soketi sunucusu/istemcisi, durum |
 | `CLI/` | `notch` komut satırı aracı; uygulama paketinde `Contents/Helpers/notch` |
-| `App/` | Koordinatör, kompakt kanatlar, açık notch sekmeleri (Medya, Takvim, Raf), ayarlar, menü çubuğu |
+| `App/Core` | `AppCoordinator` (bileşim kökü; amaç bazlı uzantılar: `+Wiring`, `+Settings`, `+Navigation`, `+Visibility`, `+ExternalAPI`, `+Actions`, `+ActivityKind`), gezinme (`NotchSection`, `NotchPage`), `AppSettings` |
+| `App/Notch` | `Closed/` kapalı ve kompakt notch, kilit ekranı · `Expanded/` açık notch çerçevesi · `Question/` onay sorusu |
+| `App/Features/<özellik>` | Notch sayfaları (`…Page`), kartlar ve servis türlerinin arayüz uzantıları (`Tür+Presentation`) |
+| `App/DesignSystem`, `App/Settings`, `App/Application`, `App/Shortcuts`, `App/Debug` | Ortak görsel dil · ayar penceresi ve sayfaları (`…SettingsPage`) · giriş ve menü çubuğu · Kestirmeler · yalnız Debug |
 | `ThirdParty/mediaremote-adapter` | ungive/mediaremote-adapter `e3ff502`, BSD-3, değiştirilmedi |
 | `Helpers/MediaSessions` | Çoklu medya oturumu yardımcısı (kendi kodumuz, Objective-C + perl yükleyici); `make sessions` |
 
@@ -266,21 +271,21 @@ yer kaplayan boş durumlar). Kullanıcı önerilen düzeni seçti.
 
 - **Tek satır başlık**: bantta çentiğin solunda sekme simgeleri (yalnız simge, ad üzerine gelince), sağında durum
   (hava, uyanık tutma, kamera/mikrofon, pil). Ayrı başlık ve şerit satırı yok; içerik ≈ 36 pt yukarıda.
-- **Şimdi** (`NowView`, hep ilk ve sabit): solda oynatıcı, sağda yalnız o an önemli olanlar, en çok 3 kart:
+- **Şimdi** (`NowPage`, hep ilk ve sabit): solda oynatıcı, sağda yalnız o an önemli olanlar, en çok 3 kart:
   4 saat içindeki toplantı (Katıl), çalışan zamanlayıcı (iptal), canlı dış etkinlik, Claude oturum/hafta.
   Hiçbiri yoksa oynatıcı tüm genişlikte. Karta basınca ayrıntı sekmesi açılır.
 - **Beş bölüm** (2026-10-16 ikinci tur; kullanıcı "özellik ekledikçe karmaşıklaşıyor" dedi, 11 sekmeydi):
   bantta yalnız Şimdi · Raf · Takvim · Araçlar · Durum (`NotchSection`), ••• şeridi ve ikinci satır yok. Sayfalar
-  (`NotchTab`) bölümlere girer: Raf = Dosyalar | Pano, Araçlar = Not | Zamanlayıcı | Terminal | Ayna, Durum =
+  (`NotchPage`) bölümlere girer: Raf = Dosyalar | Pano, Araçlar = Not | Zamanlayıcı | Terminal | Ayna, Durum =
   Sistem | Claude | CI. Birden çok sayfalı bölümde içeriğin üstünde ince bir seçici (`PagePicker`, kayan zemin); her
   bölüm son sayfasını hatırlar (`ui.lastPage`), aynı bölüm simgesine basmak ayrıntı sayfasından döndürür.
   Etkinlikler Şimdi'nin ayrıntı sayfası: etkinlik kartından açılır ("‹ Şimdi · Etkinlikler"), sığmayanlar son
   kartta "+N". Her özelliğin ayar sayfasında "Notch'ta göster"; sayfası kalmayan bölüm bantta görünmez. Yeni
   özellik bandı büyütmez, bir bölüme sayfa olur. Debug `section:<now|shelf|calendar|tools|status>`.
-- **Sabit genişlik** 640 pt (`NotchDesign.openWidth`); sekmeye göre yalnız boy değişir (`NotchTab.bodyHeight`).
+- **Sabit genişlik** 640 pt (`NotchDesign.openWidth`); sekmeye göre yalnız boy değişir (`NotchPage.bodyHeight`).
 - **Sakin boş durumlar**: Takvim'de etkinlik de anımsatıcı da yoksa tek satır; medya boşken kaynak adı
   ("MediaRemote…") gösterilmez, yalnız yedeğe düşüldüyse nedeniyle.
-- **Görsel dil** `App/Views/NotchDesign.swift`: tek yazı ölçeği (13/12/11), kart, boş durum, kapsül ve simge
+- **Görsel dil** `App/DesignSystem/NotchDesign.swift`: tek yazı ölçeği (13/12/11), kart, boş durum, kapsül ve simge
   düğmeleri; görünümlerde sabit ölçü yazılmaz. Yüzdeler yerele göre (`NowFormat.percent`).
 - ⚠️ İlerleme çubuğu `TimelineView(.animation(minimumInterval: 1))` ile her ekran karesinde uyanıyordu: medya
   açıkken ana iş parçacığı ≈ %12 meşgul. `.periodic(by: 1)` (duraklatılmışken 1 saat) ile ≈ %0,4.
@@ -336,7 +341,7 @@ yere dağınıktı. Rakip araştırması (Atoll 21 sayfa/8 grup, DynamicNotch 16
 
 ### Tasarım sistemi ve etkileşim (2026-10-16 modernizasyon turu)
 
-`App/Views/NotchDesign.swift` tek kaynak: yazı ölçeği (24 yuvarlak büyük rakam · 13 · 12 · 11 · 10), boşluk
+`App/DesignSystem/NotchDesign.swift` tek kaynak: yazı ölçeği (24 yuvarlak büyük rakam · 13 · 12 · 11 · 10), boşluk
 (2/4/6/8/12/16), köşe (7 satır/simge · 10 yan kart · 12 kart), simge (11/13/15, orta ağırlık), kontrol yüksekliği
 (22/26/32), yüzeyler (kart 0,06 · üzerine gelme 0,10 · seçili 0,14 · basılı 0,18 beyaz) ve 0,5 pt ince kenar
 (`hairline`), pasif %40. Bileşenler: `notchCard`, `MetricCard` (etiket + sağda bağlam, büyük değer + birim,

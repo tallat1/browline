@@ -166,11 +166,12 @@ A stable signing identity keeps macOS permissions across rebuilds. Ad-hoc signin
 
 | Path | What's inside |
 |---|---|
-| `App/` | The app: coordinator, views, settings, menu bar, onboarding |
+| `App/` | The app, organized by feature: `Core` (coordinator, navigation, settings), `Notch` (closed and open notch), `Features/<feature>`, `DesignSystem`, `Settings`, `Application`; see [ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | `Packages/NotchCore/` | Swift package: panel and geometry (`NotchShell`), activity priority (`ActivityEngine`), system integrations (`Integrations`), socket protocol (`ActivityAPI`), private API bridges (`PrivateBridges`) |
 | `CLI/` | The `notch` command-line tool |
 | `Helpers/`, `ThirdParty/` | Now Playing helpers |
 | `Examples/` | Claude Code and Codex hooks |
+| `docs/ARCHITECTURE.md` | Modules, data flow, conventions and how to add a feature |
 | `docs/DEVELOPMENT.md` | Engineering notes, measurements and design decisions (Turkish) |
 
 ## Roadmap

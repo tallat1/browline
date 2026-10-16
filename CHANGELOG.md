@@ -5,6 +5,7 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 ## [Unreleased]
 
 ### Changed
+- Source code reorganized by feature with a documented architecture ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); no behavior change.
 - The `notch` command-line tool and the activity API answer in English or Turkish, following the first language in your system's language list.
 
 ## [0.9.0] - 2026-10-16

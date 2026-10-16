@@ -166,11 +166,12 @@ Sabit bir imza kimliği macOS izinlerini yeniden derlemelerde korur. Ad-hoc imza
 
 | Yol | İçinde |
 |---|---|
-| `App/` | Uygulama: koordinatör, görünümler, ayarlar, menü çubuğu, karşılama |
+| `App/` | Özellik bazlı düzenlenmiş uygulama: `Core` (koordinatör, gezinme, ayarlar), `Notch` (kapalı ve açık notch), `Features/<özellik>`, `DesignSystem`, `Settings`, `Application`; ayrıntı [ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | `Packages/NotchCore/` | Swift paketi: panel ve geometri (`NotchShell`), etkinlik önceliği (`ActivityEngine`), sistem entegrasyonları (`Integrations`), soket protokolü (`ActivityAPI`), özel API köprüleri (`PrivateBridges`) |
 | `CLI/` | `notch` komut satırı aracı |
 | `Helpers/`, `ThirdParty/` | Now Playing yardımcıları |
 | `Examples/` | Claude Code ve Codex kancaları |
+| `docs/ARCHITECTURE.md` | Modüller, veri akışı, kurallar ve yeni özellik ekleme (İngilizce) |
 | `docs/DEVELOPMENT.md` | Mühendislik notları, ölçümler ve tasarım kararları |
 
 ## Yol haritası
