@@ -20,6 +20,7 @@ struct ExpandedView: View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 TabBar(layout: bar, selected: ui.selectedTab, isMoreOpen: coordinator.ui.isMoreTabsOpen,
+                       onHoverIcon: { model.haptic(.detent) },
                        toggleMore: {
                            // Şerit açıkken notch sabit kalsın (imleç kayınca kapanmasın).
                            if !coordinator.ui.isMoreTabsOpen { model.tapped() }
@@ -35,7 +36,7 @@ struct ExpandedView: View {
             .frame(height: context.bandHeight)
 
             if coordinator.ui.isMoreTabsOpen {
-                MoreTabsRow(tabs: bar.menu, selected: ui.selectedTab,
+                MoreTabsRow(tabs: bar.menu, selected: ui.selectedTab, onHoverChip: { model.haptic(.detent) },
                             edit: {
                                 coordinator.ui.isMoreTabsOpen = false
                                 coordinator.openSettings?()
@@ -78,6 +79,8 @@ struct ExpandedView: View {
         .onChange(of: ui.selectedTab, initial: true) { _, tab in
             model.preferredOpenSize = openSize(for: tab)
         }
+        // Sekme hangi yoldan değişirse değişsin (tıklama, şerit, dosya sürükleme) belirgin tık.
+        .onChange(of: ui.selectedTab) { _, _ in model.haptic(.selection) }
         .onChange(of: coordinator.questions.current?.id) { _, _ in
             model.preferredOpenSize = openSize(for: ui.selectedTab)
         }
@@ -165,6 +168,7 @@ private struct TabBar: View {
     let layout: TabBarLayout
     let selected: NotchTab
     let isMoreOpen: Bool
+    let onHoverIcon: () -> Void
     let toggleMore: () -> Void
     let select: (NotchTab) -> Void
     @Namespace private var selection
@@ -173,12 +177,12 @@ private struct TabBar: View {
         HStack(spacing: NotchDesign.tabIconSpacing) {
             ForEach(layout.shown) { tab in
                 TabIconButton(symbol: tab.symbol, title: tab.title, isSelected: tab == selected,
-                              namespace: selection) { select(tab) }
+                              namespace: selection, onHoverEnter: onHoverIcon) { select(tab) }
                     .notchTransition(.fade)
             }
             if !layout.menu.isEmpty {
                 TabIconButton(symbol: "ellipsis", title: String(localized: "Diğer sekmeler"), isSelected: isMoreOpen,
-                              namespace: nil, action: toggleMore)
+                              namespace: nil, onHoverEnter: onHoverIcon, action: toggleMore)
             }
         }
         .notchAnimation(value: layout)
@@ -191,6 +195,8 @@ private struct TabIconButton: View {
     let isSelected: Bool
     /// Kayan seçim zemini için; ••• kendi zeminini çizer.
     let namespace: Namespace.ID?
+    /// İmleç simgeye girince (dokunsal çentik).
+    let onHoverEnter: () -> Void
     let action: () -> Void
     @State private var isHovering = false
 
@@ -205,7 +211,10 @@ private struct TabIconButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(PressScaleStyle())
-        .onHover { isHovering = $0 }
+        .onHover { inside in
+            if inside, !isHovering { onHoverEnter() }
+            isHovering = inside
+        }
         .notchAnimation(NotchMotion.hover, value: isHovering)
         .help(title)
         .accessibilityLabel(title)
@@ -240,6 +249,7 @@ struct PressScaleStyle: ButtonStyle {
 private struct MoreTabsRow: View {
     let tabs: [NotchTab]
     let selected: NotchTab
+    let onHoverChip: () -> Void
     let edit: () -> Void
     let select: (NotchTab) -> Void
 
@@ -262,7 +272,9 @@ private struct MoreTabsRow: View {
     private func chips(showsTitles: Bool) -> some View {
         HStack(spacing: NotchDesign.Space.xs) {
             ForEach(tabs) { tab in
-                TabChip(tab: tab, isSelected: tab == selected, showsTitle: showsTitles) { select(tab) }
+                TabChip(tab: tab, isSelected: tab == selected, showsTitle: showsTitles, onHoverEnter: onHoverChip) {
+                    select(tab)
+                }
             }
         }
         .fixedSize()
@@ -273,6 +285,7 @@ private struct TabChip: View {
     let tab: NotchTab
     let isSelected: Bool
     let showsTitle: Bool
+    let onHoverEnter: () -> Void
     let action: () -> Void
     @State private var isHovering = false
 
@@ -293,7 +306,10 @@ private struct TabChip: View {
             .contentShape(Capsule())
         }
         .buttonStyle(PressScaleStyle())
-        .onHover { isHovering = $0 }
+        .onHover { inside in
+            if inside, !isHovering { onHoverEnter() }
+            isHovering = inside
+        }
         .notchAnimation(NotchMotion.hover, value: isHovering)
         .help(tab.title)
     }

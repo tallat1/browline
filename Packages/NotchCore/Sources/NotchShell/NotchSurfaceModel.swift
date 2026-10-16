@@ -28,6 +28,16 @@ public final class NotchSurfaceModel {
 
     @ObservationIgnored public var openDelay: Duration = .milliseconds(150)
     @ObservationIgnored public var hapticsEnabled = true
+    @ObservationIgnored private var lastHapticAt = Date.distantPast
+    /// Art arda tıklar arasında en az bu kadar: imleç simgeler üzerinde hızla kayınca titreşim olmasın.
+    static let hapticMinimumInterval: TimeInterval = 0.04
+
+    public enum Haptic: String, Sendable {
+        /// Sekme simgesinin üzerine gelme: hafif çentik.
+        case detent
+        /// Sekme seçimi: belirgin tık.
+        case selection
+    }
     /// Açık/kapalı geçişinde yönetici imleç izleyicilerini kurar ya da kaldırır.
     @ObservationIgnored var onOpenChanged: ((Bool) -> Void)?
     /// Çentiksiz ekranda "yalnız etkinlik varken" görünürlüğü bu değişikliklere bağlı.
@@ -111,6 +121,16 @@ public final class NotchSurfaceModel {
         hoverTask?.cancel()
         isPinned = true
         setOpen(true)
+    }
+
+    /// Sekmeler arasında gezinirken dokunsal geri bildirim (Force Touch trackpad'de, parmak yüzeydeyken
+    /// hissedilir). Ayar kapalıysa yok.
+    public func haptic(_ kind: Haptic) {
+        guard hapticsEnabled, Date.now.timeIntervalSince(lastHapticAt) > Self.hapticMinimumInterval else { return }
+        lastHapticAt = .now
+        NSHapticFeedbackManager.defaultPerformer.perform(kind == .selection ? .levelChange : .alignment,
+                                                         performanceTime: .now)
+        Log.shell.debug("dokunsal: \(kind.rawValue, privacy: .public)")
     }
 
     /// Esc ya da dışarı tıklama.

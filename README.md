@@ -268,6 +268,9 @@ yay, içerik 0,2, üzerine gelme 0,12, basılma 0,08 sn; Hareketi Azalt'ta yaln�
 - Trackpad: açıkken dikey kaydırma içeriğe ait (not, terminal, liste kaydırınca notch kapanmıyor; yalnız bant
   üzerinde yukarı kaydırma kapatır), atalet olayları yok sayılır (yatayda ikinci parça geçişi yok), fare tekerleği
   0,35 sn'de bir eylem (eskiden ilk tıktan sonra kilitleniyordu). `ScrollGestureTests` gerçek CGEvent'lerle.
+- Dokunsal geri bildirim (Force Touch trackpad, Ayarlar › Genel'deki düğmeye bağlı): imleç sekme simgelerinin ve
+  ••• çiplerinin üzerinden geçerken her simgede hafif çentik (`.alignment`), sekme seçilince belirgin tık
+  (`.levelChange`, sekme hangi yoldan değişirse); art arda en az 40 ms. Parmak yüzeydeyken hissedilir.
 - Ses: CoreAudio okuma/yazma ayrı kuyrukta, dinleyici bildirimleri birleşik, sürüklerken yalnız son değer yazılır
   (eskiden kaydırıcı sürüklenirken ana iş parçacığı ≈ %35 meşguldü). HUD dinleyicisi de birleşik.
 - Ölçüm (etkileşimsiz, `sample` ana iş parçacığı): kapalı %0; Şimdi açık %0,2, uzun başlık kayarken ≈ %4.
