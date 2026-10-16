@@ -20,11 +20,14 @@ struct EqualizerBars: NSViewRepresentable {
     /// Müziğe tepki için kaynak; nil ise yapay hareket.
     var spectrum: AudioSpectrum?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Düşük Güç Modu: çubuklar durağan, dinleyici bırakılır.
+    @Environment(\.pausesContinuousMotion) private var pausesContinuousMotion
 
     func makeNSView(context: Context) -> EqualizerLayerView { EqualizerLayerView() }
 
     func updateNSView(_ view: EqualizerLayerView, context: Context) {
-        view.update(color: NSColor(tint).cgColor, moving: isPlaying && isEnabled && !reduceMotion, spectrum: spectrum)
+        let moving = isPlaying && isEnabled && !reduceMotion && !pausesContinuousMotion
+        view.update(color: NSColor(tint).cgColor, moving: moving, spectrum: pausesContinuousMotion ? nil : spectrum)
     }
 
     static func dismantleNSView(_ view: EqualizerLayerView, coordinator: ()) {

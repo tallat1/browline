@@ -129,6 +129,8 @@ final class NotchUIState {
     var pomodoroPhase: Pomodoro.Phase?
     /// Son Bluetooth olayı (kısa bildirimde gösterilir).
     var bluetoothEvent: BluetoothEvent?
+    /// Mikrofon kısayolu kaydedilemedi (birleşim başka uygulamada kayıtlı).
+    var micShortcutUnavailable = false
 }
 
 /// Bluetooth kısa bildirimi: hangi aygıt, ne oldu.
@@ -169,18 +171,19 @@ final class AppCoordinator {
         static let batteryFull: ActivityID = "batteryFull"
         static let claudeUsage: ActivityID = "claudeUsage"
         static let bluetooth: ActivityID = "bluetooth"
+        static let microphone: ActivityID = "microphone"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix)
                 || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull,
-                    claudeUsage, bluetooth].contains(id)
+                    claudeUsage, bluetooth, microphone].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
         /// etkinlik metni bilgisayarın başındaki herkese görünür.
         static func isAllowedOnLockScreen(_ id: ActivityID) -> Bool {
-            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake, batteryLow, batteryFull].contains(id)
+            [nowPlaying, power, privacy, hud, timer, timerDone, keepAwake, batteryLow, batteryFull, microphone].contains(id)
         }
     }
 
@@ -212,6 +215,10 @@ final class AppCoordinator {
     let bluetooth = BluetoothMonitor()
     let microphone = MicrophoneControl()
     let spectrum = AudioSpectrum()
+    let lowPower = LowPowerMode()
+    /// Sistem geneli sessize alma kısayolu; `start()`'ta kurulur.
+    private var micShortcut: GlobalShortcut?
+    private var registeredMicShortcut: GlobalShortcut.Preset?
     /// Dış onay soruları (Claude Code izin istemleri): notch'ta İzin ver / Reddet.
     let questions = QuestionStore()
     /// Soru gelince açılan notch'lar; son soru yanıtlanınca yalnız bunlar kapanır.
@@ -250,6 +257,35 @@ final class AppCoordinator {
     }
 
     var isMicrophoneMuted: Bool { settings.meetingControlsEnabled && microphone.isMuted }
+
+    /// Düşük Güç Modu'nda (ayar açıksa) kayan yazı ve çubuklar durur, ses dinleyicisi kapanır.
+    var isMotionPaused: Bool { settings.pauseMotionInLowPower && lowPower.isEnabled }
+
+    private func updateSpectrum() {
+        spectrum.isEnabled = settings.animatedEqualizer && settings.reactiveEqualizer && !isMotionPaused
+    }
+
+    /// Kısayol yalnız toplantı denetimi açıkken kayıtlı; değişmediyse yeniden kaydedilmez.
+    private func updateMicShortcut() {
+        let preset = settings.meetingControlsEnabled ? settings.micShortcut : .off
+        guard preset != registeredMicShortcut, let micShortcut else { return }
+        let registered = micShortcut.register(preset)
+        registeredMicShortcut = preset
+        ui.micShortcutUnavailable = !registered
+        AppLog.coordinator.notice("mikrofon kısayolu: \(preset.rawValue, privacy: .public)\(registered ? "" : " (kaydedilemedi)", privacy: .public)")
+    }
+
+    /// Kısayol: sessize al / aç ve kapalı notch'ta kısa bildirim (hangi uygulama öndeyse olsun).
+    func toggleMicrophoneFromShortcut() {
+        guard settings.meetingControlsEnabled, microphone.canMute else {
+            NSSound.beep()
+            return
+        }
+        microphone.toggleMute()
+        let muted = microphone.isMuted
+        AppLog.coordinator.notice("mikrofon kısayolu: \(muted ? "sessiz" : "açık", privacy: .public)")
+        activities.flash(ActivityKind.microphone, priority: 2_000, duration: .milliseconds(1500))
+    }
 
     /// Bağlanma, ayrılma ve düşük pil; düşük pil biraz daha uzun kalır.
     func flashBluetooth(_ device: BluetoothMonitor.Device, _ change: BluetoothEvent.Change) {
@@ -296,6 +332,13 @@ final class AppCoordinator {
     }
 
     func start() {
+        micShortcut = GlobalShortcut(id: 1) { [weak self] in self?.toggleMicrophoneFromShortcut() }
+        lowPower.onChange = { [weak self] enabled in
+            guard let self else { return }
+            AppLog.coordinator.notice("Düşük Güç Modu: \(enabled ? "açık" : "kapalı", privacy: .public)")
+            updateSpectrum()
+        }
+        lowPower.start()
         activities.onActivitiesChanged = { [weak self] in self?.updateCompactState() }
         activities.onCurrentChanged = { activity in
             AppLog.coordinator.notice("öne çıkan etkinlik: \(activity?.id.rawValue ?? "yok", privacy: .public)")
@@ -458,7 +501,10 @@ final class AppCoordinator {
         bluetooth.stop()
         // Bizim kapattığımız mikrofon çıkarken geri açılır.
         microphone.stop()
+        micShortcut?.unregister()
+        registeredMicShortcut = nil
         spectrum.isEnabled = false
+        lowPower.stop()
         notes.flush()
         keepAwake.stop()
         cancelTimer()
@@ -483,7 +529,8 @@ final class AppCoordinator {
         toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
         toggle(settings.bluetoothEnabled, start: bluetooth.start, stop: bluetooth.stop)
         toggle(settings.meetingControlsEnabled, start: microphone.start, stop: microphone.stop)
-        spectrum.isEnabled = settings.animatedEqualizer && settings.reactiveEqualizer
+        updateMicShortcut()
+        updateSpectrum()
         updatePrivacyActivity()
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
         if !settings.systemStatsEnabled { systemStats.stop() }

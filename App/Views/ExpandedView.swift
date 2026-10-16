@@ -40,7 +40,10 @@ struct ExpandedView: View {
                         ui.selectedTab = $0
                     }
                     .padding(.top, NotchDesign.headerSpacing)
-                    .notchTransition(.fade)
+                    // Bölüm değişince seçici bütün olarak anında değişir: soluklaşırken eski ve yeni
+                    // bölütlerin yazıları üst üste biniyordu. Bölüm içinde yalnız zemin kayar.
+                    .id(page.section)
+                    .transition(.identity)
                 }
             }
 

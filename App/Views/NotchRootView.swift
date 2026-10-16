@@ -21,6 +21,7 @@ struct NotchRootView: View {
                 ExpandedView(context: context, model: model, coordinator: coordinator)
             }
         }
+        .environment(\.pausesContinuousMotion, coordinator.isMotionPaused)
     }
 }
 
@@ -38,6 +39,7 @@ struct LockScreenRootView: View {
         } expanded: { _ in
             EmptyView()
         }
+        .environment(\.pausesContinuousMotion, coordinator.isMotionPaused)
     }
 }
 
@@ -122,6 +124,10 @@ struct CompactLeadingView: View {
                 WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"))
             case AppCoordinator.ActivityKind.batteryFull:
                 WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"))
+            case AppCoordinator.ActivityKind.microphone:
+                let muted = coordinator.microphone.isMuted
+                WideWingLabel(symbol: muted ? "mic.slash.fill" : "mic.fill", tint: muted ? .red : .white,
+                              text: muted ? String(localized: "Mikrofon kapalı") : String(localized: "Mikrofon açık"))
             case AppCoordinator.ActivityKind.bluetooth:
                 if let event = coordinator.ui.bluetoothEvent {
                     WideWingLabel(symbol: event.device.symbolName,
@@ -260,6 +266,15 @@ struct CompactTrailingView: View {
                     Text("%\(state.percent)")
                         .monospacedDigit()
                         .foregroundStyle(activityID == AppCoordinator.ActivityKind.batteryLow ? .red : .secondary)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.microphone:
+                // Mikrofonu kullanan uygulama (görüşme), yoksa boş.
+                if let app = coordinator.microphone.inputApps.first {
+                    Text(verbatim: app.name)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                         .padding(.trailing, 12)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }

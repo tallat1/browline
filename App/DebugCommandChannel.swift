@@ -63,6 +63,12 @@ final class DebugCommandChannel {
             coordinator.spectrum.acquire()
         case "spectrum:probe-off":
             coordinator.spectrum.release()
+        case "mic:shortcut":
+            // Kısayola basılmış gibi: gerçekten sessize alır; yalnız mikrofon boştayken, iki kez gönder.
+            coordinator.toggleMicrophoneFromShortcut()
+        case "power:low-on", "power:low-off", "power:low-auto":
+            // Sistemi değiştirmeden Düşük Güç Modu benzetimi.
+            coordinator.lowPower.override = command == "power:low-auto" ? nil : command == "power:low-on"
         case "mic:toggle":
             coordinator.microphone.toggleMute()
         case "bluetooth:state":

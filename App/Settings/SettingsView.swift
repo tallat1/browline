@@ -197,6 +197,8 @@ private struct ModuleSettings: View {
             Section {
                 Toggle("Şarkı değişince kısa göster", isOn: $settings.trackPeekEnabled)
                 Toggle("Çalarken hareketli çubuklar (az miktarda enerji harcar)", isOn: $settings.animatedEqualizer)
+                Toggle("Düşük Güç Modu'nda hareketi durdur (çubuklar, kayan yazı, müzik dinleyicisi)",
+                       isOn: $settings.pauseMotionInLowPower)
                 if settings.animatedEqualizer {
                     Toggle("Çubuklar müziğe tepki versin", isOn: $settings.reactiveEqualizer)
                     Text("Sistem sesinin anlık frekans dağılımı okunur; ilk açılışta macOS sistem sesi kaydı izni ister. Ses kaydedilmez, hiçbir yere gönderilmez. İzin verilmezse çubuklar eski hareketine döner.")
@@ -208,6 +210,22 @@ private struct ModuleSettings: View {
                        isOn: $settings.bluetoothEnabled)
                 Toggle("Toplantı denetimi (mikrofonu sistem genelinde sessize al)",
                        isOn: $settings.meetingControlsEnabled)
+                if settings.meetingControlsEnabled {
+                    Picker("Sessize alma kısayolu", selection: $settings.micShortcut) {
+                        ForEach(GlobalShortcut.Preset.allCases) { preset in
+                            Text(verbatim: preset.title).tag(preset)
+                        }
+                    }
+                    if coordinator.ui.micShortcutUnavailable {
+                        Text("Bu kısayol başka bir uygulamada kayıtlı; başka birini seçin.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    } else if settings.micShortcut != .off {
+                        Text("Hangi uygulama öndeyse olsun çalışır; izin istemez.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Hızlı not", isOn: $settings.notesEnabled)
                 Toggle("Terminal (kapatınca açık kabuk sonlanır)", isOn: $settings.terminalEnabled)

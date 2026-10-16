@@ -719,6 +719,16 @@
         }
       }
     },
+    "Bu kısayol başka bir uygulamada kayıtlı; başka birini seçin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another app already uses this shortcut; choose a different one."
+          }
+        }
+      }
+    },
     "Bu macOS sürümünde kullanılamıyor (SkyLight sembolleri yok).": {
       "localizations": {
         "en": {
@@ -979,6 +989,16 @@
         }
       }
     },
+    "Düşük Güç Modu'nda hareketi durdur (çubuklar, kayan yazı, müzik dinleyicisi)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause motion in Low Power Mode (bars, scrolling text, music listener)"
+          }
+        }
+      }
+    },
     "Ek gösterge (izin gerekmez; sistem göstergesi de görünür)": {
       "localizations": {
         "en": {
@@ -1235,6 +1255,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "About"
+          }
+        }
+      }
+    },
+    "Hangi uygulama öndeyse olsun çalışır; izin istemez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Works whichever app is in front; needs no permission."
           }
         }
       }
@@ -1605,6 +1635,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Microphone on"
+          }
+        }
+      }
+    },
+    "Mikrofon kapalı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone off"
           }
         }
       }
@@ -2217,6 +2257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mute"
+          }
+        }
+      }
+    },
+    "Sessize alma kısayolu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute shortcut"
           }
         }
       }

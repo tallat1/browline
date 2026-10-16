@@ -4,8 +4,8 @@ import SwiftUI
 
 /// Tek satır metin; alana sığmıyorsa sabit hızla kayarak tamamını gösterir. Kısa metinde hareket
 /// yok. Bekle → kay → sonda bekle → yumuşakça başa dön; `loops` ise tekrarlar (açık sekmede).
-/// Genişlik NSFont ile ölçülür: yerleşim geçişi gerekmez, titreme olmaz. Hareketi azalt açıksa
-/// kaymaz, sonu üç noktayla kesilir.
+/// Genişlik NSFont ile ölçülür: yerleşim geçişi gerekmez, titreme olmaz. Hareketi azalt ya da Düşük
+/// Güç Modu açıksa kaymaz, sonu üç noktayla kesilir.
 struct MarqueeText: View {
     enum Trigger {
         /// Görününce bir kez (ya da `loops` ise sürekli) kayar: kanat ve başlık.
@@ -21,7 +21,10 @@ struct MarqueeText: View {
     var trigger: Trigger = .automatic
     @State private var offset: CGFloat = 0
     @State private var isHovering = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.pausesContinuousMotion) private var pausesContinuousMotion
+
+    private var reduceMotion: Bool { accessibilityReduceMotion || pausesContinuousMotion }
 
     var body: some View {
         GeometryReader { proxy in

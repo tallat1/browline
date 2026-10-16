@@ -37,6 +37,12 @@ public enum NotchMotion {
     }
 }
 
+extension EnvironmentValues {
+    /// Sürekli hareket (kayan yazı, çalarken oynayan çubuklar) duraklasın mı: Düşük Güç Modu'nda
+    /// (ayar açıksa) true. Kısa geçişler sürer; macOS da bu modda yalnız sürekli işleri kısar.
+    @Entry public var pausesContinuousMotion = false
+}
+
 /// Geçiş türleri. Hareketi azalt açıkken hepsi yalnız saydamlığa iner.
 public enum NotchTransition: Sendable {
     /// İçerik değişimi (sekme, durum): saydamlık + çok hafif ölçek.

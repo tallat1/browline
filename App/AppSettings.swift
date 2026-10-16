@@ -49,6 +49,10 @@ final class AppSettings {
     var meetingControlsEnabled: Bool { didSet { store(meetingControlsEnabled, "meetingControlsEnabled") } }
     /// Çubuklar müziğe tepki versin (sistem sesi kaydı izni); varsayılan kapalı.
     var reactiveEqualizer: Bool { didSet { store(reactiveEqualizer, "reactiveEqualizer") } }
+    /// Düşük Güç Modu'nda sürekli hareketi (çubuklar, kayan yazı) durdur; varsayılan açık.
+    var pauseMotionInLowPower: Bool { didSet { store(pauseMotionInLowPower, "pauseMotionInLowPower") } }
+    /// Mikrofonu sistem genelinde sessize alma kısayolu.
+    var micShortcut: GlobalShortcut.Preset { didSet { store(micShortcut.rawValue, "micShortcut") } }
     /// Belgelenmemiş kullanım uç noktası (Claude Code'un Anahtar Zinciri kaydıyla). Varsayılan kapalı;
     /// kullanıcı riskleri kabul edip açar.
     var claudeUsageAPIEnabled: Bool { didSet { store(claudeUsageAPIEnabled, "claudeUsageAPIEnabled") } }
@@ -121,6 +125,8 @@ final class AppSettings {
         bluetoothEnabled = defaults.object(forKey: "bluetoothEnabled") as? Bool ?? true
         meetingControlsEnabled = defaults.object(forKey: "meetingControlsEnabled") as? Bool ?? true
         reactiveEqualizer = defaults.object(forKey: "reactiveEqualizer") as? Bool ?? false
+        pauseMotionInLowPower = defaults.object(forKey: "pauseMotionInLowPower") as? Bool ?? true
+        micShortcut = GlobalShortcut.Preset(rawValue: defaults.string(forKey: "micShortcut") ?? "") ?? .controlOptionM
         claudeUsageAPIEnabled = defaults.bool(forKey: "claudeUsageAPIEnabled")
         remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
         systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true
