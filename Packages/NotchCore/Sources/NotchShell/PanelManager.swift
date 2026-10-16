@@ -108,6 +108,11 @@ public final class PanelManager {
         }
     }
 
+    /// Kullanıcı menü çubuğundan gizledi (sunum, ekran paylaşımı): tüm paneller tam ekrandaki gibi solar.
+    public var isHiddenByUser = false {
+        didSet { if isHiddenByUser != oldValue { refreshFullScreenState() } }
+    }
+
     /// Model kurulunca ya da kaldırılınca uygulama kompakt içeriği bağlar.
     public var onModelsChanged: (([NotchSurfaceModel]) -> Void)?
     public var models: [NotchSurfaceModel] { controllers.values.map(\.model) }
@@ -228,7 +233,7 @@ public final class PanelManager {
         let game = options.hideInGames && isGameFrontmost()
         // İdempotent; yeni kurulan paneller de aynı karardan geçer.
         for (id, controller) in controllers {
-            controller.setSuppressed(displays.contains(id) || game)
+            controller.setSuppressed(isHiddenByUser || displays.contains(id) || game)
         }
     }
 

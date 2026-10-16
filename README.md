@@ -302,6 +302,26 @@ yere dağınıktı. Rakip araştırması (Atoll 21 sayfa/8 grup, DynamicNotch 16
   Hakkında: lisanslar açılır ayrıntıda.
 - Debug: `settings:open|close`, `settings:page:<sayfa>[:<vurgu>]`, `menu:show` (menüyü 3 sn açar).
 
+### Menü çubuğu, karşılama ve ince ayarlar (2026-10-16 denetimin kalanı)
+
+- **Menü çubuğu menüsü**: yalnız o an geçerli durum satırları (çalan şarkı, süren CI, Claude oturum/hafta;
+  macOS 14.4+ `NSMenuItem.subtitle`), basınca ilgili yere gider. "Notch'u aç" alt menüsü (Şimdi, Raf, Pano,
+  Takvim, Araçlar, Durum; imlecin olduğu ekranda, kapak kapalıyken de). "Notch'u gizle": 1 saat · yarın sabah
+  08.00'e kadar · gösterene kadar (`settings.notchHiddenUntil`, yeniden başlatmada korunur, süre dolunca kendiliğinden;
+  `PanelManager.isHiddenByUser` tam ekran gizlemesiyle aynı yoldan solar). Gizliyken "Notch'u göster · Geri gelme:
+  16:12" (saate ek getirmeyen biçim). Simge: mikrofon sessizken `mic.slash.fill`, gizliyken soluk.
+- **Karşılama** (`OnboardingWindowController`, 600 × 480): notch'u tanıt → çoklu profil (Müzik ve medya,
+  Toplantılar, Geliştirici, Dosyalar ve pano; seçilenlerin özellikleri BİRLEŞEREK açılır, hiçbir seçili profilde
+  olmayan profil özellikleri kapanır, hava/ayna/kilit ekranı gibi profil dışı ayarlara dokunulmaz; pil, uyanık
+  tutma, not, zamanlayıcı hep açık) → yalnız gereken izinler (`PermissionRow`). "Atla" ayarlara dokunmaz. İlk
+  açılışta ayarlar yerine bu pencere; Ayarlar › Genel › Karşılama › "Yeniden göster".
+- **İnce ayarlar**: durum alanında fincan yalnız uyanık tutma açıkken (açma: Araçlar › Zamanlayıcı'da "Ekranı uyanık
+  tut", menü çubuğunda süreli); açılma gecikmesi Anında / Normal / Sakin / Çok sakin; raf alt çubuğunda eşit
+  ağırlıkta Paylaş, Sıkıştır, Dönüştür… (raftaki tüm uygun dosyalara, kaç dosya olduğu yanında), Temizle; üç sabit
+  sayfa boyu (kısa 132: Şimdi, Etkinlikler, Takvim, Zamanlayıcı, Sistem · orta 200: Raf, Pano, Not, Claude, CI ·
+  uzun 280: Terminal, Ayna) — Raf ile Pano arasında zıplama yok; metrik kartlarında çubuk dipte.
+- Debug: `notch:hide|show`, `onboarding:show|close|step:<n>` (adım değiştirmek profilleri uygulamaz).
+
 ### Tasarım sistemi ve etkileşim (2026-10-16 modernizasyon turu)
 
 `App/Views/NotchDesign.swift` tek kaynak: yazı ölçeği (24 yuvarlak büyük rakam · 13 · 12 · 11 · 10), boşluk
@@ -457,7 +477,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (420 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (466 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

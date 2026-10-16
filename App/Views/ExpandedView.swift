@@ -122,23 +122,18 @@ struct ExpandedView: View {
 }
 
 extension NotchTab {
+    /// Üç sabit boy (2026-10-16 denetimi: dokuz farklı boy vardı, bölüm içinde sayfa değişince notch
+    /// zıplıyordu). Raf ile Pano aynı boyda; Araçlar'da içerik gereği farklı.
+    static let shortHeight: CGFloat = 132
+    static let mediumHeight: CGFloat = 200
+    static let longHeight: CGFloat = 280
+
     /// İçerik alanının boyu (bant hariç). Genişlik hepsinde `NotchDesign.openWidth`.
     var bodyHeight: CGFloat {
         switch self {
-        case .now: 132
-        case .calendar: 124
-        // Karolar (tek satır ad) + eylem çubuğu; 104'te kesikli çerçeve gövdeden taşıyordu.
-        case .shelf: 124
-        case .activities: 120
-        case .notes: 196
-        case .timer: 84
-        case .system: 88
-        case .mirror: 300
-        case .claude: 150
-        // ≈ 77 sütun × 18 satır (12 pt SF Mono).
-        case .terminal: 280
-        case .clipboard: 200
-        case .ci: 160
+        case .now, .activities, .calendar, .timer, .system: Self.shortHeight
+        case .shelf, .clipboard, .notes, .claude, .ci: Self.mediumHeight
+        case .terminal, .mirror: Self.longHeight
         }
     }
 }
@@ -353,7 +348,9 @@ private struct StatusArea: View {
                 .help(weatherHelp(place, conditions))
                 .notchTransition(.fade)
             }
-            if full, coordinator.settings.keepAwakeEnabled {
+            // Fincan yalnız uyanık tutma açıkken (kapatmak için); açmak Araçlar › Zamanlayıcı'da ve menü
+            // çubuğunda. Hep görünen fincan durum alanını kalabalıklaştırıyordu (2026-10-16 denetimi).
+            if full, coordinator.settings.keepAwakeEnabled, coordinator.keepAwake.isActive {
                 KeepAwakeButton(keepAwake: coordinator.keepAwake).notchTransition(.fade)
             }
             // Kamera yeşil, mikrofon turuncu: macOS menü çubuğu göstergeleriyle aynı renkler.

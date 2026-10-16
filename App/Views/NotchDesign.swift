@@ -139,6 +139,8 @@ struct MetricCard: View {
                 }
             }
             if let level {
+                // Kart sayfa boyunca uzayınca çubuk dipte: değer üstte, ölçek altta, arası boş kalmaz.
+                Spacer(minLength: 0)
                 LevelBar(level: level, tint: tint).frame(height: 4)
             }
         }

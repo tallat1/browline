@@ -250,9 +250,66 @@ final class AppCoordinator {
         openSettings?()
     }
 
+    /// Menü çubuğu simgesi durum değişince (mikrofon sessiz, notch gizli) yenilenir.
+    var onStatusIconChange: (() -> Void)?
+    private var unhideTask: Task<Void, Never>?
+
+    var isNotchHidden: Bool { (settings.notchHiddenUntil ?? .distantPast) > .now }
+
+    /// Menü çubuğundan gizleme; nil süre = gösterene kadar. Süre dolunca kendiliğinden görünür.
+    func hideNotch(for duration: TimeInterval?) {
+        settings.notchHiddenUntil = duration.map { Date.now.addingTimeInterval($0) } ?? .distantFuture
+        applyNotchHidden()
+    }
+
+    /// Yarın sabaha (08.00) kadar.
+    func hideNotchUntilTomorrow() {
+        let calendar = Calendar.current
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: .now)) ?? .now
+        settings.notchHiddenUntil = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: tomorrow) ?? tomorrow
+        applyNotchHidden()
+    }
+
+    func showNotch() {
+        settings.notchHiddenUntil = nil
+        applyNotchHidden()
+    }
+
+    private func applyNotchHidden() {
+        let hidden = isNotchHidden
+        if !hidden, settings.notchHiddenUntil != nil { settings.notchHiddenUntil = nil }
+        panels.isHiddenByUser = hidden
+        unhideTask?.cancel()
+        if hidden, let until = settings.notchHiddenUntil, until != .distantFuture {
+            unhideTask = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(max(1, until.timeIntervalSinceNow)))
+                guard !Task.isCancelled else { return }
+                self?.applyNotchHidden()
+            }
+        }
+        AppLog.coordinator.notice("notch \(hidden ? "kullanıcı tarafından gizlendi" : "görünür", privacy: .public)")
+        onStatusIconChange?()
+    }
+
+    /// Menüden: notch'u imlecin olduğu ekranda belirli sayfada açar (gizliyse önce gösterir).
+    func openNotch(at tab: NotchTab) {
+        if isNotchHidden { showNotch() }
+        if availableTabs.contains(tab) { ui.selectedTab = tab }
+        let mouse = NSEvent.mouseLocation
+        let screenID = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) }
+            .flatMap { $0.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID }
+        let model = panels.models.first { $0.displayID == screenID } ?? panels.models.first
+        model?.tapped()
+    }
+
     /// İzin durumları (yalnız ayarlar açılınca kurulur).
     private(set) lazy var permissions = PermissionCenter(coordinator: self)
     var closeSettings: (() -> Void)?
+    var openOnboarding: (() -> Void)?
+    #if DEBUG
+    var onboardingStepForDebug: ((Int) -> Void)?
+    var closeOnboarding: (() -> Void)?
+    #endif
     #if DEBUG
     var showStatusMenuForCapture: (() -> Void)?
     #endif
@@ -477,6 +534,7 @@ final class AppCoordinator {
         }
         microphone.onChange = { [weak self] in
             guard let self else { return }
+            onStatusIconChange?()
             let muted = microphone.isMuted
             let apps = microphone.inputApps.count
             AppLog.coordinator.notice("mikrofon: \(muted ? "sessiz" : "açık", privacy: .public), kullanan \(apps) uygulama")
@@ -546,6 +604,7 @@ final class AppCoordinator {
         panels.start()
         lockScreen.start()
         applySettings()
+        applyNotchHidden()
     }
 
     func stop() {

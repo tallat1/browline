@@ -5,6 +5,7 @@ import Integrations
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let coordinator = AppCoordinator()
     private lazy var settingsWindow = SettingsWindowController(coordinator: coordinator)
+    private lazy var onboardingWindow = OnboardingWindowController(coordinator: coordinator)
     private var statusItem: NSStatusItem?
     /// URL olayı uygulamayı öne alır; odak bu uygulamaya geri verilir.
     private var lastExternalApp: NSRunningApplication?
@@ -19,6 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         debugChannel.start()
         #endif
         installStatusItem()
+        coordinator.onStatusIconChange = { [weak self] in self?.updateStatusIcon() }
+        updateStatusIcon()
         trackFrontmostApplication()
         coordinator.openSettings = { [weak self] in self?.settingsWindow.show() }
         coordinator.closeSettings = { [weak self] in self?.settingsWindow.close() }
@@ -30,7 +33,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             item.button?.performClick(nil)
         }
         #endif
-        if !coordinator.settings.hasCompletedOnboarding { settingsWindow.show() }
+        coordinator.openOnboarding = { [weak self] in self?.onboardingWindow.show() }
+        #if DEBUG
+        coordinator.onboardingStepForDebug = { [weak self] step in self?.onboardingWindow.model.step = step }
+        coordinator.closeOnboarding = { [weak self] in self?.onboardingWindow.close() }
+        #endif
+        if !coordinator.settings.hasCompletedOnboarding { onboardingWindow.show() }
     }
 
     // MARK: - URL şeması
@@ -97,9 +105,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
         menu.addItem(.sectionHeader(title: "NotchMVP"))
-        menu.addItem(action(String(localized: "Ayarlar…"), key: ",", symbol: "gearshape") { [weak self] in
-            self?.settingsWindow.show()
-        })
+        // O an geçerli durum satırları: yoksa menü eskisi kadar kısa (2026-10-16 tasarım denetimi).
+        let lines = statusLines()
+        if !lines.isEmpty {
+            lines.forEach(menu.addItem)
+            menu.addItem(.separator())
+        }
+        menu.addItem(openNotchMenu())
+        menu.addItem(hideNotchItem())
         if coordinator.settings.keepAwakeEnabled { menu.addItem(keepAwakeMenu()) }
         let microphone = coordinator.microphone
         if coordinator.settings.meetingControlsEnabled, microphone.canMute {
@@ -124,7 +137,100 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             })
         }
         menu.addItem(.separator())
+        menu.addItem(action(String(localized: "Ayarlar…"), key: ",", symbol: "gearshape") { [weak self] in
+            self?.settingsWindow.show()
+        })
         menu.addItem(action(String(localized: "Çık"), key: "q") { NSApp.terminate(nil) })
+    }
+
+    /// Simge: mikrofon sessizken çizgili mikrofon, notch gizliyken soluk.
+    private func updateStatusIcon() {
+        guard let button = statusItem?.button else { return }
+        let muted = coordinator.isMicrophoneMuted
+        button.image = NSImage(systemSymbolName: muted ? "mic.slash.fill" : "rectangle.topthird.inset.filled",
+                               accessibilityDescription: "NotchMVP")
+        button.appearsDisabled = coordinator.isNotchHidden
+        button.toolTip = coordinator.isNotchHidden ? String(localized: "Notch gizli") : (muted ? String(localized: "Mikrofon kapalı") : nil)
+    }
+
+    /// Çalan şarkı, süren CI, Claude limiti; basınca ilgili yere gider.
+    private func statusLines() -> [NSMenuItem] {
+        var items: [NSMenuItem] = []
+        let settings = coordinator.settings
+        if settings.nowPlayingEnabled, let info = coordinator.nowPlaying.info {
+            let detail = [info.artist, info.bundleIdentifier.flatMap(MediaTab.appName(for:))].compactMap { $0 }.filter { !$0.isEmpty }
+            items.append(statusItem(title: info.title, subtitle: detail.joined(separator: " · "),
+                                    symbol: info.isPlaying ? "play.fill" : "pause.fill") { [weak self] in
+                self?.coordinator.openNotch(at: .now)
+            })
+        }
+        if settings.ciEnabled, let run = coordinator.ci.activeRuns.first {
+            let minutes = Int(Date.now.timeIntervalSince(run.createdAt) / 60)
+            items.append(statusItem(title: "CI · \(run.repositoryName)",
+                                    subtitle: String(localized: "\(run.workflow) · \(minutes) dk sürüyor"),
+                                    symbol: "hammer.fill") { [weak self] in
+                if let url = run.url { NSWorkspace.shared.open(url) } else { self?.coordinator.openNotch(at: .ci) }
+            })
+        }
+        if settings.claudeUsageEnabled, let usage = coordinator.claudeUsage.usage, let session = usage.fiveHour?.usedPercentage {
+            let week = usage.sevenDay.map { String(localized: "hafta \(NowFormat.percent($0.usedPercentage))") }
+            items.append(statusItem(title: String(localized: "Claude · oturum \(NowFormat.percent(session))"),
+                                    subtitle: week ?? "", symbol: "sparkles") { [weak self] in
+                self?.coordinator.openNotch(at: .claude)
+            })
+        }
+        return items
+    }
+
+    private func statusItem(title: String, subtitle: String, symbol: String, _ handler: @escaping () -> Void) -> NSMenuItem {
+        let item = action(title, symbol: symbol, handler)
+        if #available(macOS 14.4, *) {
+            if !subtitle.isEmpty { item.subtitle = subtitle }
+        } else if !subtitle.isEmpty {
+            item.title = "\(title) · \(subtitle)"
+        }
+        return item
+    }
+
+    /// Notch'u imlecin olduğu ekranda istenen bölümde açar; kapak kapalıyken de çalışır.
+    private func openNotchMenu() -> NSMenuItem {
+        let item = NSMenuItem(title: String(localized: "Notch'u aç"), action: nil, keyEquivalent: "")
+        item.image = NSImage(systemSymbolName: "rectangle.topthird.inset.filled", accessibilityDescription: nil)
+        let submenu = NSMenu()
+        let destinations: [(String, String, NotchTab)] = [
+            (String(localized: "Şimdi"), "house", .now),
+            (String(localized: "Raf"), "tray.full", .shelf),
+            (String(localized: "Pano"), "doc.on.clipboard", .clipboard),
+            (String(localized: "Takvim"), "calendar", .calendar),
+            (String(localized: "Araçlar"), "wrench.and.screwdriver", coordinator.ui.lastPage[.tools] ?? .notes),
+            (String(localized: "Durum"), "gauge.with.dots.needle.33percent", coordinator.ui.lastPage[.status] ?? .system),
+        ]
+        let available = coordinator.availableTabs
+        for (title, symbol, tab) in destinations where available.contains(tab) {
+            submenu.addItem(action(title, symbol: symbol) { [weak self] in self?.coordinator.openNotch(at: tab) })
+        }
+        item.submenu = submenu
+        return item
+    }
+
+    /// Gizliyken "Notch'u göster" (ne zamana kadar gizli olduğuyla), değilse süreli gizleme.
+    private func hideNotchItem() -> NSMenuItem {
+        if coordinator.isNotchHidden {
+            let item = action(String(localized: "Notch'u göster"), symbol: "eye") { [weak self] in self?.coordinator.showNotch() }
+            if #available(macOS 14.4, *), let until = coordinator.settings.notchHiddenUntil, until != .distantFuture {
+                // Saate ek getirmeyen biçim: "16:12'a" saate göre yanlış ek alır.
+                item.subtitle = String(localized: "Geri gelme: \(until.formatted(date: .omitted, time: .shortened))")
+            }
+            return item
+        }
+        let item = NSMenuItem(title: String(localized: "Notch'u gizle"), action: nil, keyEquivalent: "")
+        item.image = NSImage(systemSymbolName: "eye.slash", accessibilityDescription: nil)
+        let submenu = NSMenu()
+        submenu.addItem(action(String(localized: "1 saat")) { [weak self] in self?.coordinator.hideNotch(for: 3600) })
+        submenu.addItem(action(String(localized: "Yarın sabaha kadar")) { [weak self] in self?.coordinator.hideNotchUntilTomorrow() })
+        submenu.addItem(action(String(localized: "Gösterene kadar")) { [weak self] in self?.coordinator.hideNotch(for: nil) })
+        item.submenu = submenu
+        return item
     }
 
     /// Uyanık tutma süreleri; notch'taki düğme süresiz açar.

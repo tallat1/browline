@@ -79,6 +79,18 @@ final class AppSettings {
     /// beş bölüme geçişte kullanılmaz oldu; okunmaz.)
     var hiddenTabs: Set<NotchTab> { didSet { store(hiddenTabs.map(\.rawValue).sorted(), "hiddenTabs") } }
     /// Kilit ekranı private SkyLight kullanır; varsayılan kapalı.
+    /// Menü çubuğundan "Notch'u gizle": bu ana kadar (`distantFuture` = gösterene kadar). Yeniden
+    /// başlatmada korunur.
+    var notchHiddenUntil: Date? {
+        didSet {
+            if let notchHiddenUntil {
+                store(notchHiddenUntil, "notchHiddenUntil")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "notchHiddenUntil")
+                onChange?()
+            }
+        }
+    }
     /// Kilitliyken müzik + pil şeridi; varsayılan açık.
     var lockScreenWidgetsEnabled: Bool { didSet { store(lockScreenWidgetsEnabled, "lockScreenWidgetsEnabled") } }
     var lockScreenEnabled: Bool {
@@ -99,6 +111,16 @@ final class AppSettings {
     @ObservationIgnored var onChange: (() -> Void)?
 
     static let openDelayChoices = [0, 150, 300, 500]
+
+    /// Milisaniye yerine sözcük (denetim: "150 ms" teknik bir birim).
+    static func openDelayTitle(_ milliseconds: Int) -> String {
+        switch milliseconds {
+        case 0: String(localized: "Anında")
+        case ..<200: String(localized: "Normal")
+        case ..<400: String(localized: "Sakin")
+        default: String(localized: "Çok sakin")
+        }
+    }
 
     init() {
         let defaults = UserDefaults.standard
@@ -155,6 +177,7 @@ final class AppSettings {
         }
         defaults.removeObject(forKey: Self.lockSessionKey)
         lockScreenWidgetsEnabled = defaults.object(forKey: "lockScreenWidgetsEnabled") as? Bool ?? true
+        notchHiddenUntil = defaults.object(forKey: "notchHiddenUntil") as? Date
         lockScreenEnabled = defaults.bool(forKey: "lockScreenEnabled")
         lockScreenAutoDisabled = defaults.bool(forKey: "lockScreenAutoDisabled")
     }

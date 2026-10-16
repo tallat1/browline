@@ -121,6 +121,22 @@
         }
       }
     },
+    "%@ · %lld dk sürüyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · running for %lld min"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$lld dk sürüyor"
+          }
+        }
+      }
+    },
     "%@ · hafta %@": {
       "localizations": {
         "en": {
@@ -245,16 +261,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Updated %lld min ago · refreshes while a Claude Code session is open"
-          }
-        }
-      }
-    },
-    "%lld ms": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld ms"
           }
         }
       }
@@ -463,16 +469,6 @@
         }
       }
     },
-    "Anladım": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Got It"
-          }
-        }
-      }
-    },
     "Anımsatıcılar": {
       "localizations": {
         "en": {
@@ -489,6 +485,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show Reminders"
+          }
+        }
+      }
+    },
+    "Anında": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instantly"
           }
         }
       }
@@ -539,6 +545,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Skip"
+          }
+        }
+      }
+    },
+    "Ayarlara dokunmadan kapatır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closes without changing any settings"
           }
         }
       }
@@ -773,6 +789,16 @@
         }
       }
     },
+    "Başlayalım": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Get Started"
+          }
+        }
+      }
+    },
     "Başlık": {
       "localizations": {
         "en": {
@@ -893,6 +919,26 @@
         }
       }
     },
+    "Birden çok seçebilirsiniz; seçtiklerinizin özellikleri açılır. Hepsi sonra Ayarlar'dan değişir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick as many as you like; their features are turned on. You can change everything later in Settings."
+          }
+        }
+      }
+    },
+    "Birkaç izin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Few Permissions"
+          }
+        }
+      }
+    },
     "Birkaç saniyelik bildirim; diğer etkinliklerin önüne geçer.": {
       "localizations": {
         "en": {
@@ -909,6 +955,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show finished downloads (Downloads folder)"
+          }
+        }
+      }
+    },
+    "Bitir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
           }
         }
       }
@@ -1153,6 +1209,16 @@
         }
       }
     },
+    "Claude · oturum %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude · session %@"
+          }
+        }
+      }
+    },
     "Claude çok fazla istek dedi": {
       "localizations": {
         "en": {
@@ -1243,6 +1309,16 @@
         }
       }
     },
+    "Dosya rafı, AirDrop, dönüştürme ve pano geçmişi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File shelf, AirDrop, converting and clipboard history"
+          }
+        }
+      }
+    },
     "Dosyalar": {
       "localizations": {
         "en": {
@@ -1263,6 +1339,16 @@
         }
       }
     },
+    "Dosyalar ve pano": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files and clipboard"
+          }
+        }
+      }
+    },
     "Dosyaları buraya sürükleyin": {
       "localizations": {
         "en": {
@@ -1279,6 +1365,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Drop files on the notch, then drag them wherever you need. What you copy is here too."
+          }
+        }
+      }
+    },
+    "Dosyaları ve ekran görüntüsü küçük resimlerini çentiğe bırakınca rafa girer.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drop files and screenshot thumbnails on the notch to put them on the shelf."
           }
         }
       }
@@ -1329,6 +1425,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Converting…"
+          }
+        }
+      }
+    },
+    "Dönüştür…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Convert…"
           }
         }
       }
@@ -1509,6 +1615,16 @@
         }
       }
     },
+    "Geliştirici": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Developer"
+          }
+        }
+      }
+    },
     "Geliştiriciler için ayrıntılar ve belgelenmemiş macOS işlevleri.": {
       "localizations": {
         "en": {
@@ -1525,6 +1641,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "General"
+          }
+        }
+      }
+    },
+    "Geri": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "Geri gelme: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returns at %@"
           }
         }
       }
@@ -1643,12 +1779,32 @@
         }
       }
     },
+    "Görsel ve videoları dönüştürür; özgünler yerinde kalır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Converts images and videos; the originals stay in place"
+          }
+        }
+      }
+    },
     "Görüşmeye dön": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Return to the call"
+          }
+        }
+      }
+    },
+    "Gösterene kadar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until I Show It"
           }
         }
       }
@@ -1789,6 +1945,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Always"
+          }
+        }
+      }
+    },
+    "Her şey hazır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Set"
           }
         }
       }
@@ -1943,12 +2109,32 @@
         }
       }
     },
+    "Karşılama": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome"
+          }
+        }
+      }
+    },
     "Katıl": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Join"
+          }
+        }
+      }
+    },
+    "Kaydırın": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe"
           }
         }
       }
@@ -2327,6 +2513,16 @@
         }
       }
     },
+    "Müzik ve medya": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music and media"
+          }
+        }
+      }
+    },
     "Müzik ve pil şeridi": {
       "localizations": {
         "en": {
@@ -2343,6 +2539,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bars that react to music; audio is never recorded"
+          }
+        }
+      }
+    },
+    "Normal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
           }
         }
       }
@@ -2407,6 +2613,16 @@
         }
       }
     },
+    "Notch gizli": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notch hidden"
+          }
+        }
+      }
+    },
     "Notch'ta ${title} bildir": {
       "localizations": {
         "en": {
@@ -2463,6 +2679,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Show Brief Notification in Notch"
+          }
+        }
+      }
+    },
+    "Notch'u aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Notch"
+          }
+        }
+      }
+    },
+    "Notch'u gizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide Notch"
+          }
+        }
+      }
+    },
+    "Notch'u göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Notch"
+          }
+        }
+      }
+    },
+    "Notch'u nasıl kullanacaksınız?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How will you use the notch?"
+          }
+        }
+      }
+    },
+    "Notch'unuz artık işe yarıyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your notch does more now"
           }
         }
       }
@@ -2717,6 +2983,16 @@
         }
       }
     },
+    "Pil, uyanık tutma, not ve zamanlayıcı her durumda açık.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Battery, keep awake, notes and timer are always on."
+          }
+        }
+      }
+    },
     "Pomodoro": {
       "localizations": {
         "en": {
@@ -2733,6 +3009,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shelf"
+          }
+        }
+      }
+    },
+    "Raftaki dosyalar dönüştürülemiyor (görsel ya da video yok)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing on the shelf can be converted (no images or videos)"
           }
         }
       }
@@ -2823,6 +3109,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Removes unpinned items"
+          }
+        }
+      }
+    },
+    "Sakin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relaxed"
           }
         }
       }
@@ -2965,6 +3261,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The choice is saved per display and kept when you reconnect it. Displays without a notch show a pill, or a floating card below the menu bar if you choose."
+          }
+        }
+      }
+    },
+    "Seçtiğiniz özellikler için ek izin gerekmiyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The features you picked need no extra permissions."
           }
         }
       }
@@ -3169,6 +3475,16 @@
         }
       }
     },
+    "Sürükleyin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag"
+          }
+        }
+      }
+    },
     "Sürüm": {
       "localizations": {
         "en": {
@@ -3255,6 +3571,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendar and meetings"
+          }
+        }
+      }
+    },
+    "Takvim, anımsatıcılar, mikrofonu sessize alma, kamera ve ekran kaydı göstergesi": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar, reminders, muting the microphone, camera and screen recording indicators"
           }
         }
       }
@@ -3349,6 +3675,16 @@
         }
       }
     },
+    "Terminal, CI durumu, Claude limitleri ve izin istemleri, sistem durumu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminal, CI status, Claude limits and permission prompts, system status"
+          }
+        }
+      }
+    },
     "Terminalde claude auth login ile oturum açın; Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
       "localizations": {
         "en": {
@@ -3380,6 +3716,16 @@
       }
     },
     "Toplantı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meetings"
+          }
+        }
+      }
+    },
+    "Toplantılar": {
       "localizations": {
         "en": {
           "stringUnit": {
@@ -3459,12 +3805,42 @@
         }
       }
     },
+    "Uyanık tutuluyor · kapat": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping awake · turn off"
+          }
+        }
+      }
+    },
     "Uyanık tutuluyor · kapatana kadar": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Keeping awake · until turned off"
+          }
+        }
+      }
+    },
+    "Uygula": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        }
+      }
+    },
+    "Uyku ve ekran koruyucuyu engeller; süreli seçenekler menü çubuğunda": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prevents sleep and the screen saver; timed options are in the menu bar"
           }
         }
       }
@@ -3589,6 +3965,16 @@
         }
       }
     },
+    "Yalnız seçtiğiniz özellikler için. İsterseniz şimdi verin, isterseniz sonra; her izin ilgili ayar sayfasında da durur.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only for the features you picked. Allow them now or later; each one also appears on its settings page."
+          }
+        }
+      }
+    },
     "Yalnız seçtiğiniz şehrin koordinatları Open-Meteo'ya gider; konum izni istenmez.": {
       "localizations": {
         "en": {
@@ -3619,12 +4005,32 @@
         }
       }
     },
+    "Yarın sabaha kadar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Until Tomorrow Morning"
+          }
+        }
+      }
+    },
     "Yeniden başlat": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Restart"
+          }
+        }
+      }
+    },
+    "Yeniden göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Again"
           }
         }
       }
@@ -3765,6 +4171,16 @@
         }
       }
     },
+    "hafta %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "week %@"
+          }
+        }
+      }
+    },
     "kullanıldı": {
       "localizations": {
         "en": {
@@ -3855,6 +4271,16 @@
         }
       }
     },
+    "Çalan şarkı, şarkı ve ses çıkışı bildirimleri, Bluetooth pil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now playing, song and audio output notices, Bluetooth battery"
+          }
+        }
+      }
+    },
     "Çalarken hareketli çubuklar": {
       "localizations": {
         "en": {
@@ -3901,6 +4327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pill on displays without a notch"
+          }
+        }
+      }
+    },
+    "Çok sakin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Very relaxed"
           }
         }
       }
@@ -4035,6 +4471,16 @@
         }
       }
     },
+    "Üzerine gelin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hover"
+          }
+        }
+      }
+    },
     "Üzerine gelince açılma": {
       "localizations": {
         "en": {
@@ -4055,6 +4501,16 @@
         }
       }
     },
+    "İki parmakla aşağı kaydırmak açar, yukarı kaydırmak kapatır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swipe down with two fingers to open, up to close."
+          }
+        }
+      }
+    },
     "İlerleme (%)": {
       "localizations": {
         "en": {
@@ -4065,12 +4521,12 @@
         }
       }
     },
-    "İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. İzinler yalnız ilgili özelliği kullandığınızda istenir.": {
+    "İmleci çentiğin üstüne getirince açılır; tıklarsanız açık kalır.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Move the pointer over the notch to open it; click to keep it open. A two-finger swipe down also opens it. Drag files onto the notch to put them on the shelf. Permissions are asked only when you use the feature that needs them."
+            "value": "Move the pointer over the notch to open it; click to keep it open."
           }
         }
       }
@@ -4131,6 +4587,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow"
+          }
+        }
+      }
+    },
+    "İzin verilen veri bu Mac'te kalır; hiçbir yere gönderilmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data you allow stays on this Mac and is never sent anywhere."
           }
         }
       }

@@ -30,7 +30,9 @@ struct ShelfTab: View {
                     }
                     .padding(.horizontal, 4)
                 }
-                HStack(spacing: NotchDesign.Space.s) {
+                Spacer(minLength: 0)
+                // Eşit ağırlıkta metin düğmeleri: sayfanın asıl işi sürüklemek (2026-10-16 denetimi).
+                HStack(spacing: NotchDesign.Space.xs) {
                     Text("\(shelf.items.count) öğe")
                         .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
@@ -39,21 +41,23 @@ struct ShelfTab: View {
                     ShareLink(items: shelf.resolvedURLs) {
                         Label("Paylaş", systemImage: "square.and.arrow.up")
                     }
-                    .buttonStyle(CapsuleButtonStyle())
+                    .buttonStyle(QuietButtonStyle())
                     Button {
                         compress(shelf.resolvedURLs)
                     } label: {
                         Label(isCompressing ? "Sıkıştırılıyor…" : "Sıkıştır", systemImage: "doc.zipper")
                     }
-                    .buttonStyle(CapsuleButtonStyle())
+                    .buttonStyle(QuietButtonStyle())
                     .disabled(isCompressing)
                     .help("Raftaki her şeyi tek zip'te toplar (İndirilenler)")
+                    convertMenu
                     Button("Temizle") { shelf.clear() }
                         .buttonStyle(QuietButtonStyle())
                 }
                 .padding(.horizontal, 4)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .padding(10)
         .background {
             RoundedRectangle(cornerRadius: NotchDesign.cardRadius, style: .continuous)
@@ -66,6 +70,38 @@ struct ShelfTab: View {
         // Rafa dosya eklenince/kaldırılınca öğeler ve boş durum geçişle.
         .notchAnimation(value: shelf.items.map(\.id))
         .notchAnimation(value: isCompressing)
+    }
+
+    /// Raftaki tüm uygun dosyalara uygulanabilen dönüşümler; yanında kaç dosyaya uygulanacağı.
+    private var convertMenu: some View {
+        let pairs = shelf.items.compactMap { item in shelf.resolvedURL(for: item).map { (item, $0) } }
+        var groups: [(ShelfConversion, [(ShelfStore.Item, URL)])] = []
+        for pair in pairs {
+            for option in ShelfConversion.options(for: pair.1) {
+                if let index = groups.firstIndex(where: { $0.0 == option }) {
+                    groups[index].1.append(pair)
+                } else {
+                    groups.append((option, [pair]))
+                }
+            }
+        }
+        return Menu {
+            ForEach(groups, id: \.0) { option, targets in
+                Button(targets.count > 1 ? "\(option.title) (\(targets.count))" : option.title) {
+                    for (item, url) in targets { convert(item, url, option) }
+                }
+            }
+        } label: {
+            Label("Dönüştür…", systemImage: "arrow.triangle.2.circlepath")
+                .font(NotchDesign.caption)
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .foregroundStyle(Color.white.opacity(groups.isEmpty ? 0.3 : 0.6))
+        .disabled(groups.isEmpty || !converting.isEmpty)
+        .help(groups.isEmpty ? String(localized: "Raftaki dosyalar dönüştürülemiyor (görsel ya da video yok)")
+                             : String(localized: "Görsel ve videoları dönüştürür; özgünler yerinde kalır"))
     }
 
     /// Sonuç kaynağın yanına yazılır ve rafa eklenir; başarısızsa uyarı sesi.

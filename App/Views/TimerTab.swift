@@ -62,9 +62,31 @@ struct TimerTab: View {
                             .buttonStyle(CapsuleButtonStyle())
                     }
                 }
+                if coordinator.settings.keepAwakeEnabled {
+                    KeepAwakeToggle(keepAwake: coordinator.keepAwake)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+}
+
+/// Ekranı uyanık tutma: durum alanındaki fincan yalnız açıkken göründüğü için açma burada.
+private struct KeepAwakeToggle: View {
+    let keepAwake: KeepAwake
+
+    var body: some View {
+        Button {
+            if keepAwake.isActive { keepAwake.stop() } else { keepAwake.start(reason: String(localized: "NotchMVP: uyanık tut")) }
+        } label: {
+            // Renk etiketin içinde: QuietButtonStyle kendi rengini dıştan verir, içteki kazanır.
+            Label(keepAwake.isActive ? String(localized: "Uyanık tutuluyor · kapat") : String(localized: "Ekranı uyanık tut"),
+                  systemImage: keepAwake.isActive ? "cup.and.saucer.fill" : "cup.and.saucer")
+                .foregroundStyle(keepAwake.isActive ? Color.orange : Color.white.opacity(0.6))
+        }
+        .buttonStyle(QuietButtonStyle())
+        .help("Uyku ve ekran koruyucuyu engeller; süreli seçenekler menü çubuğunda")
+        .notchAnimation(value: keepAwake.isActive)
     }
 }
 

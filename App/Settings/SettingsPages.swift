@@ -24,22 +24,11 @@ struct SettingsForm<Content: View>: View {
 // MARK: - Genel
 
 struct GeneralPage: View {
+    let coordinator: AppCoordinator
     @Bindable var settings: AppSettings
 
     var body: some View {
         SettingsForm(page: .general) {
-            if !settings.hasCompletedOnboarding {
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Hoş geldiniz").font(.headline)
-                        Text("İmleci çentiğin üstüne getirince notch açılır; tıklarsanız açık kalır. İki parmakla aşağı kaydırmak da açar. Dosyaları çentiğe sürükleyerek rafa bırakabilirsiniz. İzinler yalnız ilgili özelliği kullandığınızda istenir.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                        Button("Anladım") { settings.hasCompletedOnboarding = true }
-                            .padding(.top, 4)
-                    }
-                }
-            }
             Section("Başlangıç") {
                 Toggle("Girişte başlat", isOn: Binding(get: { settings.launchAtLogin },
                                                        set: { settings.launchAtLogin = $0 }))
@@ -47,6 +36,12 @@ struct GeneralPage: View {
                 if settings.launchAtLoginStatus == .requiresApproval {
                     SettingsNote("Sistem Ayarları › Genel › Giriş Öğeleri'nden onay gerekiyor.")
                 }
+                HStack {
+                    Text("Karşılama")
+                    Spacer()
+                    Button("Yeniden göster") { coordinator.openOnboarding?() }
+                }
+                .settingsAnchor("onboarding")
             }
             Section {
                 let displays = PanelManager.displaySummaries(for: settings.panelOptions)
@@ -73,7 +68,6 @@ struct GeneralPage: View {
                 SettingsNote("Seçim ekrana bağlı saklanır; çıkarıp takınca korunur. Çentiksiz ekranda hap, istenirse menü çubuğunun altında yüzen kart görünür.")
             }
         }
-        .animation(.default, value: settings.hasCompletedOnboarding)
     }
 }
 
@@ -87,7 +81,7 @@ struct NotchPage: View {
         SettingsForm(page: .notch) {
             Section("Açılma") {
                 Picker("Üzerine gelince açılma", selection: $settings.openDelayMilliseconds) {
-                    ForEach(AppSettings.openDelayChoices, id: \.self) { Text("\($0) ms").tag($0) }
+                    ForEach(AppSettings.openDelayChoices, id: \.self) { Text(AppSettings.openDelayTitle($0)).tag($0) }
                 }
                 .settingsAnchor("openDelay")
                 Toggle("Dokunsal geri bildirim", isOn: $settings.hapticsEnabled)

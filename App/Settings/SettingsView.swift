@@ -117,7 +117,7 @@ struct SettingsView: View {
     @ViewBuilder
     private func page(_ page: SettingsPage) -> some View {
         switch page {
-        case .general: GeneralPage(settings: settings)
+        case .general: GeneralPage(coordinator: coordinator, settings: settings)
         case .notch: NotchPage(coordinator: coordinator, settings: settings)
         case .permissions: PermissionsPage(center: coordinator.permissions)
         case .now: NowPage(coordinator: coordinator, settings: settings)

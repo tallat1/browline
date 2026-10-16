@@ -40,6 +40,16 @@ final class DebugCommandChannel {
                 coordinator.ui.settingsPage = value
                 coordinator.ui.settingsHighlight = parts.count > 1 ? parts[1] : nil
             }
+        case "onboarding:show":
+            coordinator.openOnboarding?()
+        case "onboarding:close":
+            coordinator.closeOnboarding?()
+        case let step where step.hasPrefix("onboarding:step:"):
+            if let value = Int(step.dropFirst(16)) { coordinator.onboardingStepForDebug?(value) }
+        case "notch:hide":
+            coordinator.hideNotch(for: 3600)
+        case "notch:show":
+            coordinator.showNotch()
         case "menu:show":
             coordinator.showStatusMenuForCapture?()
         case "settings:open":
