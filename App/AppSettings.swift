@@ -43,6 +43,12 @@ final class AppSettings {
     /// Veri Claude Code durum satırından; betik kurulu değilse sekme boş durum gösterir.
     var claudeUsageEnabled: Bool { didSet { store(claudeUsageEnabled, "claudeUsageEnabled") } }
     var terminalEnabled: Bool { didSet { store(terminalEnabled, "terminalEnabled") } }
+    /// Pano geçmişi: yalnız bellekte, gizli işaretli kopyalar alınmaz.
+    var clipboardEnabled: Bool { didSet { store(clipboardEnabled, "clipboardEnabled") } }
+    var bluetoothEnabled: Bool { didSet { store(bluetoothEnabled, "bluetoothEnabled") } }
+    var meetingControlsEnabled: Bool { didSet { store(meetingControlsEnabled, "meetingControlsEnabled") } }
+    /// Çubuklar müziğe tepki versin (sistem sesi kaydı izni); varsayılan kapalı.
+    var reactiveEqualizer: Bool { didSet { store(reactiveEqualizer, "reactiveEqualizer") } }
     /// Belgelenmemiş kullanım uç noktası (Claude Code'un Anahtar Zinciri kaydıyla). Varsayılan kapalı;
     /// kullanıcı riskleri kabul edip açar.
     var claudeUsageAPIEnabled: Bool { didSet { store(claudeUsageAPIEnabled, "claudeUsageAPIEnabled") } }
@@ -114,6 +120,10 @@ final class AppSettings {
         notesEnabled = defaults.object(forKey: "notesEnabled") as? Bool ?? true
         claudeUsageEnabled = defaults.object(forKey: "claudeUsageEnabled") as? Bool ?? true
         terminalEnabled = defaults.object(forKey: "terminalEnabled") as? Bool ?? true
+        clipboardEnabled = defaults.object(forKey: "clipboardEnabled") as? Bool ?? true
+        bluetoothEnabled = defaults.object(forKey: "bluetoothEnabled") as? Bool ?? true
+        meetingControlsEnabled = defaults.object(forKey: "meetingControlsEnabled") as? Bool ?? true
+        reactiveEqualizer = defaults.object(forKey: "reactiveEqualizer") as? Bool ?? false
         claudeUsageAPIEnabled = defaults.bool(forKey: "claudeUsageAPIEnabled")
         remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
         systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true

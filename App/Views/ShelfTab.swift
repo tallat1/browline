@@ -3,35 +3,47 @@ import NotchShell
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Dosya rafı: notch'a sürüklenen dosyalar burada durur, buradan başka yere sürüklenir
-/// ya da AirDrop ile gönderilir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
+/// Dosya rafı: notch'a sürüklenen dosyalar burada durur, buradan başka yere sürüklenir, paylaşılır,
+/// sıkıştırılır ya da önizlenir. Özgün dosyaya bookmark ile başvurur, kopyalamaz.
 struct ShelfTab: View {
     let shelf: ShelfStore
     @State private var isTargeted = false
+    @State private var isCompressing = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if shelf.items.isEmpty {
                 EmptyStateView(symbol: "tray.and.arrow.down", title: "Dosyaları buraya sürükleyin",
-                               message: "Raftan başka yere sürükleyin ya da AirDrop ile gönderin.")
+                               message: "Raftan başka yere sürükleyin, paylaşın, sıkıştırın ya da önizleyin.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(shelf.items) { item in
-                            ShelfTile(item: item, shelf: shelf).notchTransition(.swap)
+                            ShelfTile(item: item, shelf: shelf, compress: compress).notchTransition(.swap)
                         }
                     }
                     .padding(.horizontal, 4)
                 }
-                HStack(spacing: 6) {
+                HStack(spacing: NotchDesign.Space.s) {
                     Text("\(shelf.items.count) öğe")
                         .font(NotchDesign.caption)
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("AirDrop") { ShelfStore.shareViaAirDrop(shelf.resolvedURLs) }
-                        .buttonStyle(CapsuleButtonStyle())
+                    // Sistem paylaşım menüsü: AirDrop, Mesajlar, Mail, Notlar…
+                    ShareLink(items: shelf.resolvedURLs) {
+                        Label("Paylaş", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(CapsuleButtonStyle())
+                    Button {
+                        compress(shelf.resolvedURLs)
+                    } label: {
+                        Label(isCompressing ? "Sıkıştırılıyor…" : "Sıkıştır", systemImage: "doc.zipper")
+                    }
+                    .buttonStyle(CapsuleButtonStyle())
+                    .disabled(isCompressing)
+                    .help("Raftaki her şeyi tek zip'te toplar (İndirilenler)")
                     Button("Temizle") { shelf.clear() }
-                        .buttonStyle(CapsuleButtonStyle())
+                        .buttonStyle(QuietButtonStyle())
                 }
                 .padding(.horizontal, 4)
             }
@@ -47,6 +59,7 @@ struct ShelfTab: View {
         .notchAnimation(NotchMotion.hover, value: isTargeted)
         // Rafa dosya eklenince/kaldırılınca öğeler ve boş durum geçişle.
         .notchAnimation(value: shelf.items.map(\.id))
+        .notchAnimation(value: isCompressing)
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             for provider in providers {
                 _ = provider.loadObject(ofClass: URL.self) { url, _ in
@@ -59,11 +72,22 @@ struct ShelfTab: View {
             return true
         }
     }
+
+    /// Sonuç rafa da eklenir: arşiv hemen sürüklenip paylaşılabilsin.
+    private func compress(_ urls: [URL]) {
+        guard !urls.isEmpty, !isCompressing else { return }
+        isCompressing = true
+        ShelfStore.compress(urls) { archive in
+            isCompressing = false
+            if let archive { shelf.add([archive]) }
+        }
+    }
 }
 
 private struct ShelfTile: View {
     let item: ShelfStore.Item
     let shelf: ShelfStore
+    let compress: ([URL]) -> Void
     @State private var isHovering = false
 
     var body: some View {
@@ -71,6 +95,21 @@ private struct ShelfTile: View {
             Image(nsImage: NSWorkspace.shared.icon(forFile: item.url.path))
                 .resizable()
                 .frame(width: 36, height: 36)
+                .overlay(alignment: .topTrailing) {
+                    if isHovering {
+                        // Önizleme: Quick Look.
+                        Button { preview() } label: {
+                            Image(systemName: "eye")
+                                .font(.system(size: 9, weight: .semibold))
+                                .frame(width: 18, height: 18)
+                                .background(Circle().fill(Color.black.opacity(0.75)))
+                        }
+                        .buttonStyle(PressScaleStyle())
+                        .offset(x: 8, y: -6)
+                        .help("Önizle")
+                        .notchTransition(.fade)
+                    }
+                }
             Text(item.name)
                 .font(NotchDesign.caption)
                 .lineLimit(2)
@@ -78,24 +117,36 @@ private struct ShelfTile: View {
                 .frame(width: 66)
         }
         .padding(6)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+        .background(RoundedRectangle(cornerRadius: NotchDesign.Radius.medium, style: .continuous)
             .fill(isHovering ? NotchDesign.cardHoverFill : .clear))
         .onHover { isHovering = $0 }
         .notchAnimation(NotchMotion.hover, value: isHovering)
         .contentShape(Rectangle())
+        // Çift tıklama: varsayılan uygulamada aç.
+        .onTapGesture(count: 2) { if let url { NSWorkspace.shared.open(url) } }
         .onDrag {
-            NSItemProvider(object: (shelf.resolvedURL(for: item) ?? item.url) as NSURL)
+            NSItemProvider(object: (url ?? item.url) as NSURL)
         }
         .contextMenu {
-            Button("Finder'da göster") {
-                if let url = shelf.resolvedURL(for: item) { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+            Button("Aç") { if let url { NSWorkspace.shared.open(url) } }
+            Button("Önizle") { preview() }
+            Divider()
+            if let url {
+                ShareLink("Paylaş…", item: url)
             }
-            Button("AirDrop ile gönder") {
-                if let url = shelf.resolvedURL(for: item) { ShelfStore.shareViaAirDrop([url]) }
-            }
+            Button("AirDrop ile gönder") { if let url { ShelfStore.shareViaAirDrop([url]) } }
+            Button("Sıkıştır") { if let url { compress([url]) } }
+            Button("Yolu kopyala") { if let url { ShelfStore.copyPaths([url]) } }
+            Button("Finder'da göster") { if let url { NSWorkspace.shared.activateFileViewerSelecting([url]) } }
             Divider()
             Button("Raftan kaldır") { shelf.remove(item.id) }
         }
         .help(item.url.path)
+    }
+
+    private var url: URL? { shelf.resolvedURL(for: item) }
+
+    private func preview() {
+        if let url { ShelfStore.quickLook([url]) }
     }
 }

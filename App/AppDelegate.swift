@@ -92,6 +92,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self?.settingsWindow.show()
         })
         if coordinator.settings.keepAwakeEnabled { menu.addItem(keepAwakeMenu()) }
+        let microphone = coordinator.microphone
+        if coordinator.settings.meetingControlsEnabled, microphone.canMute {
+            menu.addItem(action(microphone.isMuted ? String(localized: "Mikrofonu aç") : String(localized: "Mikrofonu sessize al"),
+                                symbol: microphone.isMuted ? "mic.fill" : "mic.slash") { microphone.toggleMute() })
+        }
         if NSEvent.modifierFlags.contains(.option) {
             menu.addItem(.separator())
             menu.addItem(.sectionHeader(title: String(localized: "Gelişmiş")))

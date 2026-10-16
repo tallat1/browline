@@ -19,6 +19,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
     case mirror
     case claude
     case terminal
+    case clipboard
 
     var id: String { rawValue }
 
@@ -34,6 +35,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .mirror: "person.crop.square"
         case .claude: "sparkles"
         case .terminal: "terminal"
+        case .clipboard: "doc.on.clipboard"
         }
     }
 
@@ -49,6 +51,7 @@ enum NotchTab: String, CaseIterable, Identifiable, Sendable {
         case .mirror: String(localized: "Ayna")
         case .claude: "Claude"
         case .terminal: String(localized: "Terminal")
+        case .clipboard: String(localized: "Pano")
         }
     }
 }
@@ -65,6 +68,20 @@ final class NotchUIState {
     var lastFinishedDownload = ""
     /// Pomodoro açıksa şu anki evre; düz zamanlayıcıda nil.
     var pomodoroPhase: Pomodoro.Phase?
+    /// Son Bluetooth olayı (kısa bildirimde gösterilir).
+    var bluetoothEvent: BluetoothEvent?
+}
+
+/// Bluetooth kısa bildirimi: hangi aygıt, ne oldu.
+struct BluetoothEvent: Equatable {
+    enum Change: Equatable {
+        case connected, disconnected
+        case lowBattery(Int)
+    }
+
+    let device: BluetoothMonitor.Device
+    let change: Change
+    let date: Date
 }
 
 /// Modülleri birbirine bağlar: entegrasyonlar etkinlik üretir, etkinlik motoru kompakt içeriği
@@ -92,12 +109,13 @@ final class AppCoordinator {
         static let batteryLow: ActivityID = "batteryLow"
         static let batteryFull: ActivityID = "batteryFull"
         static let claudeUsage: ActivityID = "claudeUsage"
+        static let bluetooth: ActivityID = "bluetooth"
 
         /// Başlık ya da çubuk taşıyan etkinlikler geniş kanat ister.
         static func wantsWideWing(_ id: ActivityID) -> Bool {
             id.rawValue.hasPrefix(externalPrefix)
                 || [hud, download, downloadDone, trackChange, audioOutput, timerDone, batteryLow, batteryFull,
-                    claudeUsage].contains(id)
+                    claudeUsage, bluetooth].contains(id)
         }
 
         /// Kilit ekranında yalnız kişisel içerik taşımayanlar: toplantı başlığı, dosya adı ve dış
@@ -131,6 +149,10 @@ final class AppCoordinator {
     let notes = NotesStore()
     let claudeUsage = ClaudeUsageMonitor()
     let terminal = TerminalSession()
+    let clipboard = ClipboardHistory()
+    let bluetooth = BluetoothMonitor()
+    let microphone = MicrophoneControl()
+    let spectrum = AudioSpectrum()
     /// Dış onay soruları (Claude Code izin istemleri): notch'ta İzin ver / Reddet.
     let questions = QuestionStore()
     /// Soru gelince açılan notch'lar; son soru yanıtlanınca yalnız bunlar kapanır.
@@ -157,6 +179,32 @@ final class AppCoordinator {
 
     /// Kısa bildirimin süresi: en az `base`; metin geniş kanada sığmıyorsa kayan yazının bir turu
     /// kadar. Ürün genelinde tek kural: bildirim, metni okunmadan kaybolmaz.
+    /// Kamera/mikrofon kullanımı ve mikrofon sessizliği. Sessizdeyken müzikten ve toplantıdan önde:
+    /// konuştuğunu sanıp sessizde kalınmasın.
+    func updatePrivacyActivity() {
+        let muted = isMicrophoneMuted
+        if privacy.isCameraActive || privacy.isMicrophoneActive || muted {
+            activities.setLive(ActivityKind.privacy, priority: muted ? 45 : 15)
+        } else {
+            activities.removeLive(ActivityKind.privacy)
+        }
+    }
+
+    var isMicrophoneMuted: Bool { settings.meetingControlsEnabled && microphone.isMuted }
+
+    /// Bağlanma, ayrılma ve düşük pil; düşük pil biraz daha uzun kalır.
+    func flashBluetooth(_ device: BluetoothMonitor.Device, _ change: BluetoothEvent.Change) {
+        let kind = switch change {
+        case .connected: "bağlandı"
+        case .disconnected: "ayrıldı"
+        case let .lowBattery(level): "pil %\(level)"
+        }
+        AppLog.coordinator.notice("bluetooth \(device.kind.rawValue, privacy: .public): \(kind, privacy: .public)")
+        ui.bluetoothEvent = BluetoothEvent(device: device, change: change, date: .now)
+        let base: Duration = if case .lowBattery = change { .seconds(4) } else { .seconds(3) }
+        activities.flash(ActivityKind.bluetooth, duration: Self.readableFlashDuration(base: base, text: device.shortName))
+    }
+
     static func readableFlashDuration(base: Duration, text: String,
                                       available: CGFloat = WideWingLabel.textWidth) -> Duration {
         let overflow = MarqueeText.width(of: text, size: 13, weight: .semibold) - available
@@ -257,11 +305,15 @@ final class AppCoordinator {
         privacy.onChange = { [weak self] camera, microphone in
             guard let self else { return }
             AppLog.coordinator.notice("gizlilik: kamera \(camera ? "açık" : "kapalı", privacy: .public), mikrofon \(microphone ? "açık" : "kapalı", privacy: .public)")
-            if camera || microphone {
-                activities.setLive(ActivityKind.privacy, priority: 15)
-            } else {
-                activities.removeLive(ActivityKind.privacy)
-            }
+            self.microphone.refreshInputApps()
+            updatePrivacyActivity()
+        }
+        microphone.onChange = { [weak self] in
+            guard let self else { return }
+            let muted = microphone.isMuted
+            let apps = microphone.inputApps.count
+            AppLog.coordinator.notice("mikrofon: \(muted ? "sessiz" : "açık", privacy: .public), kullanan \(apps) uygulama")
+            updatePrivacyActivity()
         }
         hud.onShow = { [weak self] in
             self?.activities.flash(ActivityKind.hud, priority: 2_000, duration: .milliseconds(1500))
@@ -282,9 +334,16 @@ final class AppCoordinator {
             activities.flash(ActivityKind.downloadDone, duration: .seconds(3))
         }
         audioOutput.onChange = { [weak self] device in
-            self?.activities.flash(ActivityKind.audioOutput,
-                                   duration: Self.readableFlashDuration(base: .seconds(3), text: device.name))
+            guard let self else { return }
+            // Az önce bağlandığı gösterilen kulaklık ikinci kez (ses çıkışı olarak) duyurulmaz.
+            if let event = ui.bluetoothEvent, event.change == .connected, event.device.name == device.name,
+               Date.now.timeIntervalSince(event.date) < 6 { return }
+            activities.flash(ActivityKind.audioOutput,
+                             duration: Self.readableFlashDuration(base: .seconds(3), text: device.name))
         }
+        bluetooth.onConnected = { [weak self] in self?.flashBluetooth($0, .connected) }
+        bluetooth.onDisconnected = { [weak self] in self?.flashBluetooth($0, .disconnected) }
+        bluetooth.onLowBattery = { [weak self] device, level in self?.flashBluetooth(device, .lowBattery(level)) }
         keepAwake.onChange = { [weak self] active in
             guard let self else { return }
             if active { activities.setLive(ActivityKind.keepAwake, priority: 5) } else { activities.removeLive(ActivityKind.keepAwake) }
@@ -336,6 +395,11 @@ final class AppCoordinator {
         weather.stop()
         claudeUsage.stop()
         terminal.stop()
+        clipboard.stop()
+        bluetooth.stop()
+        // Bizim kapattığımız mikrofon çıkarken geri açılır.
+        microphone.stop()
+        spectrum.isEnabled = false
         notes.flush()
         keepAwake.stop()
         cancelTimer()
@@ -351,12 +415,17 @@ final class AppCoordinator {
         toggle(settings.nowPlayingEnabled, start: nowPlaying.start, stop: nowPlaying.stop)
         // Terminal sekme açılınca başlar; modül kapatılınca kabuk sonlanır.
         if !settings.terminalEnabled { terminal.stop() }
+        toggle(settings.clipboardEnabled, start: clipboard.start, stop: clipboard.stop)
         toggle(settings.batteryEnabled, start: battery.start, stop: battery.stop)
         toggle(settings.calendarEnabled, start: calendar.start, stop: calendar.stop)
         setActivityAPI(enabled: settings.activityAPIEnabled)
         toggle(settings.privacyIndicatorEnabled, start: privacy.start, stop: privacy.stop)
         toggle(settings.downloadsEnabled, start: downloads.start, stop: downloads.stop)
         toggle(settings.audioOutputAlertEnabled, start: audioOutput.start, stop: audioOutput.stop)
+        toggle(settings.bluetoothEnabled, start: bluetooth.start, stop: bluetooth.stop)
+        toggle(settings.meetingControlsEnabled, start: microphone.start, stop: microphone.stop)
+        spectrum.isEnabled = settings.animatedEqualizer && settings.reactiveEqualizer
+        updatePrivacyActivity()
         toggle(settings.calendarEnabled && settings.remindersEnabled, start: reminders.start, stop: reminders.stop)
         if !settings.systemStatsEnabled { systemStats.stop() }
         toggle(settings.claudeUsageEnabled, start: claudeUsage.start, stop: claudeUsage.stop)
@@ -408,6 +477,7 @@ final class AppCoordinator {
         case .mirror: settings.mirrorEnabled
         case .claude: settings.claudeUsageEnabled
         case .terminal: settings.terminalEnabled
+        case .clipboard: settings.clipboardEnabled
         }
     }
 

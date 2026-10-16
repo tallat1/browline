@@ -197,10 +197,22 @@ private struct ModuleSettings: View {
             Section {
                 Toggle("Şarkı değişince kısa göster", isOn: $settings.trackPeekEnabled)
                 Toggle("Çalarken hareketli çubuklar (az miktarda enerji harcar)", isOn: $settings.animatedEqualizer)
+                if settings.animatedEqualizer {
+                    Toggle("Çubuklar müziğe tepki versin", isOn: $settings.reactiveEqualizer)
+                    Text("Sistem sesinin anlık frekans dağılımı okunur; ilk açılışta macOS sistem sesi kaydı izni ister. Ses kaydedilmez, hiçbir yere gönderilmez. İzin verilmezse çubuklar eski hareketine döner.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Toggle("Ses çıkışı değişince göster (AirPods, hoparlör)", isOn: $settings.audioOutputAlertEnabled)
+                Toggle("Bluetooth aygıtları (bağlanınca, ayrılınca ve pili azalınca göster)",
+                       isOn: $settings.bluetoothEnabled)
+                Toggle("Toplantı denetimi (mikrofonu sistem genelinde sessize al)",
+                       isOn: $settings.meetingControlsEnabled)
                 Toggle("Uyanık tutma düğmesi", isOn: $settings.keepAwakeEnabled)
                 Toggle("Hızlı not", isOn: $settings.notesEnabled)
                 Toggle("Terminal (kapatınca açık kabuk sonlanır)", isOn: $settings.terminalEnabled)
+                Toggle("Pano geçmişi (yalnız bellekte; parola yöneticilerinin gizli kopyaları alınmaz)",
+                       isOn: $settings.clipboardEnabled)
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled)
                 if settings.claudeUsageEnabled {
                     Toggle("Yüzdeleri kullanım uç noktasından al (belgelenmemiş)", isOn: $settings.claudeUsageAPIEnabled)

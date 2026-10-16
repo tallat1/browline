@@ -70,8 +70,12 @@ struct CompactLeadingView: View {
                     .foregroundStyle(coordinator.battery.state?.isPluggedIn == true ? .green : .white)
             case AppCoordinator.ActivityKind.privacy:
                 let camera = coordinator.privacy.isCameraActive
-                Image(systemName: camera ? "video.fill" : "mic.fill")
-                    .foregroundStyle(camera ? .green : .orange)
+                if coordinator.isMicrophoneMuted {
+                    Image(systemName: "mic.slash.fill").foregroundStyle(.red)
+                } else {
+                    Image(systemName: camera ? "video.fill" : "mic.fill")
+                        .foregroundStyle(camera ? .green : .orange)
+                }
             case AppCoordinator.ActivityKind.hud:
                 WideWingLabel(symbol: coordinator.hud.symbolName, tint: .white, text: coordinator.hud.title)
             case AppCoordinator.ActivityKind.download:
@@ -118,6 +122,11 @@ struct CompactLeadingView: View {
                 WideWingLabel(symbol: "battery.25", tint: .red, text: String(localized: "Pil azaldı"))
             case AppCoordinator.ActivityKind.batteryFull:
                 WideWingLabel(symbol: "battery.100.bolt", tint: .green, text: String(localized: "Tam şarj"))
+            case AppCoordinator.ActivityKind.bluetooth:
+                if let event = coordinator.ui.bluetoothEvent {
+                    WideWingLabel(symbol: event.device.symbolName,
+                                  tint: event.change == .disconnected ? .secondary : .white, text: event.device.shortName)
+                }
             default:
                 if let activity = coordinator.externalActivity(for: activityID) {
                     HStack(spacing: 6) {
@@ -158,7 +167,8 @@ struct CompactTrailingView: View {
                 // Çalarken hafifçe oynayan çubuklar; ayar kapalıysa ya da azaltılmış harekette durağan.
                 EqualizerBars(isPlaying: coordinator.nowPlaying.info?.isPlaying == true,
                               tint: coordinator.nowPlaying.accentColor.map(Color.init(nsColor:)) ?? .white,
-                              isEnabled: coordinator.settings.animatedEqualizer)
+                              isEnabled: coordinator.settings.animatedEqualizer,
+                              spectrum: coordinator.settings.reactiveEqualizer ? coordinator.spectrum : nil)
             case AppCoordinator.ActivityKind.meeting:
                 if let event = coordinator.calendar.imminentMeeting {
                     // Dakikada bir güncellenir; yalnız toplantı yaklaşırken görünür.
@@ -171,7 +181,10 @@ struct CompactTrailingView: View {
                     Text("%\(state.percent)").monospacedDigit()
                 }
             case AppCoordinator.ActivityKind.privacy:
-                if coordinator.privacy.isCameraActive && coordinator.privacy.isMicrophoneActive {
+                if coordinator.isMicrophoneMuted {
+                    // Sol kanatta kırmızı mikrofon; sağda kamera açıksa yeşil, değilse kırmızı nokta.
+                    Circle().fill(coordinator.privacy.isCameraActive ? .green : .red).frame(width: 7, height: 7)
+                } else if coordinator.privacy.isCameraActive && coordinator.privacy.isMicrophoneActive {
                     Image(systemName: "mic.fill").foregroundStyle(.orange)
                 } else {
                     Circle().fill(coordinator.privacy.isCameraActive ? .green : .orange).frame(width: 7, height: 7)
@@ -247,6 +260,12 @@ struct CompactTrailingView: View {
                     Text("%\(state.percent)")
                         .monospacedDigit()
                         .foregroundStyle(activityID == AppCoordinator.ActivityKind.batteryLow ? .red : .secondary)
+                        .padding(.trailing, 12)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+            case AppCoordinator.ActivityKind.bluetooth:
+                if let event = coordinator.ui.bluetoothEvent {
+                    BluetoothEventDetail(event: event)
                         .padding(.trailing, 12)
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
@@ -406,6 +425,76 @@ extension HUDController {
         switch kind {
         case .brightness: String(localized: "Parlaklık")
         case .volume: isMuted ? String(localized: "Sessiz") : String(localized: "Ses")
+        }
+    }
+}
+
+/// Bluetooth kısa bildiriminin sağ kanadı: bağlanınca pil, azalınca kırmızı pil, ayrılınca "Ayrıldı".
+private struct BluetoothEventDetail: View {
+    let event: BluetoothEvent
+
+    var body: some View {
+        switch event.change {
+        case .disconnected:
+            Text("Ayrıldı").foregroundStyle(.secondary)
+        case let .lowBattery(level):
+            BatteryLevelLabel(level: level, tint: .red)
+        case .connected:
+            if let level = event.device.lowest {
+                BatteryLevelLabel(level: level, tint: level <= 20 ? .red : .secondary)
+            }
+        }
+    }
+}
+
+/// Aygıt pili: simge ve yerel yüzde ("%80" / "80%").
+struct BatteryLevelLabel: View {
+    let level: Int
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(verbatim: NowFormat.percent(Double(level))).monospacedDigit()
+            Image(systemName: BluetoothMonitor.Device.batterySymbol(for: level))
+        }
+        .foregroundStyle(tint)
+    }
+}
+
+extension BluetoothMonitor.Device {
+    var symbolName: String {
+        switch kind {
+        case .headphones:
+            if name.localizedCaseInsensitiveContains("AirPods Pro") { "airpodspro" }
+            else if name.localizedCaseInsensitiveContains("AirPods Max") { "airpodsmax" }
+            else if name.localizedCaseInsensitiveContains("AirPods") { "airpods" }
+            else { "headphones" }
+        case .keyboard: "keyboard"
+        case .mouse: "magicmouse"
+        case .trackpad: "rectangle.and.hand.point.up.left"
+        case .speaker: "hifispeaker"
+        case .gamepad: "gamecontroller"
+        case .other: "wave.3.right"
+        }
+    }
+
+    /// Kulaklıkta sol/sağ/kutu ayrı; diğerlerinde tek pil.
+    var batteryHelp: String {
+        var parts: [String] = []
+        if let main { parts.append(NowFormat.percent(Double(main))) }
+        if let left { parts.append(String(localized: "sol \(NowFormat.percent(Double(left)))")) }
+        if let right { parts.append(String(localized: "sağ \(NowFormat.percent(Double(right)))")) }
+        if let caseLevel { parts.append(String(localized: "kutu \(NowFormat.percent(Double(caseLevel)))")) }
+        return ([name] + parts).joined(separator: " · ")
+    }
+
+    static func batterySymbol(for level: Int) -> String {
+        switch level {
+        case ..<13: "battery.0percent"
+        case ..<38: "battery.25percent"
+        case ..<63: "battery.50percent"
+        case ..<88: "battery.75percent"
+        default: "battery.100percent"
         }
     }
 }

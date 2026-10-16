@@ -37,6 +37,62 @@ final class DebugCommandChannel {
             models.forEach { $0.tapped() }
         case "close":
             models.forEach { $0.dismiss() }
+        case "shelf:add-test":
+            // Yalnız deneme dosyası; kullanıcının raf öğelerine dokunmaz.
+            let file = URL(fileURLWithPath: "/tmp/notch-raf-deneme.txt")
+            try? "NotchMVP raf denemesi".write(to: file, atomically: true, encoding: .utf8)
+            coordinator.shelf.add([file])
+        case "shelf:remove-test":
+            for item in coordinator.shelf.items where item.url.path.hasPrefix("/tmp/notch-raf-deneme") {
+                coordinator.shelf.remove(item.id)
+            }
+        case "mic:state":
+            let microphone = coordinator.microphone
+            let summary = "sessiz \(microphone.isMuted), yazılabilir \(microphone.canMute), kullanan [\(microphone.inputApps.map(\.name).joined(separator: ", "))]"
+            AppLog.coordinator.notice("mikrofon durumu: \(summary, privacy: .public)")
+        case "spectrum:state":
+            let spectrum = coordinator.spectrum
+            let reading = spectrum.levels.read()
+            let values = reading.values.map { String(format: "%.2f", $0) }.joined(separator: " ")
+            let summary = "açık \(spectrum.isEnabled), çalışıyor \(spectrum.isRunning), sinyal \(reading.hasSignal), [\(values)], hata \(spectrum.lastError ?? "yok")"
+            AppLog.coordinator.notice("spektrum: \(summary, privacy: .public)")
+        case "spectrum:probe-on":
+            // Çubuk görünmese de dinleyiciyi tutar (ölçüm için); probe-off ile bırakılır.
+            coordinator.spectrum.acquire()
+        case "spectrum:probe-off":
+            coordinator.spectrum.release()
+        case "mic:toggle":
+            coordinator.microphone.toggleMute()
+        case "bluetooth:state":
+            // Ad yazılmaz: tür ve pil düzeyleri.
+            let summary = coordinator.bluetooth.devices
+                .map { "\($0.kind.rawValue) \($0.lowest.map(String.init) ?? "–")" }
+                .joined(separator: ", ")
+            let running = coordinator.bluetooth.isRunning
+            AppLog.coordinator.notice("bluetooth: çalışıyor \(running), [\(summary, privacy: .public)]")
+        case "bluetooth:preview-connect", "bluetooth:preview-low", "bluetooth:preview-disconnect":
+            // Örnek aygıt; adı deneme olduğunu söyler.
+            let sample = BluetoothMonitor.Device(name: "Örnek kulaklık (deneme)", kind: .headphones,
+                                                 left: 12, right: 64, caseLevel: 40)
+            let change: BluetoothEvent.Change = switch command {
+            case "bluetooth:preview-low": .lowBattery(12)
+            case "bluetooth:preview-disconnect": .disconnected
+            default: .connected
+            }
+            coordinator.flashBluetooth(sample, change)
+        case "clipboard:state":
+            // İçerik yazılmaz: yalnız sayı ve türler.
+            let kinds = coordinator.clipboard.items.map { item -> String in
+                switch item.content {
+                case .text: "metin"
+                case .url: "bağlantı"
+                case .files: "dosya"
+                case .image: "görsel"
+                }
+            }
+            let running = coordinator.clipboard.isRunning
+            let blocked = coordinator.clipboard.isReadingBlocked
+            debugLog.info("pano geçmişi: \(kinds.count) öğe [\(kinds.joined(separator: ", "), privacy: .public)], çalışıyor \(running), engelli \(blocked)")
         case "tab:more":
             coordinator.ui.isMoreTabsOpen.toggle()
         case let tab where tab.hasPrefix("tab:"):

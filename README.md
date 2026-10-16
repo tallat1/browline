@@ -106,6 +106,23 @@ Kapalı notch'taki tek sürekli animasyon olduğu için ölçülerek seçildi (2
 SwiftUI her karede büyük saydam paneli yeniden çizdiriyor; Core Animation animasyonu pencere sunucusunda
 yürür, uygulama uyanmaz. Duraklatınca, azaltılmış harekette ya da Ayarlar › Modüller'den kapatılınca durur.
 
+**Müziğe tepki (isteğe bağlı, varsayılan kapalı).** Ayarlar › Modüller › "Çubuklar müziğe tepki versin".
+`AudioSpectrum` sistem sesinin kopyasını Core Audio süreç dinleyicisinden alır (`CATapDescription`, macOS
+14.2+, özel küme aygıtı), 1024 örnekte bir FFT ile dört banda böler (40–160 / 160–640 / 640–2500 /
+2500–10000 Hz). Her bant kendi yakın geçmiş tepesine göre 15 dB aralıkta ölçeklenir (ses düzeyinden
+bağımsız), 1,4 eğriyle vuruş belirginleşir; hızlı yükselir, yavaş iner. Çubuklar ekran bağlantısıyla 30 Hz.
+
+- İzin: ilk açılışta macOS sistem sesi kaydı izni ister (`NSAudioCaptureUsageDescription`). İmza geliştirici
+  sertifikasıyla olduğu için izin yeniden derlemede korunur. Ses kaydedilmez, yalnız dört sayı çıkar.
+- Sinyal 1,2 sn yoksa (izin verilmedi, sessiz geçiş) çubuklar yapay harekete döner; hiç donmaz.
+- Dinleyici yalnız çubuk görünür ve çalarken açık. Kısa bildirim çubukların yerini alınca 5 sn bekler,
+  sonra küme aygıtı ve dinleyici silinir. Çıkış aygıtı değişince yeniden kurulur.
+- Ölçüm (2026-10-16, Debug, müzik çalarken, `top` 2 sn aralık): tepkili kip, çubuklar görünürken uygulama
+  toplamı %0,9–1,4. Analiz kuyruğu tek çekirdeğin %0,6'sı (`sample` 3 sn). İlk sürümde örnek başına
+  Swift döngüleri %7 tutuyordu; karıştırma ve bant toplamları vDSP'ye taşındı.
+- 30 dB aralıkta çubuklar hep tepede kalıyordu (6 dB'lik vuruşta salınım 0,15). Test
+  `sixDecibelBeatsSwingTheBar` 0,4 altını kırmızı sayar.
+
 ## Hareket ve şarkı geçişleri
 
 - Tek hareket sistemi `NotchShell/NotchMotion.swift`: açılış/kapanış kritik sönümlü yay, kanat genişliği ve
@@ -225,6 +242,7 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
 | v1: ekran başına mod (otomatik: çentik/hap · yüzen kart · kapalı), Mission Control'de ve oyunlarda gizleme | ✓ mod çözümü, yüzen yerleşim ve oyun kategorisi birim testli; yüzen kart yerleşik ekranda debug komutuyla görsel doğrulandı; dış ekran, Mission Control ve oyun elle denenmedi |
 | v1: TR/EN yerelleştirme (String Catalog) | ✓ 111 metin + Info.plist izin metinleri; iki dilde açık notch görsel doğrulandı; ayarlar penceresi görsel denenmedi |
 | v1: kilit ekranı | ✓ macOS 27.0.1'de normal notch kilit ekranında görünüyor (kullanıcı denemesi), kilitte imleçle açılmıyor; kilitliyken içerik süzülüyor (debug kilit benzetimiyle görsel doğrulandı). SkyLight paneli (ayar açık) gerçek kilitte denenmedi |
+| v1+: pano geçmişi, raf derinliği, Bluetooth, toplantı denetimi, müziğe tepkili çubuklar (2026-10-16) | ✓ yazıldı; pano, raf sıkıştırma adları, Bluetooth ayrıştırma ve uyarı eşikleri, spektrum bantları ve vuruş salınımı birim testli. Pano izleyici çalışıyor (izin `alwaysAllow`); raf çubuğu, Bluetooth kanadı (örnek aygıt) ve Sistem kartı (gerçek AirPods, %78), sessiz mikrofon kanadı ve kartı görsel doğrulandı. Mikrofon kısa süre sessize alınıp geri açıldı, aygıtta `mute 0` doğrulandı. Spektrum gerçek müzikle (izin verildi) çalıştı, çubuklar kareden kareye değişiyor. Gerçek Bluetooth bağlanma/ayrılma, gerçek görüşmede "Görüşmeye dön" ve sessizliğin aygıt değişince taşınması elle denenmedi |
 | v1: Focus | ✗ yapılmadı (entitlement ister) |
 | Developer ID, notarization, Sparkle 2, ödeme, imzalı lisans | ✗ yapılmadı: Developer ID Application kimliği yok |
 | macOS 14, 15, 26 duman testi; müzik çalarken enerji | ✗ ölçülmedi |
@@ -334,7 +352,11 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 | Modül | Esin | Nasıl | Enerji / izin |
 |---|---|---|---|
 | Şarkı değişince kısa göster | MediaMate, DynamicLake "Sneak Peek" | Başlık ya da sanatçı değişince 3 sn geniş kanat: kapak, şarkı, sanatçı | Ek iş yok |
-| Ses çıkışı değişince göster | Alcove, DynamicLake | CoreAudio varsayılan çıkış dinleyicisi; AirPods türünü addan seçer, yanında ses düzeyi | İzin yok; AirPods pili public değil, gösterilmez |
+| Ses çıkışı değişince göster | Alcove, DynamicLake | CoreAudio varsayılan çıkış dinleyicisi; AirPods türünü addan seçer, yanında ses düzeyi | İzin yok. Az önce Bluetooth bildirimi çıkan kulaklık (6 sn) ikinci kez duyurulmaz |
+| Bluetooth aygıtları | Alcove, DynamicLake | Bağlanınca, ayrılınca ve pil %20 / %10 eşiğinin altına inince geniş kanat: aygıt simgesi, kısa ad ("Talat (AirPods Pro)" → "AirPods Pro"), pil. Sistem sekmesinde kart (tek aygıtta büyük yüzde ve çubuk, fazlasında iki satır); sol/sağ/kutu üzerine gelince | İzin yok: bağlantı olayı IOKit `IOBluetoothDevice` eşleşme bildirimi (IOBluetooth API'si izin penceresi açtırırdı), ad ve pil `system_profiler -json SPBluetoothDataType` (≈ 0,1 sn, 0,02 sn CPU), olaydan 1,5 sn sonra ve bağlıyken 5 dk'da bir. Kulaklıkta uyarı kutuyu saymaz |
+| Toplantı denetimi | MeetingBar, Mutify | Mikrofon kullanımdayken ya da sessizdeyken Şimdi'de en üstte kart: kullanan uygulama, sessize al / aç, "Görüşmeye dön" (o uygulamayı öne getirir; tarayıcıdaki toplantıda tarayıcı). Sessizken kapalı notch'ta kırmızı mikrofon, Now Playing'in ve toplantının önünde. Menü çubuğunda da | İzin yok: varsayılan girişin `kAudioDevicePropertyMute`'u (yoksa giriş düzeyi 0, eskisi saklanır), kullanan uygulama `kAudioProcessPropertyIsRunningInput` (yardımcı süreç en dıştaki `.app`'e çevrilir). Giriş aygıtı değişince sessizlik yeni aygıta taşınır; uygulama kapanırken bizim kapattığımız mikrofon açılır. Kamera kapatma ve ayrılma uygulamaya özgü (Erişilebilirlik), yok |
+| Pano geçmişi | Maccy, Paste | Pano sekmesi: son 50 kopya (metin, bağlantı, dosya, görsel ≤ 8 MB), uygulama ve zaman; basınca yeniden kopyalanır, sabitle / sil / temizle (sabitler kalır) | Yalnız bellekte, diske yazılmaz. `changeCount` 0,75 sn'de bir. nspasteboard.org gizli/geçici türler (parola yöneticileri) hiç alınmaz. macOS "diğer uygulamalardan yapıştırma" iznini engellerse sekme söyler |
+| Raf derinliği | Dropover, Yoink | Rafın altında Paylaş (sistem paylaşım menüsü), Sıkıştır (`ditto`; tek öğe yanına, çoklu İndirilenler'e tarihli zip) ve Temizle. Öğede: üzerine gelince göz (Quick Look, `qlmanage -p`), çift tık açar; sağ tık Aç, Önizle, Paylaş…, AirDrop, Sıkıştır, Yolu kopyala, Finder'da göster, Raftan kaldır | Sıkıştırma arka planda; ad çakışırsa "ad 2.zip" |
 | Uyanık tutma | Atoll, Amphetamine | `IOPMAssertion` (ekran uykusunu engeller); açık notch'ta fincan düğmesi süresiz, menü çubuğunda 30 dk / 1 sa / 2 sa | `pmset -g assertions`'ta "NotchMVP: uyanık tut"; süreli açıkken kalan süre açık notch'ta fincanın yanında ve menü başlığında. Doğrulama (2026-10-16, `pmset -g assertions`): aç/kapat, 5 sn süre dolumu, süreliden süresize geçiş, uzatma, uygulama kapanınca kaydın bırakılması ✓ |
 | Zamanlayıcı | NotchFlow, Atoll | Hazır süreler, +1 dk, iptal; bitince "Süre doldu" ve ses. Kilit ekranında da görünür | Tek uyuyan Task; saniyelik çizim yalnız kanat ya da sekme ekrandayken |
 | Pil uyarıları | Alcove, boring.notch | Fişte değilken %20 ve %10 eşiği aşağı geçilince, fişteyken %100 olunca 4 sn; kilit ekranında da | Ek iş yok |
@@ -346,7 +368,7 @@ Hepsi public API, hepsi Ayarlar › Modüller'den kapatılabilir; kapalıyken ar
 | Hızlı not | NotchPad, Islet | Not sekmesi, uygulama klasöründe `notes.txt`; duraksayınca kaydedilir | Klavye: sekme görünürken panel key olabilir, ama yalnız alana tıklayınca alır; yazarken notch sabitlenir; kapanınca klavye öndeki uygulamaya döner. Düzen menüsü olmadığı için ⌘C/V/X/A/Z panelde elle yönlendirilir |
 | Ayna | boring.notch, NotchNook | AVFoundation önizleme, yatay çevrilmiş | Kamera yalnız sekme açıkken; izin ilk "Kameraya erişim ver"de, `com.apple.security.device.camera` |
 
-Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `timer:pomodoro`, `weather:<şehir>|off`, `tab:notes`, `tab:timer`, `tab:system`, `tab:mirror`.
+Debug: `track:preview`, `audio:preview`, `awake:on|off`, `timer:<sn>|cancel`, `battery:low|full`, `timer:pomodoro`, `weather:<şehir>|off`, `tab:notes`, `tab:timer`, `tab:system`, `tab:mirror`, `tab:clipboard`, `clipboard:state` (yalnız sayı ve tür), `shelf:add-test|remove-test`, `bluetooth:state|preview-connect|preview-low|preview-disconnect` (örnek aygıt "deneme" adlı), `mic:state|toggle`, `spectrum:state|probe-on|probe-off`.
 
 ## Ekranlar
 
@@ -390,7 +412,7 @@ Daha eski macOS sürümleri için ayrıca deneysel, varsayılan kapalı bir SkyL
 
 ## Yerelleştirme
 
-Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (226 metin) ve
+Kaynak dil Türkçe (`developmentLanguage: tr`), çeviri İngilizce: `App/Localizable.xcstrings` (318 metin; "%lld öğe" İngilizcede tekil/çoğul) ve
 `App/InfoPlist.xcstrings`. Uygulama sistemin dil sırasını izler; listede İngilizce önce geliyorsa İngilizce açılır.
 Yalnız bu uygulamanın dilini değiştirmek için Sistem Ayarları › Genel › Dil ve Bölge › Uygulamalar.
 

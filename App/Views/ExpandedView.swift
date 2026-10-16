@@ -112,10 +112,12 @@ struct ExpandedView: View {
         case .activities: ActivitiesTab(store: coordinator.externalActivities)
         case .notes: NotesTab(notes: coordinator.notes, model: model)
         case .timer: TimerTab(coordinator: coordinator)
-        case .system: SystemTab(stats: coordinator.systemStats)
+        case .system: SystemTab(stats: coordinator.systemStats,
+                                bluetooth: coordinator.settings.bluetoothEnabled ? coordinator.bluetooth : nil)
         case .mirror: MirrorTab(mirror: coordinator.mirror)
         case .claude: ClaudeTab(usage: coordinator.claudeUsage)
         case .terminal: TerminalTab(session: coordinator.terminal, model: model)
+        case .clipboard: ClipboardTab(history: coordinator.clipboard)
         }
     }
 }
@@ -135,6 +137,7 @@ extension NotchTab {
         case .claude: 150
         // ≈ 77 sütun × 18 satır (12 pt SF Mono).
         case .terminal: 280
+        case .clipboard: 200
         }
     }
 }

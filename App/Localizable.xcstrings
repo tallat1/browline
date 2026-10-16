@@ -155,6 +155,16 @@
         }
       }
     },
+    "%lld dk önce": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min ago"
+          }
+        }
+      }
+    },
     "%lld dk önce güncellendi · 5 dakikada bir tazelenir": {
       "localizations": {
         "en": {
@@ -240,9 +250,21 @@
     "%lld öğe": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld items"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld items"
+                }
+              }
+            }
           }
         }
       }
@@ -333,16 +355,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "5-hour session limit reached"
-          }
-        }
-      }
-    },
-    "AirDrop": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "AirDrop"
           }
         }
       }
@@ -477,6 +489,16 @@
         }
       }
     },
+    "Ayrıldı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnected"
+          }
+        }
+      }
+    },
     "Az önce güncellendi": {
       "localizations": {
         "en": {
@@ -497,12 +519,32 @@
         }
       }
     },
+    "Aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
     "Ağ": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Network"
+          }
+        }
+      }
+    },
+    "Basınca panoya kopyalanır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Click to copy to the clipboard"
           }
         }
       }
@@ -623,6 +665,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "A notification for a few seconds; it goes in front of other activities."
+          }
+        }
+      }
+    },
+    "Bluetooth": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth"
+          }
+        }
+      }
+    },
+    "Bluetooth aygıtları (bağlanınca, ayrılınca ve pili azalınca göster)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bluetooth devices (show on connect, disconnect and low battery)"
           }
         }
       }
@@ -1017,6 +1079,16 @@
         }
       }
     },
+    "Geçmişten sil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove from history"
+          }
+        }
+      }
+    },
     "Girişte başlat": {
       "localizations": {
         "en": {
@@ -1057,12 +1129,32 @@
         }
       }
     },
+    "Gizlilik ve Güvenlik › Diğer uygulamalardan yapıştırma'dan NotchMVP'ye izin verin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow NotchMVP in Privacy & Security › Paste from Other Apps."
+          }
+        }
+      }
+    },
     "Görünüm": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Appearance"
+          }
+        }
+      }
+    },
+    "Görüşmeye dön": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return to the call"
           }
         }
       }
@@ -1153,6 +1245,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No external activities yet"
+          }
+        }
+      }
+    },
+    "Henüz kopyalanan bir şey yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing copied yet"
           }
         }
       }
@@ -1357,6 +1459,26 @@
         }
       }
     },
+    "Kopyaladığın metin, bağlantı, dosya ve görseller burada görünür; basınca yeniden kopyalanır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text, links, files and images you copy show up here; click one to copy it again."
+          }
+        }
+      }
+    },
+    "Kopyalandı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
     "Kısa mola": {
       "localizations": {
         "en": {
@@ -1427,12 +1549,62 @@
         }
       }
     },
+    "Mikrofon": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone"
+          }
+        }
+      }
+    },
+    "Mikrofon açık": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microphone on"
+          }
+        }
+      }
+    },
     "Mikrofon kullanımda": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Microphone in use"
+          }
+        }
+      }
+    },
+    "Mikrofonu aç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unmute Microphone"
+          }
+        }
+      }
+    },
+    "Mikrofonu sessize al": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute Microphone"
+          }
+        }
+      }
+    },
+    "Mikrofonu sessize al (tüm uygulamalar)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mute the microphone (all apps)"
           }
         }
       }
@@ -1697,6 +1869,36 @@
         }
       }
     },
+    "Pano": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard"
+          }
+        }
+      }
+    },
+    "Pano geçmişi (yalnız bellekte; parola yöneticilerinin gizli kopyaları alınmaz)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard history (memory only; password managers' concealed copies are skipped)"
+          }
+        }
+      }
+    },
+    "Pano okuma engellenmiş": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clipboard access is blocked"
+          }
+        }
+      }
+    },
     "Parlaklık": {
       "localizations": {
         "en": {
@@ -1723,6 +1925,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Brightness: adjusted on the built-in display (private DisplayServices)."
+          }
+        }
+      }
+    },
+    "Paylaş": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
+          }
+        }
+      }
+    },
+    "Paylaş…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share…"
           }
         }
       }
@@ -1770,19 +1992,41 @@
     "Rafta %lld öğe": {
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld items on the shelf"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld item on the shelf"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld items on the shelf"
+                }
+              }
+            }
           }
         }
       }
     },
-    "Raftan başka yere sürükleyin ya da AirDrop ile gönderin.": {
+    "Raftaki her şeyi tek zip'te toplar (İndirilenler)": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Drag items out of the shelf or send them with AirDrop."
+            "value": "Collects everything on the shelf into one zip (Downloads)"
+          }
+        }
+      }
+    },
+    "Raftan başka yere sürükleyin, paylaşın, sıkıştırın ya da önizleyin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag items elsewhere, share, compress or preview them."
           }
         }
       }
@@ -1823,6 +2067,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "SF Symbol name"
+          }
+        }
+      }
+    },
+    "Sabitle (temizlemede silinmez)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pin (kept when clearing)"
+          }
+        }
+      }
+    },
+    "Sabitlemeyi kaldır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unpin"
+          }
+        }
+      }
+    },
+    "Sabitlenmemiş öğeleri siler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removes unpinned items"
           }
         }
       }
@@ -1907,6 +2181,16 @@
         }
       }
     },
+    "Sessizde": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Muted"
+          }
+        }
+      }
+    },
     "Sessize al": {
       "localizations": {
         "en": {
@@ -1967,6 +2251,26 @@
         }
       }
     },
+    "Sistem sesinin anlık frekans dağılımı okunur; ilk açılışta macOS sistem sesi kaydı izni ister. Ses kaydedilmez, hiçbir yere gönderilmez. İzin verilmezse çubuklar eski hareketine döner.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reads the live frequency balance of system audio; macOS asks for system audio recording permission the first time. Audio is never recorded or sent anywhere. Without permission the bars keep their usual motion."
+          }
+        }
+      }
+    },
+    "Son kopyalananlar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recently copied"
+          }
+        }
+      }
+    },
     "Sonraki": {
       "localizations": {
         "en": {
@@ -2023,6 +2327,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose a duration"
+          }
+        }
+      }
+    },
+    "Sıkıştır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compress"
+          }
+        }
+      }
+    },
+    "Sıkıştırılıyor…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compressing…"
           }
         }
       }
@@ -2163,6 +2487,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Run claude once in a terminal; Claude Code renews the token."
+          }
+        }
+      }
+    },
+    "Toplantı denetimi (mikrofonu sistem genelinde sessize al)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meeting controls (mute the microphone system-wide)"
           }
         }
       }
@@ -2427,6 +2761,16 @@
         }
       }
     },
+    "az önce": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "just now"
+          }
+        }
+      }
+    },
     "en düşük %lld°, en yüksek %lld°": {
       "localizations": {
         "en": {
@@ -2453,12 +2797,42 @@
         }
       }
     },
+    "kutu %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "case %@"
+          }
+        }
+      }
+    },
     "mediaremote-adapter (ungive), BSD-3-Clause. Değiştirilmeden, ayrı süreç olarak kullanılır.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "mediaremote-adapter (ungive), BSD-3-Clause. Used unmodified, as a separate process."
+          }
+        }
+      }
+    },
+    "sağ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "right %@"
+          }
+        }
+      }
+    },
+    "sol %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "left %@"
           }
         }
       }
@@ -2523,6 +2897,16 @@
         }
       }
     },
+    "Çubuklar müziğe tepki versin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bars react to the music"
+          }
+        }
+      }
+    },
     "Çık": {
       "localizations": {
         "en": {
@@ -2569,6 +2953,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Priority"
+          }
+        }
+      }
+    },
+    "Önizle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick Look"
           }
         }
       }

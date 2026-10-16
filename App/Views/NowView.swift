@@ -53,6 +53,8 @@ struct NowView: View {
             NowCard(open: open(.activities)) { ActivityCardContent(activity: activity) }
         case .claude:
             NowCard(open: open(.claude)) { ClaudeCardContent(usage: coordinator.claudeUsage) }
+        case .call:
+            NowCard(open: nil) { CallCardContent(microphone: coordinator.microphone) }
         }
     }
 
@@ -69,6 +71,7 @@ enum NowItem: Identifiable {
     case timer
     case activity(ExternalActivity)
     case claude
+    case call
 
     var id: String {
         switch self {
@@ -76,6 +79,7 @@ enum NowItem: Identifiable {
         case .timer: "timer"
         case let .activity(activity): "activity-\(activity.id)"
         case .claude: "claude"
+        case .call: "call"
         }
     }
 
@@ -87,6 +91,11 @@ enum NowItem: Identifiable {
     static func current(coordinator: AppCoordinator, now: Date) -> [NowItem] {
         var items: [NowItem] = []
         let settings = coordinator.settings
+        // Mikrofon kullanımdaysa (görüşme) ya da sessizdeyse en üstte.
+        if settings.meetingControlsEnabled, coordinator.microphone.canMute,
+           coordinator.privacy.isMicrophoneActive || coordinator.microphone.isMuted {
+            items.append(.call)
+        }
         if settings.calendarEnabled,
            let event = coordinator.calendar.upcoming.first(where: { !$0.isAllDay && $0.end > now }),
            event.start.timeIntervalSince(now) <= meetingLead {
@@ -225,6 +234,46 @@ private struct ClaudeCardContent: View {
         let sessionText = NowFormat.percent(session)
         guard let week else { return sessionText }
         return String(localized: "\(sessionText) · hafta \(NowFormat.percent(week))")
+    }
+}
+
+/// Görüşme: mikrofonu kullanan uygulama, sessize alma ve uygulamaya dönüş.
+private struct CallCardContent: View {
+    let microphone: MicrophoneControl
+
+    var body: some View {
+        HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(verbatim: microphone.inputApps.first?.name ?? String(localized: "Mikrofon"))
+                    .font(NotchDesign.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Text(microphone.isMuted ? "Sessizde" : "Mikrofon açık")
+                    .font(NotchDesign.bodyEmphasized)
+                    .foregroundStyle(microphone.isMuted ? .red : .primary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 4)
+            if !microphone.inputApps.isEmpty {
+                Button(action: microphone.activateInputApp) {
+                    Image(systemName: "arrow.up.forward.app")
+                        .font(.system(size: NotchDesign.Icon.small, weight: NotchDesign.Icon.weight))
+                }
+                .buttonStyle(IconButtonStyle(size: NotchDesign.Control.small))
+                .help("Görüşmeye dön")
+            }
+            Button(action: microphone.toggleMute) {
+                Image(systemName: microphone.isMuted ? "mic.slash.fill" : "mic.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(microphone.isMuted ? .white : .primary)
+                    .frame(width: 26, height: 26)
+                    .background(Circle().fill(microphone.isMuted ? Color.red : NotchDesign.selectionFill))
+                    .contentShape(Circle())
+            }
+            .buttonStyle(PressScaleStyle())
+            .help(microphone.isMuted ? "Mikrofonu aç" : "Mikrofonu sessize al (tüm uygulamalar)")
+        }
+        .notchAnimation(value: microphone.isMuted)
     }
 }
 

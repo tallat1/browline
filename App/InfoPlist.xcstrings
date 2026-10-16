@@ -21,6 +21,16 @@
         }
       }
     },
+    "NSAudioCaptureUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So the bars can react to the playing music by reading the live frequency balance of the audio. Audio is never recorded or sent anywhere."
+          }
+        }
+      }
+    },
     "NSCalendarsFullAccessUsageDescription": {
       "localizations": {
         "en": {

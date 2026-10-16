@@ -59,6 +59,7 @@ targets:
         NSCalendarsFullAccessUsageDescription: "Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak."
         NSRemindersFullAccessUsageDescription: "Bugün vadesi gelen anımsatıcıları Takvim sekmesinde göstermek ve tamamlandı işaretlemek için."
         NSCameraUsageDescription: "Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez."
+        NSAudioCaptureUsageDescription: "Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez."
         # Etkinlik API'sinin URL kapısı: notchmvp://push?id=…&title=…
         CFBundleURLTypes:
           - CFBundleURLName: com.talatozcoban.notchmvp.activity
