@@ -77,11 +77,14 @@ TEAM_OVERRIDE=()
 if [ "$IDENTITY" = - ]; then TEAM_OVERRIDE=(DEVELOPMENT_TEAM=); fi
 DERIVED=build/release
 # generic/platform=macOS: hedef belirtilmezse yalnız bu Mac'in mimarisi derleniyordu (arm64).
+# DEPLOYMENT_POSTPROCESSING + STRIP: build eylemi sembolleri soymuyordu; ikilide derleme yolları
+# (/Users/<ad>/…) kalıyordu. Soyma imzadan önce yapılır.
 xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Release \
   -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" -skipPackagePluginValidation -quiet \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
+  DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES \
   OTHER_CODE_SIGN_FLAGS="$TIMESTAMP" \
   ${TEAM_OVERRIDE[@]+"${TEAM_OVERRIDE[@]}"} \
   build
@@ -94,6 +97,12 @@ for bin in "$APP/Contents/MacOS/Browline" "$APP/Contents/Helpers/notch"; do
   case "$archs" in *arm64*x86_64*|*x86_64*arm64*) echo "  evrensel ✓ $(basename "$bin") ($archs)" ;;
     *) fail "$(basename "$bin") evrensel değil: $archs" ;; esac
 done
+
+step "Derleme yolu izi"
+for bin in "$APP/Contents/MacOS/Browline" "$APP/Contents/Helpers/notch"; do
+  if grep -aq "$HOME" "$bin"; then fail "$(basename "$bin") içinde ev klasörü yolu kaldı (soyma çalışmadı)"; fi
+done
+echo "  yok ✓"
 
 step "İmza doğrulama"
 codesign --verify --deep --strict --verbose=1 "$APP" 2>&1 | sed 's/^/  /'
