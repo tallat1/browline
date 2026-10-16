@@ -3,136 +3,8 @@ import Integrations
 import NotchShell
 import SwiftUI
 
-/// Şimdi: açılış ekranı. Solda oynatıcı; sağda yalnız o an önemli olanlar (sıradaki toplantı, çalışan
-/// zamanlayıcı, canlı etkinlik, Claude limiti), en çok üç kart. Hiçbiri yoksa oynatıcı tüm genişliği
-/// alır. Karta basınca ayrıntı sekmesi açılır.
-struct NowView: View {
-    let coordinator: AppCoordinator
-    let model: NotchSurfaceModel
-
-    static let sideWidth: CGFloat = 190
-
-    var body: some View {
-        // Toplantı yaklaşınca kart dakikada bir yenilenir; görünüm yalnız notch açıkken var.
-        TimelineView(.everyMinute) { timeline in
-            let items = NowItem.current(coordinator: coordinator, now: timeline.currentDate)
-            HStack(alignment: .top, spacing: 10) {
-                if coordinator.settings.nowPlayingEnabled {
-                    MediaTab(nowPlaying: coordinator.nowPlaying, volume: coordinator.volume, model: model,
-                             sourceDescription: coordinator.nowPlayingSourceDescription)
-                }
-                if !items.isEmpty {
-                    sideColumn(items, now: timeline.currentDate)
-                        .frame(maxWidth: coordinator.settings.nowPlayingEnabled ? Self.sideWidth : .infinity)
-                        .notchTransition(.fade)
-                } else if !coordinator.settings.nowPlayingEnabled {
-                    EmptyStateView(symbol: "checkmark.circle", title: "Şu an bekleyen bir şey yok")
-                }
-            }
-            .notchAnimation(value: items.map(\.id))
-        }
-    }
-
-    private func sideColumn(_ items: [NowItem], now: Date) -> some View {
-        VStack(spacing: 5) {
-            ForEach(items) { item in
-                card(for: item, now: now).notchTransition(.listItem)
-            }
-            Spacer(minLength: 0)
-        }
-    }
-
-    @ViewBuilder
-    private func card(for item: NowItem, now: Date) -> some View {
-        switch item {
-        case let .meeting(event):
-            NowCard(open: open(.calendar)) { MeetingCardContent(event: event, now: now) }
-        case .timer:
-            NowCard(open: open(.timer)) { TimerCardContent(coordinator: coordinator) }
-        case let .activity(activity, more):
-            NowCard(open: open(.activities)) { ActivityCardContent(activity: activity, more: more) }
-        case .claude:
-            NowCard(open: open(.claude)) { ClaudeCardContent(usage: coordinator.claudeUsage) }
-        case .call:
-            NowCard(open: nil) { CallCardContent(microphone: coordinator.microphone) }
-        case let .ci(run):
-            NowCard(open: open(.ci)) { CICardContent(run: run, others: coordinator.ci.activeRuns.count - 1) }
-        }
-    }
-
-    /// Ayrıntı sekmesi kapalı ya da gizliyse kart yalnız bilgi verir.
-    private func open(_ tab: NotchTab) -> (() -> Void)? {
-        guard coordinator.availableTabs.contains(tab) else { return nil }
-        return { coordinator.ui.selectedTab = tab }
-    }
-}
-
-/// Şimdi'nin sağ sütunundaki öğeler, öncelik sırasıyla.
-enum NowItem: Identifiable {
-    case meeting(CalendarMonitor.Event)
-    case timer
-    /// `more`: kartlara sığmayan etkinlik sayısı (son etkinlik kartında "+N"; basınca tümü).
-    case activity(ExternalActivity, more: Int = 0)
-    case claude
-    case call
-    /// Süren CI çalışması (ilki).
-    case ci(CIMonitor.Run)
-
-    var id: String {
-        switch self {
-        case let .meeting(event): "meeting-\(event.id)"
-        case .timer: "timer"
-        case let .activity(activity, _): "activity-\(activity.id)"
-        case .claude: "claude"
-        case .call: "call"
-        case let .ci(run): "ci-\(run.id)"
-        }
-    }
-
-    static let limit = 3
-    /// Toplantı kartı en erken bu kadar önce görünür.
-    static let meetingLead: TimeInterval = 4 * 3600
-
-    @MainActor
-    static func current(coordinator: AppCoordinator, now: Date) -> [NowItem] {
-        var items: [NowItem] = []
-        let settings = coordinator.settings
-        #if DEBUG
-        let isDemo = coordinator.ui.isDemoMode
-        #else
-        let isDemo = false
-        #endif
-        let activities = coordinator.externalActivities.activities.filter { !isDemo || $0.id.hasPrefix("demo.") }
-        // Mikrofon kullanımdaysa (görüşme) ya da sessizdeyse en üstte.
-        if !isDemo, settings.meetingControlsEnabled, coordinator.microphone.canMute,
-           coordinator.privacy.isMicrophoneActive || coordinator.microphone.isMuted {
-            items.append(.call)
-        }
-        if !isDemo, settings.calendarEnabled,
-           let event = coordinator.calendar.upcoming.first(where: { !$0.isAllDay && $0.end > now }),
-           event.start.timeIntervalSince(now) <= meetingLead {
-            items.append(.meeting(event))
-        }
-        if settings.timerEnabled, coordinator.timer.isRunning { items.append(.timer) }
-        if !isDemo, settings.ciEnabled, let run = coordinator.ci.activeRuns.first { items.append(.ci(run)) }
-        if settings.activityAPIEnabled {
-            items += activities.prefix(2).map { NowItem.activity($0) }
-        }
-        if !isDemo, settings.claudeUsageEnabled, coordinator.claudeUsage.usage?.fiveHour != nil { items.append(.claude) }
-        var shown = Array(items.prefix(limit))
-        // Etkinlikler sekmesi Şimdi'ye katıldı: sığmayanlar son etkinlik kartında sayı olarak.
-        let total = settings.activityAPIEnabled ? activities.count : 0
-        let activityIndices = shown.indices.filter { if case .activity = shown[$0] { true } else { false } }
-        if let last = activityIndices.last, total > activityIndices.count,
-           case let .activity(activity, _) = shown[last] {
-            shown[last] = .activity(activity, more: total - activityIndices.count)
-        }
-        return shown
-    }
-}
-
 /// Şimdi kartı: ince dolgu, üzerine gelince aydınlanır, basınca ayrıntıya gider.
-private struct NowCard<Content: View>: View {
+struct NowCard<Content: View>: View {
     let open: (() -> Void)?
     @ViewBuilder let content: Content
     @State private var isHovering = false
@@ -153,7 +25,7 @@ private struct NowCard<Content: View>: View {
     }
 }
 
-private struct MeetingCardContent: View {
+struct MeetingCardContent: View {
     let event: CalendarMonitor.Event
     let now: Date
 
@@ -183,7 +55,7 @@ private struct MeetingCardContent: View {
     }
 }
 
-private struct TimerCardContent: View {
+struct TimerCardContent: View {
     let coordinator: AppCoordinator
 
     var body: some View {
@@ -211,7 +83,7 @@ private struct TimerCardContent: View {
     }
 }
 
-private struct ActivityCardContent: View {
+struct ActivityCardContent: View {
     let activity: ExternalActivity
     var more = 0
 
@@ -241,7 +113,7 @@ private struct ActivityCardContent: View {
     }
 }
 
-private struct ClaudeCardContent: View {
+struct ClaudeCardContent: View {
     let usage: ClaudeUsageMonitor
 
     var body: some View {
@@ -269,7 +141,7 @@ private struct ClaudeCardContent: View {
 }
 
 /// Görüşme: mikrofonu kullanan uygulama, sessize alma ve uygulamaya dönüş.
-private struct CallCardContent: View {
+struct CallCardContent: View {
     let microphone: MicrophoneControl
 
     var body: some View {
@@ -309,7 +181,7 @@ private struct CallCardContent: View {
 }
 
 /// Süren derleme: depo · iş akışı, commit başlığı ve geçen süre.
-private struct CICardContent: View {
+struct CICardContent: View {
     let run: CIMonitor.Run
     let others: Int
 
@@ -351,12 +223,5 @@ private struct ThinBar: View {
             }
         }
         .frame(height: 3)
-    }
-}
-
-enum NowFormat {
-    /// 0–100 yüzde, yerele göre ("%22" Türkçe, "22%" İngilizce).
-    static func percent(_ value: Double) -> String {
-        (value / 100).formatted(.percent.precision(.fractionLength(0)))
     }
 }
