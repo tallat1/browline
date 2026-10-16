@@ -97,25 +97,31 @@ enum NowItem: Identifiable {
     static func current(coordinator: AppCoordinator, now: Date) -> [NowItem] {
         var items: [NowItem] = []
         let settings = coordinator.settings
+        #if DEBUG
+        let isDemo = coordinator.ui.isDemoMode
+        #else
+        let isDemo = false
+        #endif
+        let activities = coordinator.externalActivities.activities.filter { !isDemo || $0.id.hasPrefix("demo.") }
         // Mikrofon kullanımdaysa (görüşme) ya da sessizdeyse en üstte.
-        if settings.meetingControlsEnabled, coordinator.microphone.canMute,
+        if !isDemo, settings.meetingControlsEnabled, coordinator.microphone.canMute,
            coordinator.privacy.isMicrophoneActive || coordinator.microphone.isMuted {
             items.append(.call)
         }
-        if settings.calendarEnabled,
+        if !isDemo, settings.calendarEnabled,
            let event = coordinator.calendar.upcoming.first(where: { !$0.isAllDay && $0.end > now }),
            event.start.timeIntervalSince(now) <= meetingLead {
             items.append(.meeting(event))
         }
         if settings.timerEnabled, coordinator.timer.isRunning { items.append(.timer) }
-        if settings.ciEnabled, let run = coordinator.ci.activeRuns.first { items.append(.ci(run)) }
+        if !isDemo, settings.ciEnabled, let run = coordinator.ci.activeRuns.first { items.append(.ci(run)) }
         if settings.activityAPIEnabled {
-            items += coordinator.externalActivities.activities.prefix(2).map { NowItem.activity($0) }
+            items += activities.prefix(2).map { NowItem.activity($0) }
         }
-        if settings.claudeUsageEnabled, coordinator.claudeUsage.usage?.fiveHour != nil { items.append(.claude) }
+        if !isDemo, settings.claudeUsageEnabled, coordinator.claudeUsage.usage?.fiveHour != nil { items.append(.claude) }
         var shown = Array(items.prefix(limit))
         // Etkinlikler sekmesi Şimdi'ye katıldı: sığmayanlar son etkinlik kartında sayı olarak.
-        let total = settings.activityAPIEnabled ? coordinator.externalActivities.activities.count : 0
+        let total = settings.activityAPIEnabled ? activities.count : 0
         let activityIndices = shown.indices.filter { if case .activity = shown[$0] { true } else { false } }
         if let last = activityIndices.last, total > activityIndices.count,
            case let .activity(activity, _) = shown[last] {

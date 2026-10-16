@@ -23,7 +23,7 @@ public final class VolumeController {
     @ObservationIgnored private var listeners: [(AudioObjectID, AudioObjectPropertyAddress, AudioObjectPropertyListenerBlock)] = []
     /// CoreAudio sorguları coreaudiod'a gider (her biri milisaniyeler): ana iş parçacığında yapılınca
     /// kaydırıcı sürüklenirken ana iş parçacığı %35'e kadar meşgul oluyordu (2026-10-16 örneklemesi).
-    @ObservationIgnored private let audioQueue = DispatchQueue(label: "com.talatozcoban.notchmvp.volume", qos: .userInitiated)
+    @ObservationIgnored private let audioQueue = DispatchQueue(label: "com.talatozcoban.browline.volume", qos: .userInitiated)
     @ObservationIgnored private var readPending = false
     @ObservationIgnored private var pendingVolume: Float?
     @ObservationIgnored private var unmuteBeforeWrite = false

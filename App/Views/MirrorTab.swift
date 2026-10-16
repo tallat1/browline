@@ -58,7 +58,7 @@ struct MirrorTab: View {
 /// Kamera oturumu. `startRunning` bloklayıcı; oturum yalnız kendi kuyruğunda değiştirilir.
 final class CameraMirror: @unchecked Sendable {
     let session = AVCaptureSession()
-    private let queue = DispatchQueue(label: "com.talatozcoban.notchmvp.mirror")
+    private let queue = DispatchQueue(label: "com.talatozcoban.browline.mirror")
     private var isConfigured = false
 
     func start() {

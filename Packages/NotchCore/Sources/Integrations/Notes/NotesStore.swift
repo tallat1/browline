@@ -17,7 +17,7 @@ public final class NotesStore {
 
     public init(directory: URL? = nil) {
         let base = directory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("com.talatozcoban.notchmvp")
+            .appendingPathComponent("com.talatozcoban.browline")
         fileURL = base.appendingPathComponent("notes.txt")
         text = (try? String(contentsOf: fileURL, encoding: .utf8)) ?? ""
     }

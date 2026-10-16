@@ -181,7 +181,7 @@ public final class CIMonitor {
         if let user { arguments += ["-u", user] }
         guard let output = run(tool, arguments) else { return .failure(FetchError("gh çalıştırılamadı")) }
         guard output.status == 0 else {
-            Log.integrations.error("CI: \(repository, privacy: .public) okunamadı (gh çıkış \(output.status))")
+            Log.integrations.error("CI: \(repository, privacy: .private) okunamadı (gh çıkış \(output.status))")
             return .failure(FetchError(repository))
         }
         return .success(parse(output.data, repository: repository))

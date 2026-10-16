@@ -239,15 +239,33 @@ struct CIRepositorySettings: View {
         draft = ""
     }
 
-    /// ~/GitHub (yoksa ev klasörü) altındaki git depoları; son 14 günde commit alan GitHub depoları.
+    /// Son 14 günde commit alan GitHub depoları. Yaygın geliştirici klasörlerine bakılır (TCC korumasız);
+    /// hiçbiri yoksa klasörü kullanıcı seçer. Ev klasörünü taramak Masaüstü, Belgeler ve İndirilenler izin
+    /// pencerelerini açtırıyordu.
     private func suggest() {
-        isSearching = true
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let github = home.appendingPathComponent("GitHub")
-        let root = FileManager.default.fileExists(atPath: github.path) ? github : home
+        let roots = ["GitHub", "Developer", "Projects", "Code", "src"]
+            .map { home.appendingPathComponent($0, isDirectory: true) }
+            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        if !roots.isEmpty { return scan(roots) }
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.message = String(localized: "Git depolarınızın bulunduğu klasörü seçin.")
+        panel.prompt = String(localized: "Seç")
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        scan([url])
+    }
+
+    private func scan(_ roots: [URL]) {
+        isSearching = true
         Task {
-            let found = await Task.detached(priority: .utility) { CIMonitor.suggestedRepositories(in: root) }.value
-            suggestions = found
+            let found = await Task.detached(priority: .utility) {
+                var seen = Set<String>()
+                return roots.flatMap { CIMonitor.suggestedRepositories(in: $0) }.filter { seen.insert($0).inserted }
+            }.value
+            suggestions = Array(found.prefix(6))
             isSearching = false
         }
     }

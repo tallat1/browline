@@ -27,6 +27,9 @@ final class AppSettings {
     var calendarEnabled: Bool { didSet { store(calendarEnabled, "calendarEnabled") } }
     var shelfEnabled: Bool { didSet { store(shelfEnabled, "shelfEnabled") } }
     var activityAPIEnabled: Bool { didSet { store(activityAPIEnabled, "activityAPIEnabled") } }
+    /// `browline://` bağlantıları (Raycast, Alfred, Kestirmeler). Web sayfaları da açabildiği için ayrı ve
+    /// varsayılan kapalı.
+    var urlSchemeEnabled: Bool { didSet { store(urlSchemeEnabled, "urlSchemeEnabled") } }
     /// Dış onay soruları (ör. Claude Code izin istemleri) notch'ta yanıtlanır; kapalıysa istemci kendi akışına döner.
     var questionsEnabled: Bool { didSet { store(questionsEnabled, "questionsEnabled") } }
     var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
@@ -63,7 +66,6 @@ final class AppSettings {
     var micShortcut: GlobalShortcut.Preset { didSet { store(micShortcut.rawValue, "micShortcut") } }
     /// Belgelenmemiş kullanım uç noktası (Claude Code'un Anahtar Zinciri kaydıyla). Varsayılan kapalı;
     /// kullanıcı riskleri kabul edip açar.
-    var claudeUsageAPIEnabled: Bool { didSet { store(claudeUsageAPIEnabled, "claudeUsageAPIEnabled") } }
     /// Takvim sekmesinde; izin yalnız düğmeye basınca istenir.
     var remindersEnabled: Bool { didSet { store(remindersEnabled, "remindersEnabled") } }
     var systemStatsEnabled: Bool { didSet { store(systemStatsEnabled, "systemStatsEnabled") } }
@@ -124,6 +126,7 @@ final class AppSettings {
 
     init() {
         let defaults = UserDefaults.standard
+        Self.migrateDefaults(defaults)
         screenPolicy = PanelManager.ScreenPolicy(rawValue: defaults.string(forKey: "screenPolicy") ?? "")
             ?? .builtInOrMain
         notchlessVisibility = PanelManager.NotchlessVisibility(
@@ -138,14 +141,15 @@ final class AppSettings {
         hideInGames = defaults.bool(forKey: "hideInGames")
         nowPlayingEnabled = defaults.object(forKey: "nowPlayingEnabled") as? Bool ?? true
         batteryEnabled = defaults.object(forKey: "batteryEnabled") as? Bool ?? true
-        calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? true
+        calendarEnabled = defaults.object(forKey: "calendarEnabled") as? Bool ?? false
         shelfEnabled = defaults.object(forKey: "shelfEnabled") as? Bool ?? true
-        activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true
-        questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? true
+        activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? false
+        urlSchemeEnabled = defaults.bool(forKey: "urlSchemeEnabled")
+        questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? false
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
-        privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? true
-        screenRecordingIndicatorEnabled = defaults.object(forKey: "screenRecordingIndicatorEnabled") as? Bool ?? true
-        ciEnabled = defaults.object(forKey: "ciEnabled") as? Bool ?? true
+        privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? false
+        screenRecordingIndicatorEnabled = defaults.object(forKey: "screenRecordingIndicatorEnabled") as? Bool ?? false
+        ciEnabled = defaults.object(forKey: "ciEnabled") as? Bool ?? false
         ciRepositories = defaults.stringArray(forKey: "ciRepositories") ?? []
         ciOnlyMine = defaults.object(forKey: "ciOnlyMine") as? Bool ?? true
         downloadsEnabled = defaults.bool(forKey: "downloadsEnabled")
@@ -155,17 +159,16 @@ final class AppSettings {
         keepAwakeEnabled = defaults.object(forKey: "keepAwakeEnabled") as? Bool ?? true
         timerEnabled = defaults.object(forKey: "timerEnabled") as? Bool ?? true
         notesEnabled = defaults.object(forKey: "notesEnabled") as? Bool ?? true
-        claudeUsageEnabled = defaults.object(forKey: "claudeUsageEnabled") as? Bool ?? true
-        terminalEnabled = defaults.object(forKey: "terminalEnabled") as? Bool ?? true
+        claudeUsageEnabled = defaults.object(forKey: "claudeUsageEnabled") as? Bool ?? false
+        terminalEnabled = defaults.object(forKey: "terminalEnabled") as? Bool ?? false
         clipboardEnabled = defaults.object(forKey: "clipboardEnabled") as? Bool ?? true
         bluetoothEnabled = defaults.object(forKey: "bluetoothEnabled") as? Bool ?? true
-        meetingControlsEnabled = defaults.object(forKey: "meetingControlsEnabled") as? Bool ?? true
+        meetingControlsEnabled = defaults.object(forKey: "meetingControlsEnabled") as? Bool ?? false
         reactiveEqualizer = defaults.object(forKey: "reactiveEqualizer") as? Bool ?? false
         pauseMotionInLowPower = defaults.object(forKey: "pauseMotionInLowPower") as? Bool ?? true
         micShortcut = GlobalShortcut.Preset(rawValue: defaults.string(forKey: "micShortcut") ?? "") ?? .controlOptionM
-        claudeUsageAPIEnabled = defaults.bool(forKey: "claudeUsageAPIEnabled")
-        remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? true
-        systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? true
+        remindersEnabled = defaults.object(forKey: "remindersEnabled") as? Bool ?? false
+        systemStatsEnabled = defaults.object(forKey: "systemStatsEnabled") as? Bool ?? false
         weatherEnabled = defaults.bool(forKey: "weatherEnabled")
         weatherPlace = defaults.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherMonitor.Place.self, from: $0) }
         mirrorEnabled = defaults.object(forKey: "mirrorEnabled") as? Bool ?? true
@@ -180,6 +183,28 @@ final class AppSettings {
         notchHiddenUntil = defaults.object(forKey: "notchHiddenUntil") as? Date
         lockScreenEnabled = defaults.bool(forKey: "lockScreenEnabled")
         lockScreenAutoDisabled = defaults.bool(forKey: "lockScreenAutoDisabled")
+    }
+
+    /// 0.9.0'da açık gelen geliştirici ve toplantı özellikleri karşılamanın varsayılan profiline (medya + dosyalar)
+    /// çekildi: karşılama bitmeden ya da "Atla" ile hiçbiri arka planda çalışmasın. Karşılamayı geçmiş kurulumda
+    /// hiç yazılmamış anahtar eski varsayılanıyla (açık) yazılır; mevcut kullanıcının gördüğü değişmez.
+    static let defaultsVersion = 2
+    static let previouslyOnByDefault = ["calendarEnabled", "remindersEnabled", "meetingControlsEnabled", "privacyIndicatorEnabled", "screenRecordingIndicatorEnabled", "terminalEnabled", "ciEnabled", "claudeUsageEnabled", "activityAPIEnabled", "questionsEnabled", "systemStatsEnabled"]
+
+    static func migrateDefaults(_ defaults: UserDefaults) {
+        guard defaults.integer(forKey: "settingsDefaultsVersion") < defaultsVersion else { return }
+        if defaults.bool(forKey: "hasCompletedOnboarding") {
+            // URL şeması eskiden etkinlik API'siyle birlikte açıktı.
+            if defaults.object(forKey: "urlSchemeEnabled") == nil {
+                defaults.set(defaults.object(forKey: "activityAPIEnabled") as? Bool ?? true, forKey: "urlSchemeEnabled")
+            }
+            for key in previouslyOnByDefault where defaults.object(forKey: key) == nil {
+                defaults.set(true, forKey: key)
+            }
+        }
+        // 0.9.0: Claude oturum anahtarıyla kullanım sorgusu kaldırıldı (Anthropic kuralları); ayarı kalmasın.
+        defaults.removeObject(forKey: "claudeUsageAPIEnabled")
+        defaults.set(defaultsVersion, forKey: "settingsDefaultsVersion")
     }
 
     private static let lockSessionKey = "lockScreenSessionOpen"

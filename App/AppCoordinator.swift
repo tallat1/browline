@@ -126,6 +126,11 @@ final class NotchUIState {
     /// Bölüm başına son açılan sayfa: bölüme dönünce oradan devam edilir.
     var lastPage: [NotchSection: NotchTab] = [:]
     var activityAPIStatus = String(localized: "Kapalı")
+    #if DEBUG
+    /// README görüntüleri: Şimdi'de gerçek toplantı, mikrofon, Claude ve dış etkinlik kartları gizlenir;
+    /// yalnız `demo.` ile başlayan etkinlikler görünür. Yalnız debug derlemesinde.
+    var isDemoMode = false
+    #endif
     /// Son tamamlanan indirmenin adı (kısa bildirimde gösterilir).
     var lastFinishedDownload = ""
     /// Pomodoro açıksa şu anki evre; düz zamanlayıcıda nil.
@@ -499,7 +504,7 @@ final class AppCoordinator {
         questions.onQuestionsChanged = { [weak self] list in self?.questionsChanged(list) }
         questions.onResolved = { question, decision, reason in
             let waited = Int(Date.now.timeIntervalSince(question.askedAt).rounded())
-            AppLog.coordinator.notice("onay sorusu kapandı: \(reason.rawValue, privacy: .public), karar \(decision?.rawValue ?? "yok", privacy: .public), \(waited) sn (\(question.subtitle ?? "", privacy: .public))")
+            AppLog.coordinator.notice("onay sorusu kapandı: \(reason.rawValue, privacy: .public), karar \(decision?.rawValue ?? "yok", privacy: .public), \(waited) sn (\(question.subtitle ?? "", privacy: .private))")
         }
         externalActivities.onFlash = { [weak self] activity, duration in
             // İstenen süre en az; uzun başlık sonuna kadar kayabilsin diye gerekirse uzar.
@@ -670,7 +675,6 @@ final class AppCoordinator {
         // Modül açıkken arka planda seyrek örnekleme: Sistem sayfası açılınca grafik geçmişi hazır.
         toggle(settings.systemStatsEnabled, start: systemStats.startBackground, stop: systemStats.stop)
         toggle(settings.claudeUsageEnabled, start: claudeUsage.start, stop: claudeUsage.stop)
-        claudeUsage.setAPIEnabled(settings.claudeUsageEnabled && settings.claudeUsageAPIEnabled)
         if settings.weatherEnabled, let place = settings.weatherPlace { weather.start(place: place) } else { weather.stop() }
         if !settings.keepAwakeEnabled { keepAwake.stop() }
         if !settings.timerEnabled { cancelTimer() }
@@ -794,6 +798,11 @@ final class AppCoordinator {
     }
 
     func handleURL(_ url: URL) {
+        // Web sayfaları da bu bağlantıyı açabilir: ayrı anahtar, varsayılan kapalı; ayrıştırmadan önce denetlenir.
+        guard settings.activityAPIEnabled, settings.urlSchemeEnabled else {
+            AppLog.coordinator.notice("URL yok sayıldı: URL şeması kapalı")
+            return
+        }
         do throws(ActivityURL.ParseError) {
             _ = handleExternal(try ActivityURL.request(from: url), source: "URL")
         } catch {
@@ -846,16 +855,17 @@ final class AppCoordinator {
             _ = externalActivities.handle(ActivityRequest(
                 op: .push, id: Self.questionActivityID, title: first.title, subtitle: first.subtitle,
                 symbol: first.symbol ?? "hand.raised.fill", tint: first.tint ?? "#FF9F0A",
-                priority: ActivityKind.questionPriority, ttl: max(1, first.expiresAt.timeIntervalSinceNow)))
+                priority: ActivityKind.questionPriority, ttl: max(1, first.expiresAt.timeIntervalSinceNow)),
+                isInternal: true)
             if arrived {
-                AppLog.coordinator.notice("onay sorusu geldi (\(list.count) bekliyor): \(first.subtitle ?? first.title, privacy: .public)")
+                AppLog.coordinator.notice("onay sorusu geldi (\(list.count) bekliyor): \(first.subtitle ?? first.title, privacy: .private)")
                 for model in panels.models where !model.isOpen {
                     model.tapped()
                     questionOpenedModels.append(ObjectIdentifier(model))
                 }
             }
         } else {
-            _ = externalActivities.handle(ActivityRequest(op: .end, id: Self.questionActivityID))
+            _ = externalActivities.handle(ActivityRequest(op: .end, id: Self.questionActivityID), isInternal: true)
             let opened = Set(questionOpenedModels)
             for model in panels.models where opened.contains(ObjectIdentifier(model)) { model.dismiss() }
             questionOpenedModels.removeAll()

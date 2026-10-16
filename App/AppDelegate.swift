@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        HelperQuarantine.clear()
         coordinator.start()
         #if DEBUG
         debugChannel.start()

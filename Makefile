@@ -2,7 +2,10 @@ APP := build/Build/Products/Debug/Browline.app
 ADAPTER_SRC := ThirdParty/mediaremote-adapter
 ADAPTER_BUILD := build/adapter
 SESSIONS_BUILD := build/sessions
-BUNDLE_ID := com.talatozcoban.notchmvp
+BUNDLE_ID := com.talatozcoban.browline
+# Kendi imzanızla derlemek için: make run XCODE_FLAGS='DEVELOPMENT_TEAM=ABCDE12345'
+# İmzasız yerel deneme: make run XCODE_FLAGS='CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM='
+XCODE_FLAGS ?=
 
 .PHONY: gen adapter sessions build run stop restart test log measure clean
 
@@ -26,7 +29,7 @@ $(SESSIONS_BUILD)/MediaSessions.dylib: Helpers/MediaSessions/MediaSessions.m
 
 build: gen adapter sessions
 	xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Debug -skipPackagePluginValidation \
-		-derivedDataPath build -quiet build
+		-derivedDataPath build -quiet $(XCODE_FLAGS) build
 
 run: build
 	open $(APP)

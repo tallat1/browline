@@ -178,7 +178,7 @@ private final class TapSession: SpectrumSession {
     private var tapID = AudioObjectID(kAudioObjectUnknown)
     private var aggregateID = AudioObjectID(kAudioObjectUnknown)
     private var procID: AudioDeviceIOProcID?
-    private let queue = DispatchQueue(label: "com.talatozcoban.notchmvp.spectrum", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "com.talatozcoban.browline.spectrum", qos: .userInteractive)
 
     init(levels: SpectrumLevels) throws {
         let description = CATapDescription(stereoGlobalTapButExcludeProcesses: [])
@@ -192,7 +192,7 @@ private final class TapSession: SpectrumSession {
             let outputUID = try Self.defaultOutputUID()
             let aggregate: [String: Any] = [
                 kAudioAggregateDeviceNameKey: "Browline spektrum",
-                kAudioAggregateDeviceUIDKey: "com.talatozcoban.notchmvp.spectrum.\(UUID().uuidString)",
+                kAudioAggregateDeviceUIDKey: "com.talatozcoban.browline.spectrum.\(UUID().uuidString)",
                 kAudioAggregateDeviceMainSubDeviceKey: outputUID,
                 kAudioAggregateDeviceIsPrivateKey: true,
                 kAudioAggregateDeviceIsStackedKey: false,

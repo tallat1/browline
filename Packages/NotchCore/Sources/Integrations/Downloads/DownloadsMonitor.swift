@@ -55,7 +55,7 @@ public final class DownloadsMonitor {
         guard source == nil else { return }
         let descriptor = open(directory.path, O_EVTONLY)
         guard descriptor >= 0 else {
-            Log.integrations.error("İndirilenler klasörü açılamadı (izin?): \(self.directory.path, privacy: .public)")
+            Log.integrations.error("İndirilenler klasörü açılamadı (izin?): \(self.directory.path, privacy: .private)")
             return
         }
         let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor,

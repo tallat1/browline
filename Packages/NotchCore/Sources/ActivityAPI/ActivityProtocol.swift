@@ -9,7 +9,7 @@ public enum ActivityAPI {
             return URL(fileURLWithPath: override)
         }
         return FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/com.talatozcoban.notchmvp/activity.sock")
+            .appendingPathComponent("Library/Application Support/com.talatozcoban.browline/activity.sock")
     }
 
     /// Tek satırın üst sınırı; aşan bağlantı kapatılır.

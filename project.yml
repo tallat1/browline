@@ -49,21 +49,24 @@ targets:
       properties:
         CFBundleName: Browline
         CFBundleDisplayName: Browline
-        CFBundleShortVersionString: "0.1.0"
+        CFBundleShortVersionString: "0.9.0"
         CFBundleVersion: "1"
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         # Ajan uygulama: Dock simgesi ve uygulama menüsü yok.
         LSUIElement: true
         NSHumanReadableCopyright: "© 2026 Browline"
-        NSAppleEventsUsageDescription: "MediaRemote kullanılamadığında Music ve Spotify'ı oynat/duraklat ve parça geçişi için denetlemek."
+        NSAppleEventsUsageDescription: "Music ve Spotify'da çalanı denetlemek için: oynat/duraklat, parça geçişi ve konuma atlama."
+        NSDesktopFolderUsageDescription: "Rafa bırakılan ekran görüntülerini kaydetmek ve dönüştürülen dosyaları asıllarının yanına yazmak için."
+        NSDownloadsFolderUsageDescription: "İndirmeleri notch'ta göstermek ve sıkıştırılan ya da dönüştürülen dosyaları İndirilenler'e kaydetmek için."
+        NSDocumentsFolderUsageDescription: "Dönüştürülen dosyaları Belgeler'deki asıllarının yanına kaydetmek için."
         NSCalendarsFullAccessUsageDescription: "Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak."
         NSRemindersFullAccessUsageDescription: "Bugün vadesi gelen anımsatıcıları Takvim sekmesinde göstermek ve tamamlandı işaretlemek için."
         NSCameraUsageDescription: "Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez."
         NSAudioCaptureUsageDescription: "Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez."
-        # Etkinlik API'sinin URL kapısı: browline://push?id=…&title=… (notchmvp:// eski adla da çalışır)
+        # Etkinlik API'sinin URL kapısı: browline://push?id=…&title=… (Ayarlar'da ayrı anahtar, varsayılan kapalı)
         CFBundleURLTypes:
-          - CFBundleURLName: com.talatozcoban.notchmvp.activity
-            CFBundleURLSchemes: [browline, notchmvp]
+          - CFBundleURLName: com.talatozcoban.browline.activity
+            CFBundleURLSchemes: [browline]
     entitlements:
       path: App/Browline.entitlements
       properties:
@@ -73,7 +76,7 @@ targets:
         com.apple.security.device.camera: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.notchmvp
+        PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.browline
         PRODUCT_NAME: Browline
         # Icon Composer simgesi (App/Browline.icon): macOS 26+ Liquid Glass; actool 14/15 için .icns de üretir.
         ASSETCATALOG_COMPILER_APPICON_NAME: Browline
@@ -100,7 +103,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: notch
-        PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.notchmvp.cli
+        PRODUCT_BUNDLE_IDENTIFIER: com.talatozcoban.browline.cli
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_IDENTITY: "Apple Development"
         ENABLE_HARDENED_RUNTIME: YES

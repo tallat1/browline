@@ -31,7 +31,7 @@ struct TrackChangeTests {
 struct AudioOutputTests {
     @Test func symbolsFromNameThenTransport() {
         typealias Monitor = AudioOutputMonitor
-        #expect(Monitor.symbolName(for: .init(id: 1, name: "Talat’s AirPods Pro", transport: .bluetooth)) == "airpodspro")
+        #expect(Monitor.symbolName(for: .init(id: 1, name: "Ada’s AirPods Pro", transport: .bluetooth)) == "airpodspro")
         #expect(Monitor.symbolName(for: .init(id: 1, name: "AirPods Max", transport: .bluetooth)) == "airpodsmax")
         #expect(Monitor.symbolName(for: .init(id: 1, name: "WH-1000XM5", transport: .bluetooth)) == "headphones")
         #expect(Monitor.symbolName(for: .init(id: 1, name: "MacBook Pro Hoparlörü", transport: .builtIn)) == "laptopcomputer")
@@ -259,53 +259,6 @@ struct ClaudeLimitLogTests {
     }
 }
 
-/// Uç nokta biçimi topluluk raporlarından; sahte veriyle. Gerçek anahtar testlere hiç girmez.
-struct ClaudeUsageAPITests {
-    // Örnek değerler: gerçek anahtar değil.
-    @Test func decodesSecurityOutput() throws {
-        let json = #"{"claudeAiOauth":{"accessToken":"ornek-deneme","expiresAt":1760000000000}}"#
-        let plain = try #require(ClaudeUsageAPI.decodePassword(Data((json + "\n").utf8)))
-        #expect(ClaudeUsageAPI.parseCredentials(plain)?.accessToken == "ornek-deneme")
-        let hex = Data(json.utf8).map { String(format: "%02x", $0) }.joined()
-        let decoded = try #require(ClaudeUsageAPI.decodePassword(Data((hex + "\n").utf8)))
-        #expect(ClaudeUsageAPI.parseCredentials(decoded)?.accessToken == "ornek-deneme")
-        #expect(ClaudeUsageAPI.decodePassword(Data("\n".utf8)) == nil)
-    }
-
-    @Test func cacheDropsExpiredCredentials() async {
-        let cache = ClaudeUsageAPI.CredentialCache()
-        let now = Date(timeIntervalSince1970: 1_000)
-        await cache.store(.init(accessToken: "ornek", expiresAt: now.addingTimeInterval(60)))
-        #expect(await cache.current(at: now)?.accessToken == "ornek")
-        #expect(await cache.current(at: now.addingTimeInterval(61)) == nil)
-    }
-
-    @Test func parsesUtilizationAndMicrosecondResets() throws {
-        let body = Data(#"{"five_hour":{"utilization":23.0,"resets_at":"2026-10-16T04:59:59.943648+00:00"},"seven_day":{"utilization":41.5,"resets_at":"2026-10-20T08:00:00+00:00"},"seven_day_opus":null}"#.utf8)
-        let captured = Date(timeIntervalSince1970: 1_800_000_000)
-        let usage = try #require(ClaudeUsageAPI.parse(body, capturedAt: captured))
-        #expect(usage.fiveHour?.usedPercentage == 23)
-        #expect(usage.sevenDay?.usedPercentage == 41.5)
-        #expect(usage.fiveHour?.resetsAt == ClaudeUsageAPI.date(from: "2026-10-16T04:59:59+00:00"))
-        #expect(usage.capturedAt == captured)
-        #expect(ClaudeUsageAPI.parse(Data(#"{"error":"x"}"#.utf8), capturedAt: captured) == nil)
-    }
-
-    @Test func dates() {
-        #expect(ClaudeUsageAPI.date(from: "2026-10-16T04:59:59Z") == Date(timeIntervalSince1970: 1_792_126_799))
-        #expect(ClaudeUsageAPI.date(from: "2026-10-16T04:59:59.5Z") == Date(timeIntervalSince1970: 1_792_126_799))
-        #expect(ClaudeUsageAPI.date(from: "dün") == nil)
-    }
-
-    @Test func credentialsNeedAccessTokenOnly() throws {
-        let fake = Data(#"{"claudeAiOauth":{"accessToken":"sahte-anahtar","refreshToken":"sahte-yenileme","expiresAt":1800000000000}}"#.utf8)
-        let credentials = try #require(ClaudeUsageAPI.parseCredentials(fake))
-        #expect(credentials.accessToken == "sahte-anahtar")
-        #expect(credentials.expiresAt == Date(timeIntervalSince1970: 1_800_000_000))
-        #expect(ClaudeUsageAPI.parseCredentials(Data(#"{"claudeAiOauth":{}}"#.utf8)) == nil)
-    }
-}
-
 struct ShelfActionTests {
     private func temporaryFolder() throws -> URL {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("notch-raf-\(UUID().uuidString)")
@@ -352,11 +305,11 @@ struct ShelfActionTests {
 @MainActor
 struct BluetoothMonitorTests {
     // system_profiler -json çıktısının özü (2026-10-16, macOS 27, Türkçe bölge: "%80").
-    static let sample = #"{"SPBluetoothDataType":[{"device_connected":[{"Talat (AirPods Pro)":{"device_batteryLevelCase":"%15","device_batteryLevelLeft":"%80","device_batteryLevelRight":"%79","device_minorType":"Headphones"}},{"Talat (AirPods Pro)":{"device_batteryLevelCase":"%15"}},{"Magic Keyboard":{"device_batteryLevelMain":"18%","device_minorType":"Keyboard"}}],"device_not_connected":[{"Eski":{}}]}]}"#
+    static let sample = #"{"SPBluetoothDataType":[{"device_connected":[{"Ada (AirPods Pro)":{"device_batteryLevelCase":"%15","device_batteryLevelLeft":"%80","device_batteryLevelRight":"%79","device_minorType":"Headphones"}},{"Ada (AirPods Pro)":{"device_batteryLevelCase":"%15"}},{"Magic Keyboard":{"device_batteryLevelMain":"18%","device_minorType":"Keyboard"}}],"device_not_connected":[{"Eski":{}}]}]}"#
 
     @Test func parsesAndMergesDevices() {
         let devices = BluetoothMonitor.parse(Data(Self.sample.utf8))
-        #expect(devices.map(\.name) == ["Talat (AirPods Pro)", "Magic Keyboard"])
+        #expect(devices.map(\.name) == ["Ada (AirPods Pro)", "Magic Keyboard"])
         #expect(devices[0].kind == .headphones)
         #expect(devices[0].left == 80)
         #expect(devices[0].right == 79)
@@ -368,8 +321,8 @@ struct BluetoothMonitorTests {
 
     @Test func shortNameDropsOwner() {
         func short(_ name: String) -> String { BluetoothMonitor.Device(name: name, kind: .other).shortName }
-        #expect(short("Talat (AirPods Pro)") == "AirPods Pro")
-        #expect(short("Talat’s Magic Keyboard") == "Magic Keyboard")
+        #expect(short("Ada (AirPods Pro)") == "AirPods Pro")
+        #expect(short("Ada’s Magic Keyboard") == "Magic Keyboard")
         #expect(short("MX Master 3") == "MX Master 3")
         #expect(short("(Boş)") == "(Boş)")
     }

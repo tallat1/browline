@@ -5,3 +5,8 @@ build/
 Browline.xcodeproj/
 xcuserdata/
 dist/
+*.xcodeproj/
+DerivedData/
+.claude/
+CLAUDE.md
+AGENTS.md

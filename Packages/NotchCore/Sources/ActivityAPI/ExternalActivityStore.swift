@@ -14,10 +14,16 @@ public final class ExternalActivityStore {
     @ObservationIgnored private var expiryTask: Task<Void, Never>?
 
     public static let maximumActivities = 8
+    /// Uygulamanın kendi etkinlikleri (ör. onay sorusu `notch.question`); dışarıdan yazılamaz, bitirilemez.
+    public static let reservedPrefix = "notch."
 
     public init() {}
 
-    public func handle(_ request: ActivityRequest, now: Date = .now) -> ActivityResponse {
+    /// `isInternal`: uygulamanın kendi çağrısı; soket, URL ve Kestirmeler ayrılmış kimliklere dokunamaz.
+    public func handle(_ request: ActivityRequest, now: Date = .now, isInternal: Bool = false) -> ActivityResponse {
+        if !isInternal, let id = request.id, id.hasPrefix(Self.reservedPrefix) {
+            return .failure("\(Self.reservedPrefix) ile başlayan kimlikler uygulamaya ayrılmış")
+        }
         do {
             switch request.op {
             case .ping:

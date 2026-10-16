@@ -492,6 +492,11 @@ public final class NowPlayingController {
         present(presented)
     }
 
+    #if DEBUG
+    /// README görüntüleri için örnek parça; yalnız debug derlemesinde. Gerçek oturum değişince onun yerine geçer.
+    public func presentSample(_ sample: NowPlayingInfo?) { present(sample) }
+    #endif
+
     private func present(_ newValue: NowPlayingInfo?) {
         guard newValue != info else { return }
         let titleChanged = newValue?.title != info?.title

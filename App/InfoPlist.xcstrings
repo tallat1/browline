@@ -16,7 +16,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When MediaRemote is unavailable, controls play/pause and track changes in Music and Spotify."
+            "value": "To control what's playing in Music and Spotify: play and pause, skipping tracks and seeking."
           }
         }
       }
@@ -47,6 +47,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "So you can see yourself in the Mirror tab. Nothing is recorded or sent anywhere."
+          }
+        }
+      }
+    },
+    "NSDesktopFolderUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To save screenshots you drop on the shelf and to write converted files next to their originals."
+          }
+        }
+      }
+    },
+    "NSDocumentsFolderUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To save converted files next to their originals in Documents."
+          }
+        }
+      }
+    },
+    "NSDownloadsFolderUsageDescription": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To show downloads in the notch and to save zipped or converted files to Downloads."
           }
         }
       }

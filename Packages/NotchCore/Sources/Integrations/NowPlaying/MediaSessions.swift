@@ -97,7 +97,7 @@ struct MediaSessionsBundle: Equatable, Sendable {
             guard finished.terminationStatus != 0 else { return }
             let message = String(decoding: errors.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            Log.integrations.error("Oturum komutu başarısız (\(name, privacy: .public)): \(finished.terminationStatus) \(message, privacy: .public)")
+            Log.integrations.error("Oturum komutu başarısız (\(name, privacy: .public)): \(finished.terminationStatus) \(message, privacy: .private)")
         }
         do {
             try process.run()

@@ -144,7 +144,7 @@ public final class ActivitySocketServer: @unchecked Sendable {
 
     public let socketURL: URL
     private let handler: Handler
-    private let queue = DispatchQueue(label: "com.talatozcoban.notchmvp.activity-api")
+    private let queue = DispatchQueue(label: "com.talatozcoban.browline.activity-api")
     // Aşağıdakiler yalnız `queue` üzerinde değişir.
     private var listenSource: DispatchSourceRead?
     private var connections: [Int32: Connection] = [:]
@@ -234,6 +234,8 @@ public final class ActivitySocketServer: @unchecked Sendable {
             let count = read(connection.fd, &chunk, chunk.count)
             if count > 0 {
                 connection.buffer.append(contentsOf: chunk[0..<count])
+                // Satırsız akış belleği büyütmesin: tampon dolunca işle; kalan veri için kaynak yeniden tetiklenir.
+                if connection.buffer.count > ActivityAPI.maximumLineBytes { break }
                 continue
             }
             if count < 0, errno == EAGAIN || errno == EINTR { break }

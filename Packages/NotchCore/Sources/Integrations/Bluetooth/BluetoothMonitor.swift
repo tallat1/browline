@@ -32,7 +32,7 @@ public final class BluetoothMonitor {
             self.caseLevel = caseLevel
         }
 
-        /// Dar yerler için aygıt adı: "Talat (AirPods Pro)" → "AirPods Pro", "Talat’s Keyboard" → "Keyboard".
+        /// Dar yerler için aygıt adı: "Ada (AirPods Pro)" → "AirPods Pro", "Ada’s Keyboard" → "Keyboard".
         public var shortName: String {
             if name.hasSuffix(")"), let open = name.lastIndex(of: "("), open > name.startIndex {
                 let inner = name[name.index(after: open)..<name.index(before: name.endIndex)]

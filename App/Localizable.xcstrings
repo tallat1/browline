@@ -245,16 +245,6 @@
         }
       }
     },
-    "%lld dk önce güncellendi · 5 dakikada bir tazelenir": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Updated %lld min ago · refreshes every 5 minutes"
-          }
-        }
-      }
-    },
     "%lld dk önce güncellendi · Claude Code oturumu açıkken tazelenir": {
       "localizations": {
         "en": {
@@ -449,26 +439,6 @@
         }
       }
     },
-    "Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "If asked for Keychain access, choose \"Always Allow\"."
-          }
-        }
-      }
-    },
-    "Anahtar reddedildi": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The token was rejected"
-          }
-        }
-      }
-    },
     "Anımsatıcılar": {
       "localizations": {
         "en": {
@@ -629,16 +599,6 @@
         }
       }
     },
-    "Az önce güncellendi · 5 dakikada bir tazelenir": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Updated just now · refreshes every 5 minutes"
-          }
-        }
-      }
-    },
     "Aç": {
       "localizations": {
         "en": {
@@ -715,16 +675,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Click to copy to the clipboard"
-          }
-        }
-      }
-    },
-    "Bağlantı ya da uç nokta sorunu; birazdan yeniden denenecek.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A connection or endpoint problem; it will retry shortly."
           }
         }
       }
@@ -905,16 +855,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "If you hit a limit, when it resets shows here. Only Claude Code in the terminal reports usage percentages."
-          }
-        }
-      }
-    },
-    "Biraz sonra kendiliğinden yeniden denenecek.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "It will retry on its own shortly."
           }
         }
       }
@@ -1159,16 +1099,6 @@
         }
       }
     },
-    "Claude Code oturumu bulunamadı": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No Claude Code sign-in found"
-          }
-        }
-      }
-    },
     "Claude Code'un etkin hesabı": {
       "localizations": {
         "en": {
@@ -1185,16 +1115,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude Code's active account · profile %@"
-          }
-        }
-      }
-    },
-    "Claude Code'un oturumuyla 5 dakikada bir sorulur; belgelenmemiş bir uç nokta, haber vermeden değişebilir.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Checked every 5 minutes with Claude Code's session; an undocumented endpoint that may change without notice."
           }
         }
       }
@@ -1249,16 +1169,6 @@
         }
       }
     },
-    "Claude çok fazla istek dedi": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Claude said too many requests"
-          }
-        }
-      }
-    },
     "Claude'da yanıtla": {
       "localizations": {
         "en": {
@@ -1279,12 +1189,12 @@
         }
       }
     },
-    "Derleme ilerlemesi, Claude oturumları ve Kestirmeler Şimdi'de kart olarak görünür. Komut satırı ayrıntıları Gelişmiş'te.": {
+    "Derleme ilerlemesi, Claude oturumları ve Kestirmeler Şimdi'de kart olarak görünür. Bağlantıları web sayfaları da açabilir; yalnız Raycast, Alfred ya da Kestirmeler'de kullanıyorsanız açın. Komut satırı ayrıntıları Gelişmiş'te.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Build progress, Claude sessions and Shortcuts show as cards in Now. Command-line details are in Advanced."
+            "value": "Build progress, Claude sessions and Shortcuts appear as cards in Now. Web pages can open these links too; turn them on only if you use them from Raycast, Alfred or Shortcuts. Command-line details are in Advanced."
           }
         }
       }
@@ -1711,6 +1621,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Launch at login"
+          }
+        }
+      }
+    },
+    "Git depolarınızın bulunduğu klasörü seçin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the folder that contains your Git repositories."
           }
         }
       }
@@ -2351,26 +2271,6 @@
         }
       }
     },
-    "Limitler alınamadı": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn't get limits"
-          }
-        }
-      }
-    },
-    "Limitler alınıyor…": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fetching limits…"
-          }
-        }
-      }
-    },
     "Lisans metni bulunamadı.": {
       "localizations": {
         "en": {
@@ -2843,26 +2743,6 @@
         }
       }
     },
-    "Oturum anahtarının süresi dolmuş": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The sign-in token has expired"
-          }
-        }
-      }
-    },
-    "Oturum ve hafta yüzdeleri": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Session and weekly percentages"
-          }
-        }
-      }
-    },
     "Oturum · 5 saat": {
       "localizations": {
         "en": {
@@ -3281,6 +3161,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mute shortcut"
+          }
+        }
+      }
+    },
+    "Seç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
           }
         }
       }
@@ -3725,36 +3615,6 @@
         }
       }
     },
-    "Terminalde claude auth login ile oturum açın; Anahtar Zinciri izni istenirse \"Her zaman izin ver\" seçin.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sign in with claude auth login in a terminal; if asked for Keychain access, choose \"Always Allow\"."
-          }
-        }
-      }
-    },
-    "Terminalde claude auth login ile yeniden oturum açın.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sign in again with claude auth login in a terminal."
-          }
-        }
-      }
-    },
-    "Terminalde claude komutunu bir kez çalıştırın; Claude Code anahtarı yeniler.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Run claude once in a terminal; Claude Code renews the token."
-          }
-        }
-      }
-    },
     "Toplantı": {
       "localizations": {
         "en": {
@@ -4137,6 +3997,16 @@
         }
       }
     },
+    "Yüzdeler Claude Code'un durum satırı betiğinden gelir (Examples/claude-code/usage-statusline.sh); Browline Claude oturumunuza hiç dokunmaz.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Percentages come from Claude Code's status line script (Examples/claude-code/usage-statusline.sh); Browline never touches your Claude sign-in."
+          }
+        }
+      }
+    },
     "Yüzen kart (menü çubuğunun altında)": {
       "localizations": {
         "en": {
@@ -4223,6 +4093,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "just now"
+          }
+        }
+      }
+    },
+    "browline:// bağlantıları": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "browline:// links"
           }
         }
       }

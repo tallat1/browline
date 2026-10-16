@@ -6,8 +6,6 @@ import Foundation
 /// Yanıt kanalı olmadığı için yalnız push, end ve flash. Alan sınırları sokettekiyle aynı.
 public enum ActivityURL {
     public static let scheme = "browline"
-    /// Çalışma adından kalan şema: eski betik ve kestirmeler bozulmasın.
-    public static let legacySchemes: Set<String> = ["notchmvp"]
 
     public enum ParseError: Error, Equatable, CustomStringConvertible {
         case scheme
@@ -29,7 +27,7 @@ public enum ActivityURL {
                                                     "priority", "ttl", "duration"]
 
     public static func request(from url: URL) throws(ParseError) -> ActivityRequest {
-        guard let urlScheme = url.scheme?.lowercased(), urlScheme == scheme || legacySchemes.contains(urlScheme),
+        guard url.scheme?.lowercased() == scheme,
               let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { throw .scheme }
         // browline://push?… ya da browline:push?…
         let name = (components.host ?? components.path).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
@@ -50,18 +48,30 @@ public enum ActivityURL {
             guard let value = ActivityRequest.number(from: raw) else { throw .number(key) }
             return value
         }
+        func integer(_ key: String) throws(ParseError) -> Int? {
+            guard let value = try number(key) else { return nil }
+            guard let integer = ActivityRequest.integer(from: value) else { throw .number(key) }
+            return integer
+        }
         return ActivityRequest(op: operation, id: values["id"], title: values["title"], subtitle: values["subtitle"],
                                progress: try number("progress"), symbol: values["symbol"], tint: values["tint"],
-                               priority: try number("priority").map { Int($0) }, ttl: try number("ttl"),
+                               priority: try integer("priority"), ttl: try number("ttl"),
                                duration: try number("duration"))
     }
 }
 
 extension ActivityRequest {
-    /// `0.4` ya da `40%`; komut satırı ve URL şeması aynı kuralı kullanır.
+    /// `0.4` ya da `40%`; komut satırı ve URL şeması aynı kuralı kullanır. Sonsuz ve NaN reddedilir.
     public static func number(from raw: String) -> Double? {
         let trimmed = raw.trimmingCharacters(in: .whitespaces)
-        if trimmed.hasSuffix("%") { return Double(trimmed.dropLast()).map { $0 / 100 } }
-        return Double(trimmed)
+        let value = trimmed.hasSuffix("%") ? Double(trimmed.dropLast()).map { $0 / 100 } : Double(trimmed)
+        return value.flatMap { $0.isFinite ? $0 : nil }
+    }
+
+    /// Öncelik gibi tam sayı alanlar: `Int(Double)` sonsuzda, NaN'da ve Int'e sığmayan değerde çöker
+    /// (bir web sayfasındaki `browline://push?priority=1e999` bağlantısı uygulamayı düşürüyordu).
+    public static func integer(from value: Double) -> Int? {
+        guard value.isFinite else { return nil }
+        return Int(exactly: value.rounded())
     }
 }

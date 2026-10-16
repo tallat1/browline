@@ -5,7 +5,7 @@ import Integrations
 import NotchShell
 import os
 
-private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: "debug")
+private let debugLog = Logger(subsystem: "com.talatozcoban.browline", category: "debug")
 
 /// Yalnız debug derlemesi: test betikleri notch'u imleci ele geçirmeden yönetebilsin.
 /// Komutlar dağıtık bildirim nesnesi olarak gelir: open, close, tab:media|calendar|shelf|activities,
@@ -14,9 +14,11 @@ private let debugLog = Logger(subsystem: "com.talatozcoban.notchmvp", category: 
 /// awake:on|off, battery:low|full, weather:<şehir>|off, timer:pomodoro.
 @MainActor
 final class DebugCommandChannel {
-    static let name = Notification.Name("com.talatozcoban.notchmvp.debug")
+    static let name = Notification.Name("com.talatozcoban.browline.debug")
     private let coordinator: AppCoordinator
     private var token: NSObjectProtocol?
+    /// demo:on zamanlayıcıyı kendisi başlattıysa demo:off onu durdurur; kullanıcının zamanlayıcısına dokunulmaz.
+    private var demoStartedTimer = false
 
     init(coordinator: AppCoordinator) {
         self.coordinator = coordinator
@@ -179,6 +181,26 @@ final class DebugCommandChannel {
             else if let seconds = Double(timer.dropFirst(6)) { coordinator.timer.start(seconds: seconds) }
         case "audio:preview":
             coordinator.activities.flash(AppCoordinator.ActivityKind.audioOutput, duration: .seconds(3))
+        case "demo:track":
+            // Örnek parça (README görüntüleri): kullanıcının gerçek müziği görüntüye girmesin.
+            coordinator.nowPlaying.presentSample(NowPlayingInfo(
+                bundleIdentifier: "com.apple.Music", title: "Afterglow", artist: "Demo Session",
+                album: "Browline Samples", duration: 214, elapsedTime: 81, timestamp: .now,
+                isPlaying: true, artworkData: Self.demoArtwork()))
+        case "demo:clear":
+            coordinator.nowPlaying.presentSample(nil)
+        case "demo:on":
+            coordinator.ui.isDemoMode = true
+            handle("demo:track")
+            if !coordinator.timer.isRunning {
+                coordinator.timer.start(seconds: 25 * 60)
+                demoStartedTimer = true
+            }
+        case "demo:off":
+            coordinator.ui.isDemoMode = false
+            coordinator.nowPlaying.presentSample(nil)
+            if demoStartedTimer { coordinator.cancelTimer() }
+            demoStartedTimer = false
         case "track:preview":
             let title = coordinator.nowPlaying.info?.title ?? ""
             coordinator.activities.flash(AppCoordinator.ActivityKind.trackChange,
@@ -270,4 +292,26 @@ final class DebugCommandChannel {
         }
     }
 }
+extension DebugCommandChannel {
+    /// Örnek kapak: akşam gökyüzü geçişi ve alçak güneş; telifli görsel kullanmamak için kodla çizilir.
+    static func demoArtwork() -> Data? {
+        let size = 600
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: size, pixelsHigh: size, bitsPerSample: 8,
+                                         samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return nil }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        let bounds = NSRect(x: 0, y: 0, width: size, height: size)
+        NSGradient(colors: [NSColor(red: 0.24, green: 0.12, blue: 0.42, alpha: 1),
+                            NSColor(red: 0.93, green: 0.36, blue: 0.33, alpha: 1),
+                            NSColor(red: 1.0, green: 0.71, blue: 0.36, alpha: 1)])?.draw(in: bounds, angle: -90)
+        NSColor(red: 1.0, green: 0.88, blue: 0.62, alpha: 0.95).setFill()
+        NSBezierPath(ovalIn: NSRect(x: 190, y: 120, width: 220, height: 220)).fill()
+        NSColor(red: 0.18, green: 0.08, blue: 0.24, alpha: 1).setFill()
+        NSBezierPath(rect: NSRect(x: 0, y: 0, width: size, height: 170)).fill()
+        NSGraphicsContext.restoreGraphicsState()
+        return rep.representation(using: .png, properties: [:])
+    }
+}
+
 #endif

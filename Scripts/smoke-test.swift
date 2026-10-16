@@ -10,7 +10,7 @@ try? FileManager.default.createDirectory(at: outputDirectory, withIntermediateDi
 
 func send(_ command: String) {
     DistributedNotificationCenter.default().postNotificationName(
-        Notification.Name("com.talatozcoban.notchmvp.debug"), object: command, userInfo: nil,
+        Notification.Name("com.talatozcoban.browline.debug"), object: command, userInfo: nil,
         deliverImmediately: true)
 }
 

@@ -12,7 +12,7 @@ five_reset=$(field rate_limits.five_hour.resets_at)
 week=$(field rate_limits.seven_day.used_percentage)
 week_reset=$(field rate_limits.seven_day.resets_at)
 
-dir="$HOME/Library/Application Support/com.talatozcoban.notchmvp"
+dir="$HOME/Library/Application Support/com.talatozcoban.browline"
 mkdir -p "$dir"
 # Çalıştığının izi (içeriksiz): limit gelmese de uygulama "durum satırı çalışıyor" diyebilsin.
 touch "$dir/claude-statusline.seen"

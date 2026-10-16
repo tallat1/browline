@@ -208,7 +208,11 @@ struct NowPage: View {
                     .disabled(!settings.activityAPIEnabled)
                     .padding(.leading, 16)
                     .settingsAnchor("questions")
-                SettingsNote("Derleme ilerlemesi, Claude oturumları ve Kestirmeler Şimdi'de kart olarak görünür. Komut satırı ayrıntıları Gelişmiş'te.")
+                Toggle("browline:// bağlantıları", isOn: $settings.urlSchemeEnabled)
+                    .disabled(!settings.activityAPIEnabled)
+                    .padding(.leading, 16)
+                    .settingsAnchor("urlScheme")
+                SettingsNote("Derleme ilerlemesi, Claude oturumları ve Kestirmeler Şimdi'de kart olarak görünür. Bağlantıları web sayfaları da açabilir; yalnız Raycast, Alfred ya da Kestirmeler'de kullanıyorsanız açın. Komut satırı ayrıntıları Gelişmiş'te.")
             }
         }
         .onAppear { coordinator.permissions.refresh() }
@@ -324,12 +328,7 @@ struct StatusPage: View {
             Section("Claude") {
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled).settingsAnchor("claude")
                 ShowInNotchToggle(settings: settings, tab: .claude, isFeatureEnabled: settings.claudeUsageEnabled)
-                if settings.claudeUsageEnabled {
-                    Toggle("Oturum ve hafta yüzdeleri", isOn: $settings.claudeUsageAPIEnabled)
-                        .padding(.leading, 16)
-                        .settingsAnchor("claudeAPI")
-                    SettingsNote("Claude Code'un oturumuyla 5 dakikada bir sorulur; belgelenmemiş bir uç nokta, haber vermeden değişebilir.")
-                }
+                SettingsNote("Yüzdeler Claude Code'un durum satırı betiğinden gelir (Examples/claude-code/usage-statusline.sh); Browline Claude oturumunuza hiç dokunmaz.")
             }
             Section("CI") {
                 Toggle("GitHub Actions durumu", isOn: $settings.ciEnabled).settingsAnchor("ci")

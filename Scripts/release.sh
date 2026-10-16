@@ -5,10 +5,16 @@
 #       Developer ID olmadan boru hattını sınar: mevcut "Apple Development" imzasıyla derler, imzaları
 #       doğrular, DMG üretir; notarization atlanır. Çıkan DMG başka Mac'te Gatekeeper'dan GEÇMEZ.
 #
-#   Scripts/release.sh --notary-profile notchmvp
+#   Scripts/release.sh --beta
+#       Notarize edilmemiş, yayımlanabilir beta: temiz ağaç ve HEAD'de v<sürüm> etiketi şart, ad-hoc imza,
+#       notarization yok. İndiren ilk açılışta Gizlilik ve Güvenlik › Yine de Aç der. Ad-hoc: imzada ad ya da
+#       e-posta yok (Apple Development sertifikasının adı e-postayı içeriyor); bedeli, imza kimliği her sürümde
+#       değiştiği için macOS izinleri güncellemede yeniden sorulur. --identity "Apple Development" ile değişir.
+#
+#   Scripts/release.sh --notary-profile browline
 #       Gerçek yayın. Önce bir kez:
 #         1. Anahtar Zinciri'nde "Developer ID Application: … (TAKIM)" sertifikası (developer.apple.com).
-#         2. xcrun notarytool store-credentials notchmvp --apple-id <e-posta> --team-id <TAKIM> \
+#         2. xcrun notarytool store-credentials browline --apple-id <e-posta> --team-id <TAKIM> \
 #              --password <uygulamaya özel parola>   (parola betiğe ya da depoya yazılmaz)
 #       İsteğe bağlı: --identity "Developer ID Application: Ad (TAKIM)" (yoksa Anahtar Zinciri'nden ilki).
 #
@@ -17,11 +23,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DRY_RUN=0
+BETA=0
 NOTARY_PROFILE=""
 IDENTITY=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
+    --beta) BETA=1 ;;
     --notary-profile) NOTARY_PROFILE="$2"; shift ;;
     --identity) IDENTITY="$2"; shift ;;
     *) echo "bilinmeyen seçenek: $1" >&2; exit 2 ;;
@@ -36,8 +44,8 @@ VERSION=$(awk -F'"' '/CFBundleShortVersionString/ {print $2; exit}' project.yml)
 BUILD=$(awk -F'"' '/CFBundleVersion:/ {print $2; exit}' project.yml)
 [ -n "$VERSION" ] || fail "project.yml'de CFBundleShortVersionString bulunamadı"
 
-if [ "$DRY_RUN" = 1 ]; then
-  IDENTITY="${IDENTITY:-Apple Development}"
+if [ "$DRY_RUN" = 1 ] || [ "$BETA" = 1 ]; then
+  IDENTITY="${IDENTITY:--}"
 else
   if [ -z "$IDENTITY" ]; then
     IDENTITY=$(security find-identity -v -p codesigning | awk -F'"' '/Developer ID Application/ {print $2; exit}')
@@ -46,26 +54,46 @@ else
   [ -n "$NOTARY_PROFILE" ] || fail "--notary-profile gerekli (xcrun notarytool store-credentials ile kaydedilen ad)"
 fi
 
-step "Sürüm $VERSION ($BUILD), imza: $IDENTITY$([ "$DRY_RUN" = 1 ] && echo ' — kuru çalıştırma')"
+KIND=""
+if [ "$DRY_RUN" = 1 ]; then KIND=" — kuru çalıştırma"; elif [ "$BETA" = 1 ]; then KIND=" — beta, notarize edilmez"; fi
+step "Sürüm $VERSION ($BUILD), imza: $([ "$IDENTITY" = - ] && echo ad-hoc || echo "$IDENTITY")$KIND"
 if [ -n "$(git status --porcelain)" ]; then
   # Yayımlanan paket bir commit'e karşılık gelmeli; kirli ağaçtan gerçek yayın yok.
   [ "$DRY_RUN" = 1 ] || fail "çalışma ağacı temiz değil; önce commit'leyin"
   echo "  uyarı: çalışma ağacı temiz değil (kuru çalıştırmada sorun değil)"
+fi
+if [ "$DRY_RUN" = 0 ] && ! git tag --points-at HEAD | grep -qx "v$VERSION"; then
+  fail "HEAD'de v$VERSION etiketi yok; önce: git tag -a v$VERSION -m \"Browline $VERSION\""
 fi
 
 step "Bağımlılıklar (adaptör, medya oturumları) ve proje"
 make adapter sessions gen >/dev/null
 
 step "Release derleme"
+# Zaman damgası Apple'ın sunucusuna gider; ad-hoc ve kuru çalıştırmada gerekmez.
+if [ "$DRY_RUN" = 1 ] || [ "$IDENTITY" = - ]; then TIMESTAMP=--timestamp=none; else TIMESTAMP=--timestamp; fi
+# Ad-hoc imzada project.yml'deki takım kimliği kullanılmaz. (Boş dizi + set -u: bash 3.2'de +"…" kalıbı şart.)
+TEAM_OVERRIDE=()
+if [ "$IDENTITY" = - ]; then TEAM_OVERRIDE=(DEVELOPMENT_TEAM=); fi
 DERIVED=build/release
+# generic/platform=macOS: hedef belirtilmezse yalnız bu Mac'in mimarisi derleniyordu (arm64).
 xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Release \
+  -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" -skipPackagePluginValidation -quiet \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
-  OTHER_CODE_SIGN_FLAGS="$([ "$DRY_RUN" = 1 ] && echo --timestamp=none || echo --timestamp)" \
+  OTHER_CODE_SIGN_FLAGS="$TIMESTAMP" \
+  ${TEAM_OVERRIDE[@]+"${TEAM_OVERRIDE[@]}"} \
   build
 APP="$DERIVED/Build/Products/Release/Browline.app"
 [ -d "$APP" ] || fail "uygulama derlenmedi: $APP"
+
+step "Mimari"
+for bin in "$APP/Contents/MacOS/Browline" "$APP/Contents/Helpers/notch"; do
+  archs=$(lipo -archs "$bin")
+  case "$archs" in *arm64*x86_64*|*x86_64*arm64*) echo "  evrensel ✓ $(basename "$bin") ($archs)" ;;
+    *) fail "$(basename "$bin") evrensel değil: $archs" ;; esac
+done
 
 step "İmza doğrulama"
 codesign --verify --deep --strict --verbose=1 "$APP" 2>&1 | sed 's/^/  /'
@@ -94,11 +122,15 @@ ln -s /Applications "$STAGING/Applications"
 DMG="dist/Browline-$VERSION.dmg"
 rm -f "$DMG"
 hdiutil create -quiet -volname "Browline $VERSION" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
-codesign --force --sign "$IDENTITY" $([ "$DRY_RUN" = 1 ] && echo --timestamp=none || echo --timestamp) "$DMG"
+# Ad-hoc imza disk görüntüsüne bir şey katmaz; yalnız gerçek kimlikle imzalanır.
+if [ "$IDENTITY" != - ]; then codesign --force --sign "$IDENTITY" "$TIMESTAMP" "$DMG"; fi
 echo "  $DMG ($(du -h "$DMG" | cut -f1))"
 
 if [ "$DRY_RUN" = 1 ]; then
   step "Notarization atlandı (kuru çalıştırma)"
+elif [ "$BETA" = 1 ]; then
+  step "Notarization yok (beta)"
+  echo "  İlk açılışta: Sistem Ayarları › Gizlilik ve Güvenlik › Yine de Aç (README › Install)."
 else
   step "Notarization (birkaç dakika sürebilir)"
   xcrun notarytool submit "$DMG" --keychain-profile "$NOTARY_PROFILE" --wait

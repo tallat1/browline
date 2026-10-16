@@ -102,7 +102,7 @@ public final class WeatherMonitor {
             Log.integrations.notice("Hava durumu güncellendi")
         } catch {
             lastError = String(describing: error)
-            Log.integrations.error("Hava durumu alınamadı: \(String(describing: error), privacy: .public)")
+            Log.integrations.error("Hava durumu alınamadı: \((error as? URLError)?.code.rawValue ?? -1, privacy: .public) \(String(describing: error), privacy: .private)")
         }
     }
 

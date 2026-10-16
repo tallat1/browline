@@ -22,7 +22,7 @@ public final class ShelfStore {
 
     public init(directory: URL? = nil) {
         let base = directory ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("com.talatozcoban.notchmvp", isDirectory: true)
+            .appendingPathComponent("com.talatozcoban.browline", isDirectory: true)
         fileURL = base.appendingPathComponent("shelf.json")
         load()
     }

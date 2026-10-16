@@ -75,6 +75,13 @@ func number(_ key: String) -> Double? {
     return value
 }
 
+@MainActor
+func integer(_ key: String) -> Int? {
+    guard let value = number(key) else { return nil }
+    guard let integer = ActivityRequest.integer(from: value) else { fail("--\(key) tam sayı olmalı: \(options[key] ?? "")", code: 2) }
+    return integer
+}
+
 let operation: ActivityRequest.Operation
 switch command {
 case "push": operation = .push
@@ -93,7 +100,7 @@ if let unknown = options.keys.first(where: { !known.contains($0) }) { fail("Bili
 let request = ActivityRequest(
     op: operation, id: options["id"], title: options["title"], subtitle: options["subtitle"],
     progress: number("progress"), symbol: options["symbol"], tint: options["tint"],
-    priority: number("priority").map { Int($0) }, ttl: number("timeout") ?? number("ttl"), duration: number("duration"),
+    priority: integer("priority"), ttl: number("timeout") ?? number("ttl"), duration: number("duration"),
     detail: options["detail"])
 
 do {

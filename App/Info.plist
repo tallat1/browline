@@ -17,16 +17,15 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.0</string>
+	<string>0.9.0</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.talatozcoban.notchmvp.activity</string>
+			<string>com.talatozcoban.browline.activity</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>browline</string>
-				<string>notchmvp</string>
 			</array>
 		</dict>
 	</array>
@@ -37,13 +36,19 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>MediaRemote kullanılamadığında Music ve Spotify'ı oynat/duraklat ve parça geçişi için denetlemek.</string>
+	<string>Music ve Spotify'da çalanı denetlemek için: oynat/duraklat, parça geçişi ve konuma atlama.</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Yaklaşan toplantıları notch'ta göstermek ve katılma bağlantısını açmak.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>Rafa bırakılan ekran görüntülerini kaydetmek ve dönüştürülen dosyaları asıllarının yanına yazmak için.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Dönüştürülen dosyaları Belgeler'deki asıllarının yanına kaydetmek için.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>İndirmeleri notch'ta göstermek ve sıkıştırılan ya da dönüştürülen dosyaları İndirilenler'e kaydetmek için.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2026 Browline</string>
 	<key>NSRemindersFullAccessUsageDescription</key>

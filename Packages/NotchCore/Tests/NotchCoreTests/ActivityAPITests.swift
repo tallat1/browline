@@ -34,6 +34,14 @@ struct ActivityValidationTests {
 
 @MainActor
 struct ExternalActivityStoreTests {
+    @Test func reservedIDsAreInternalOnly() {
+        let store = ExternalActivityStore()
+        #expect(!store.handle(ActivityRequest(op: .push, id: "notch.question", title: "Sahte")).ok)
+        #expect(store.handle(ActivityRequest(op: .push, id: "notch.question", title: "Soru"), isInternal: true).ok)
+        #expect(!store.handle(ActivityRequest(op: .end, id: "notch.question")).ok)
+        #expect(store.activities.map(\.id) == ["notch.question"])
+    }
+
     @Test func pushUpdatesInPlaceAndEndRemoves() {
         let store = ExternalActivityStore()
         #expect(store.handle(ActivityRequest(op: .push, id: "a", title: "Bir")).ok)
@@ -120,16 +128,17 @@ struct ActivityURLTests {
             == ActivityRequest(op: .flash, title: "Bitti", duration: 2))
     }
 
-    @Test func acceptsLegacyScheme() throws {
-        #expect(try ActivityURL.request(from: #require(URL(string: "notchmvp://end?id=build")))
-            == ActivityRequest(op: .end, id: "build"))
-    }
 
     @Test(arguments: [
         ("https://push?id=a", ActivityURL.ParseError.scheme),
         ("browline://list", .operation("list")),
         ("browline://push?id=a&title=b&color=red", .unknownParameter("color")),
         ("browline://push?id=a&title=b&progress=yarım", .number("progress")),
+        // Int(Double) bunlarda çöküyordu: web bağlantısıyla uygulama düşürülebiliyordu.
+        ("browline://push?id=a&title=b&priority=1e999", .number("priority")),
+        ("browline://push?id=a&title=b&priority=nan", .number("priority")),
+        ("browline://push?id=a&title=b&priority=1e300", .number("priority")),
+        ("browline://push?id=a&title=b&ttl=inf", .number("ttl")),
     ])
     func rejectsMalformed(_ raw: String, _ expected: ActivityURL.ParseError) throws {
         let url = try #require(URL(string: raw.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? raw))

@@ -1,5 +1,5 @@
 import os
 
 enum Log {
-    static let shell = Logger(subsystem: "com.talatozcoban.notchmvp", category: "shell")
+    static let shell = Logger(subsystem: "com.talatozcoban.browline", category: "shell")
 }
