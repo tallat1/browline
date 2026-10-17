@@ -77,6 +77,8 @@
 
 Permissions are requested only when you turn on a feature that needs them. Settings › Permissions lists every one with its state.
 
+**Updates.** From 0.9.1 on, Browline updates itself with [Sparkle](https://sparkle-project.org): on the second launch it asks whether to check automatically, and every update is verified with Browline's signing key before it's installed. Settings › General has the switch and a Check Now button. 0.9.0 has to be updated by hand from the releases page.
+
 To verify the download, compare `shasum -a 256 Browline-0.9.0.dmg` with the checksum in the release notes.
 
 ## Using Browline
@@ -117,7 +119,7 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 
 ## Privacy
 
-- **No accounts, analytics or telemetry.** Browline never phones home.
+- **No accounts, analytics or telemetry.** The only connection Browline makes on its own is the update check, and only if you allow it.
 - **Your data stays local.** Settings, the shelf list and notes live in `~/Library/Application Support/com.talatozcoban.browline`. Clipboard history stays in memory and is gone when you quit.
 - **Claude limits** (opt-in) read Claude Code's local files on your Mac: the account name, the status line's usage numbers and limit notices in session logs. Nothing leaves your Mac.
 - **Network access only for features you turn on:**
@@ -126,6 +128,7 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 |---|---|---|
 | Weather | [Open-Meteo](https://open-meteo.com) | The coordinates of the city you pick, not your location |
 | CI status | GitHub, through your own `gh` CLI | Nothing from Browline itself; `gh` uses its own sign-in |
+| Updates | GitHub (the release list and downloads) | Nothing beyond the request itself, which includes the app version |
 
 **Permissions.** Each one is asked only when its feature is on:
 
@@ -177,7 +180,6 @@ A stable signing identity keeps macOS permissions across rebuilds. Ad-hoc signin
 ## Roadmap
 
 - Developer ID signing and notarization for 1.0
-- Automatic updates
 - Testing on macOS 14, 15 and 26 and on Intel Macs
 - Focus mode
 
@@ -189,6 +191,7 @@ Bug reports, ideas and pull requests are welcome; please open an [issue](https:/
 
 - [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter) by Jonas van den Berg (BSD 3-Clause)
 - [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) by Miguel de Icaza (MIT)
+- [Sparkle](https://sparkle-project.org) by the Sparkle Project (MIT)
 - Ideas from the notch app community: NotchNook, Alcove, boring.notch, Atoll, DynamicLake, MediaMate and others. Browline contains none of their code.
 
 Full license texts: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

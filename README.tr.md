@@ -77,6 +77,8 @@
 
 İzinler yalnız onları gerektiren bir özelliği açtığınızda istenir. Ayarlar › İzinler hepsini durumlarıyla listeler.
 
+**Güncellemeler.** 0.9.1'den itibaren Browline kendini [Sparkle](https://sparkle-project.org) ile günceller: ikinci açılışta otomatik denetim isteyip istemediğinizi sorar ve her güncellemeyi kurmadan önce Browline'ın imza anahtarıyla doğrular. Anahtar ve "Şimdi denetle" düğmesi Ayarlar › Genel'de. 0.9.0 elle, sürümler sayfasından güncellenir.
+
 İndirmeyi doğrulamak için `shasum -a 256 Browline-0.9.0.dmg` çıktısını sürüm notlarındaki değerle karşılaştırın.
 
 ## Kullanım
@@ -117,7 +119,7 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 
 ## Gizlilik
 
-- **Hesap, analiz ya da telemetri yok.** Browline hiçbir yere rapor göndermez.
+- **Hesap, analiz ya da telemetri yok.** Browline'ın kendiliğinden kurduğu tek bağlantı güncelleme denetimi; o da yalnız izin verirseniz.
 - **Verileriniz yerelde kalır.** Ayarlar, raf listesi ve notlar `~/Library/Application Support/com.talatozcoban.browline` içinde durur. Pano geçmişi yalnız bellektedir, uygulama kapanınca silinir.
 - **Claude limitleri** (isteğe bağlı) Mac'inizdeki Claude Code dosyalarını okur: hesap adı, durum satırının kullanım değerleri ve oturum kayıtlarındaki limit bildirimleri. Hiçbir şey Mac'inizden çıkmaz.
 - **Ağ erişimi yalnız açtığınız özellikler için:**
@@ -126,6 +128,7 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 |---|---|---|
 | Hava durumu | [Open-Meteo](https://open-meteo.com) | Seçtiğiniz şehrin koordinatları; konumunuz değil |
 | CI durumu | GitHub, kendi `gh` aracınız üzerinden | Browline'ın kendisi hiçbir şey göndermez; `gh` kendi oturumunu kullanır |
+| Güncellemeler | GitHub (sürüm listesi ve indirmeler) | İsteğin kendisi dışında hiçbir şey; istekte uygulama sürümü yer alır |
 
 **İzinler.** Her biri yalnız ilgili özellik açıksa istenir:
 
@@ -177,7 +180,6 @@ Sabit bir imza kimliği macOS izinlerini yeniden derlemelerde korur. Ad-hoc imza
 ## Yol haritası
 
 - 1.0 için Developer ID imzası ve notarization
-- Otomatik güncelleme
 - macOS 14, 15, 26 ve Intel Mac'lerde deneme
 - Odak (Focus) modu
 
@@ -189,6 +191,7 @@ Hata bildirimleri, fikirler ve pull request'ler memnuniyetle karşılanır; büy
 
 - [mediaremote-adapter](https://github.com/ungive/mediaremote-adapter), Jonas van den Berg (BSD 3-Clause)
 - [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm), Miguel de Icaza (MIT)
+- [Sparkle](https://sparkle-project.org), Sparkle Project (MIT)
 - Çentik uygulamaları topluluğundan fikirler: NotchNook, Alcove, boring.notch, Atoll, DynamicLake, MediaMate ve diğerleri. Browline onların kodunu içermez.
 
 Lisans metinlerinin tamamı: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

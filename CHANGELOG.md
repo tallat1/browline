@@ -4,6 +4,9 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+- Automatic updates with Sparkle: asks before checking, verifies every update with Browline's EdDSA key, and has a switch and a Check Now button in Settings › General and the menu bar.
+
 ### Changed
 - Source code reorganized by feature with a documented architecture ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); no behavior change.
 - The `notch` command-line tool and the activity API answer in English or Turkish, following the first language in your system's language list.

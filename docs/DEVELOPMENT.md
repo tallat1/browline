@@ -560,9 +560,31 @@ hardened runtime ile mi imzalı; `get-task-allow` yok mu. ⚠️ Xcode Release d
 ekliyordu (notarization reddeder): `CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO` ile kapandı. `embed-adapter.sh` Developer ID
 kimliğinde `--timestamp`, diğerlerinde `--timestamp=none` kullanır. Yetkiler: Apple olayları, kamera, takvim.
 
-Sparkle 2 eklenmedi; karar bekleyenler: appcast'in yeri (GitHub Releases ya da kendi alan adı), EdDSA anahtar çifti
-(`generate_keys`, özel anahtar Anahtar Zinciri'nde), Info.plist'e `SUFeedURL` ve `SUPublicEDKey`, denetim aralığı ve
-ayarlarda "Güncellemeleri denetle". Sonra `release.sh` sonuna `generate_appcast dist/`.
+**Otomatik güncelleme (Sparkle 2.10.0, 2026-10-17).** `App/Application/AppUpdater.swift`; Debug derlemesinde
+başlatılmaz (geliştirme kopyası kendini GitHub sürümüyle değiştirmesin). Menü çubuğunda "Güncellemeleri Denetle…",
+Ayarlar › Genel › Güncellemeler'de otomatik denetim anahtarı ve "Şimdi denetle". Otomatik denetim iznini Sparkle
+ikinci açılışta kendisi sorar.
+
+- Besleme: `SUFeedURL` = `https://raw.githubusercontent.com/tallat1/browline/main/appcast.xml` (depo kökündeki
+  `appcast.xml`; GitHub'ın `releases/latest` adresi ön sürümleri göstermediği için o kullanılmadı). Arşiv: sürüm
+  sayfasındaki DMG.
+- İmza: EdDSA. `SUPublicEDKey` project.yml'de; özel anahtar geliştiricinin oturum Anahtar Zinciri'nde
+  (`generate_keys`, 2026-10-17). ⛔ Yedeklenmeli: `…/Sparkle/bin/generate_keys -x <dosya>` ile dışa aktarıp
+  parola yöneticisinde saklayın, dosyayı silin. Kaybolursa yeni anahtarla yayımlanan sürümü mevcut kullanıcılar
+  kuramaz (ad-hoc imzada Apple kod imzası yedek yolu yok).
+- Ad-hoc imza: Sparkle eski ve yeni sürümün EdDSA anahtarı aynıysa kod imzası kimliğinin değişmesine izin verir
+  (`SUUpdateValidator`, "adhoc signing can be used at minimum"). ⛔ Ama hardened runtime'ın kütüphane doğrulaması
+  ad-hoc `Sparkle.framework`'ü "different Team IDs" diye reddediyor, uygulama açılışta düşüyordu: `release.sh` ad-hoc
+  yayında YALNIZ ana uygulamayı `com.apple.security.cs.disable-library-validation` ile yeniden imzalar.
+- `Scripts/release.sh`: DMG'den sonra açık anahtarın Anahtar Zinciri'ndekiyle eşleştiğini denetler, `sign_update`
+  ile imzalar ve `Scripts/appcast.py` ile `appcast.xml`'in başına sürümü ekler (aynı derleme numarası güncellenir,
+  daha düşüğü reddedilir). Kuru çalıştırma `dist/dry-run/` altına yazar, depodaki appcast'e dokunmaz.
+- Yayın sırası: `CFBundleVersion` artır (Sparkle onu karşılaştırır; 0.9.0 = 1) → commit → `git tag -a vX` →
+  `release.sh --beta` → `gh release create vX <dmg> <sha256> --prerelease` → `appcast.xml`'i commit'le ve it (DMG
+  yayımlandıktan SONRA, yoksa denetleyen kullanıcı 404 alır).
+- ✓ Uçtan uca (2026-10-17): Release kopyası A (derleme 1) yerel appcast'ten (127.0.0.1, `SUFeedURL` kullanıcı
+  ayarıyla geçici) derleme 99'u indirdi, kapanınca Sparkle aynı yere kurdu, imza geçerli. ⚠️ Uygulama `kill` ile
+  kapanınca Now Playing yardımcıları (`perl`) yetim kalıyor; menüden çıkışta kapanıyorlar.
 
 ## Eski macOS uyumluluğu
 

@@ -53,5 +53,9 @@
 	<string>© 2026 Browline</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Bugün vadesi gelen anımsatıcıları Takvim sekmesinde göstermek ve tamamlandı işaretlemek için.</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/tallat1/browline/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>pHZIh6Dh0fZfLHawCOVMXuo5N8vHSxs0iA2MY8dAGk0=</string>
 </dict>
 </plist>

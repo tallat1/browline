@@ -1179,6 +1179,16 @@
         }
       }
     },
+    "Debug derlemesinde güncelleme kapalı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates are off in Debug builds."
+          }
+        }
+      }
+    },
     "Depo ekle…": {
       "localizations": {
         "en": {
@@ -1775,6 +1785,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Indicators"
+          }
+        }
+      }
+    },
+    "Güncellemeler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updates"
+          }
+        }
+      }
+    },
+    "Güncellemeleri Denetle…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check for Updates…"
+          }
+        }
+      }
+    },
+    "Güncellemeleri otomatik denetle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatically check for updates"
           }
         }
       }
@@ -3345,6 +3385,16 @@
         }
       }
     },
+    "Sparkle (Sparkle Project), MIT": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparkle (Sparkle Project), MIT"
+          }
+        }
+      }
+    },
     "Spotify, Music, tarayıcı ve diğer oynatıcılar; birden çok oynatıcı varsa seçilebilir.": {
       "localizations": {
         "en": {
@@ -3937,6 +3987,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Until Tomorrow Morning"
+          }
+        }
+      }
+    },
+    "Yeni sürümler GitHub'dan gelir ve imzaları doğrulanır. Denetimde yalnız sürüm listesi indirilir; kişisel bilgi gönderilmez.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New versions come from GitHub and their signatures are verified. A check only downloads the list of versions; no personal information is sent."
           }
         }
       }
@@ -4679,6 +4739,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Now"
+          }
+        }
+      }
+    },
+    "Şimdi denetle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check Now"
           }
         }
       }

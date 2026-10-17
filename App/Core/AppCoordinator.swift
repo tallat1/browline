@@ -42,6 +42,8 @@ final class AppCoordinator {
     let lowPower = LowPowerMode()
     let screenRecording = ScreenRecordingMonitor()
     let ci = CIMonitor()
+    /// Sparkle 2; Debug derlemesinde başlatılmaz.
+    let updater = AppUpdater()
     /// Dış onay soruları (Claude Code izin istemleri): notch'ta İzin ver / Reddet.
     let questions = QuestionStore()
 
@@ -107,6 +109,7 @@ final class AppCoordinator {
 
         panels.start()
         lockScreen.start()
+        updater.start()
         applySettings()
         applyNotchHidden()
     }

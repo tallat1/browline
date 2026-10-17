@@ -14,6 +14,10 @@ packages:
   SwiftTerm:
     url: https://github.com/migueldeicaza/SwiftTerm
     exactVersion: 1.11.2
+  # Otomatik güncelleme (MIT). Besleme GitHub'daki appcast.xml; arşivler EdDSA imzalı (Scripts/release.sh).
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -44,6 +48,7 @@ targets:
       - package: NotchCore
         product: Integrations
       - package: SwiftTerm
+      - package: Sparkle
     info:
       path: App/Info.plist
       properties:
@@ -64,6 +69,10 @@ targets:
         NSCameraUsageDescription: "Ayna sekmesinde kendinizi görmeniz için. Görüntü kaydedilmez, hiçbir yere gönderilmez."
         NSAudioCaptureUsageDescription: "Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez."
         # Etkinlik API'sinin URL kapısı: browline://push?id=…&title=… (Ayarlar'da ayrı anahtar, varsayılan kapalı)
+        # Sparkle: besleme ve güncelleme arşivlerini doğrulayan açık EdDSA anahtarı (özel anahtar geliştiricinin
+        # Anahtar Zinciri'nde; bkz. docs/DEVELOPMENT.md › Dağıtım).
+        SUFeedURL: https://raw.githubusercontent.com/tallat1/browline/main/appcast.xml
+        SUPublicEDKey: pHZIh6Dh0fZfLHawCOVMXuo5N8vHSxs0iA2MY8dAGk0=
         CFBundleURLTypes:
           - CFBundleURLName: com.talatozcoban.browline.activity
             CFBundleURLSchemes: [browline]

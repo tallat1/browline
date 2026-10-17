@@ -15,6 +15,7 @@ enum SettingsSearch {
         var list: [SettingsSearchEntry] = [
             .init(id: "launchAtLogin", page: .general, title: String(localized: "Girişte başlat"), keywords: ["login", "startup", "açılış", "başlangıç"]),
             .init(id: "onboarding", page: .general, title: String(localized: "Karşılama"), keywords: ["hoş geldiniz", "welcome", "onboarding", "profil", "profile", "başlangıç"]),
+            .init(id: "updates", page: .general, title: String(localized: "Güncellemeler"), keywords: ["update", "güncelleme", "sparkle", "sürüm", "version", "yeni sürüm"]),
             .init(id: "displays", page: .general, title: String(localized: "Ekranlar"), keywords: ["display", "monitör", "monitor", "dış ekran", "hap", "pill", "yüzen", "floating"]),
             .init(id: "openDelay", page: .notch, title: String(localized: "Üzerine gelince açılma"), keywords: ["hover", "gecikme", "delay", "aç"]),
             .init(id: "haptics", page: .notch, title: String(localized: "Dokunsal geri bildirim"), keywords: ["haptic", "trackpad", "titreşim", "force touch"]),

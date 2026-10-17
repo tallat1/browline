@@ -39,6 +39,9 @@ struct AboutSettingsPage: View {
                 DisclosureGroup("SwiftTerm (Miguel de Icaza), MIT") {
                     licenseText(Self.license("SwiftTerm-LICENSE"))
                 }
+                DisclosureGroup("Sparkle (Sparkle Project), MIT") {
+                    licenseText(Self.license("Sparkle-LICENSE"))
+                }
             }
         }
     }

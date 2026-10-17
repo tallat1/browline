@@ -24,6 +24,7 @@ struct GeneralSettingsPage: View {
                 }
                 .settingsAnchor("onboarding")
             }
+            UpdatesSection(updater: coordinator.updater)
             Section {
                 let displays = PanelManager.displaySummaries(for: settings.panelOptions)
                 ForEach(displays) { display in
@@ -49,5 +50,37 @@ struct GeneralSettingsPage: View {
                 SettingsNote("Seçim ekrana bağlı saklanır; çıkarıp takınca korunur. Çentiksiz ekranda hap, istenirse menü çubuğunun altında yüzen kart görünür.")
             }
         }
+    }
+}
+
+/// Güncellemeler: otomatik denetim (Sparkle'ın kendi ayarı) ve elle denetleme.
+private struct UpdatesSection: View {
+    @Bindable var updater: AppUpdater
+
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+    }
+
+    var body: some View {
+        Section {
+            if AppUpdater.isAvailable {
+                Toggle("Güncellemeleri otomatik denetle", isOn: $updater.automaticallyChecks)
+                    .settingsAnchor("updates")
+                HStack {
+                    Text("Sürüm \(version)")
+                    Spacer()
+                    Button("Şimdi denetle") { updater.checkForUpdates() }
+                        .disabled(!updater.canCheckForUpdates)
+                }
+            } else {
+                SettingsNote("Debug derlemesinde güncelleme kapalı.")
+                    .settingsAnchor("updates")
+            }
+        } header: {
+            Text("Güncellemeler")
+        } footer: {
+            SettingsNote("Yeni sürümler GitHub'dan gelir ve imzaları doğrulanır. Denetimde yalnız sürüm listesi indirilir; kişisel bilgi gönderilmez.")
+        }
+        .onAppear { updater.refresh() }
     }
 }

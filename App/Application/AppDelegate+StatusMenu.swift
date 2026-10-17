@@ -53,6 +53,13 @@ extension AppDelegate {
         menu.addItem(action(String(localized: "Ayarlar…"), key: ",", symbol: "gearshape") { [weak self] in
             self?.settingsWindow.show()
         })
+        if AppUpdater.isAvailable {
+            let update = action(String(localized: "Güncellemeleri Denetle…"), symbol: "arrow.triangle.2.circlepath") { [weak self] in
+                self?.coordinator.updater.checkForUpdates()
+            }
+            update.isEnabled = coordinator.updater.canCheckForUpdates
+            menu.addItem(update)
+        }
         menu.addItem(action(String(localized: "Çık"), key: "q") { NSApp.terminate(nil) })
     }
 

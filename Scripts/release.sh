@@ -91,6 +91,18 @@ xcodebuild -project Browline.xcodeproj -scheme Browline -configuration Release \
 APP="$DERIVED/Build/Products/Release/Browline.app"
 [ -d "$APP" ] || fail "uygulama derlenmedi: $APP"
 
+if [ "$IDENTITY" = - ]; then
+  step "Ad-hoc: kütüphane doğrulaması istisnası"
+  # Ad-hoc imzada takım kimliği yok; hardened runtime'ın kütüphane doğrulaması gömülü Sparkle.framework'ü
+  # "different Team IDs" diye reddediyor ve uygulama açılışta düşüyor (dyld, 2026-10-17). İstisna yalnız ana
+  # uygulamaya; notch aracı ve Developer ID imzası buna ihtiyaç duymaz.
+  ENT_FILE="$DERIVED/adhoc-entitlements.plist"
+  codesign -d --entitlements - --xml "$APP" > "$ENT_FILE" 2>/dev/null
+  /usr/libexec/PlistBuddy -c "Add :com.apple.security.cs.disable-library-validation bool true" "$ENT_FILE"
+  codesign --force --sign - --options runtime --entitlements "$ENT_FILE" "$APP"
+  echo "  com.apple.security.cs.disable-library-validation ✓"
+fi
+
 step "Mimari"
 for bin in "$APP/Contents/MacOS/Browline" "$APP/Contents/Helpers/notch"; do
   archs=$(lipo -archs "$bin")
@@ -128,7 +140,10 @@ STAGING=$(mktemp -d)
 trap 'rm -rf "$STAGING"' EXIT
 cp -R "$APP" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
-DMG="dist/Browline-$VERSION.dmg"
+# Kuru çalıştırma ayrı klasöre: yayımlanmış DMG'nin üzerine yazmasın.
+DIST=dist; [ "$DRY_RUN" = 1 ] && DIST=dist/dry-run
+mkdir -p "$DIST"
+DMG="$DIST/Browline-$VERSION.dmg"
 rm -f "$DMG"
 hdiutil create -quiet -volname "Browline $VERSION" -srcfolder "$STAGING" -ov -format UDZO "$DMG"
 # Ad-hoc imza disk görüntüsüne bir şey katmaz; yalnız gerçek kimlikle imzalanır.
@@ -148,4 +163,27 @@ else
 fi
 
 shasum -a 256 "$DMG" | tee "$DMG.sha256" | sed 's/^/  sha256 /'
+
+step "Sparkle (EdDSA imzası ve appcast)"
+SPARKLE_BIN="$DERIVED/SourcePackages/artifacts/sparkle/Sparkle/bin"
+[ -x "$SPARKLE_BIN/sign_update" ] || fail "sign_update bulunamadı: $SPARKLE_BIN"
+# Uygulamadaki açık anahtar Anahtar Zinciri'ndeki özel anahtarla eşleşmeli; yoksa kimse güncelleyemez.
+PUBLIC_KEY=$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP/Contents/Info.plist")
+KEYCHAIN_KEY=$("$SPARKLE_BIN/generate_keys" -p 2>/dev/null | tail -1) || fail "Anahtar Zinciri'nde Sparkle anahtarı yok (generate_keys)"
+[ "$PUBLIC_KEY" = "$KEYCHAIN_KEY" ] || fail "SUPublicEDKey Anahtar Zinciri'ndeki anahtarla eşleşmiyor"
+echo "  açık anahtar eşleşiyor ✓"
+SIGNATURE=$("$SPARKLE_BIN/sign_update" "$DMG") || fail "EdDSA imzası atılamadı"
+REPO_URL=https://github.com/tallat1/browline
+APPCAST=appcast.xml
+if [ "$DRY_RUN" = 1 ]; then
+  APPCAST="$DIST/appcast-preview.xml"
+  if [ -f appcast.xml ]; then cp appcast.xml "$APPCAST"; else rm -f "$APPCAST"; fi
+fi
+python3 Scripts/appcast.py --appcast "$APPCAST" --version "$VERSION" --build "$BUILD" \
+  --url "$REPO_URL/releases/download/v$VERSION/Browline-$VERSION.dmg" \
+  --signature "$SIGNATURE" --notes "$REPO_URL/releases/tag/v$VERSION"
 step "Tamam: $DMG"
+if [ "$DRY_RUN" = 0 ]; then
+  echo "  Sonra: gh release create v$VERSION $DMG $DMG.sha256 --prerelease --notes-file …"
+  echo "         ardından appcast.xml'i commit'leyip itin (sürüm sayfası ve DMG yayımlandıktan SONRA)."
+fi
