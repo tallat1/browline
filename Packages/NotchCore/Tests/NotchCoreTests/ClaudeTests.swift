@@ -85,3 +85,79 @@ struct ClaudeLimitLogTests {
         #expect(hits.last?.resetsAt == Date(timeIntervalSince1970: TimeInterval(base + 3_600)))
     }
 }
+
+struct ClaudeUsageProbeTests {
+    let istanbul = TimeZone(identifier: "Europe/Istanbul")!
+    var now: Date { date(2026, 10, 17, 18) }
+
+    func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int, _ minute: Int = 0) -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = istanbul
+        return calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour, minute: minute))!
+    }
+
+    @Test func parsesUsageOutput() throws {
+        // ÖRNEK: Claude Code 2.1.220 `claude -p /usage` çıktısının biçimi (değerler örnek).
+        let text = """
+        You are currently using your subscription to power your Claude Code usage
+
+        Current session: 29% used · resets Oct 17 at 10:09pm (Europe/Istanbul)
+        Current week (all models): 34% used · resets Oct 20 at 11:59am (Europe/Istanbul)
+        Current week (Fable): 0% used · resets Oct 20 at 12pm (Europe/Istanbul)
+
+        What's contributing to your limits usage?
+        Last 24h · 787 requests · 5 sessions
+          97% of your usage was at >150k context
+        """
+        let usage = try #require(ClaudeUsageProbe.parse(text, now: now))
+        #expect(usage.fiveHour == .init(usedPercentage: 29, resetsAt: date(2026, 10, 17, 22, 9)))
+        // Model başına satır ("Fable") tüm modellerin yerine geçmez; katkı satırlarındaki yüzdeler okunmaz.
+        #expect(usage.sevenDay == .init(usedPercentage: 34, resetsAt: date(2026, 10, 20, 11, 59)))
+        #expect(usage.capturedAt == now)
+        #expect(usage.source == .claudeCode)
+    }
+
+    @Test func resetTimes() {
+        #expect(ClaudeUsageProbe.resetDate("Oct 20 at 12pm (Europe/Istanbul)", now: now) == date(2026, 10, 20, 12))
+        #expect(ClaudeUsageProbe.resetDate("Oct 18 at 12am (Europe/Istanbul)", now: now) == date(2026, 10, 18, 0))
+        // Yalnız saat: geçtiyse yarın.
+        #expect(ClaudeUsageProbe.resetDate("10pm (Europe/Istanbul)", now: now) == date(2026, 10, 17, 22))
+        #expect(ClaudeUsageProbe.resetDate("9am (Europe/Istanbul)", now: now) == date(2026, 10, 18, 9))
+        // Yıl yazılmıyor: Aralık sonunda Ocak tarihi gelecek yıl.
+        let december = date(2026, 12, 30, 12)
+        #expect(ClaudeUsageProbe.resetDate("Jan 2 at 9:30am (Europe/Istanbul)", now: december) == date(2027, 1, 2, 9, 30))
+        #expect(ClaudeUsageProbe.resetDate("soon", now: now) == nil)
+        #expect(ClaudeUsageProbe.resetDate("Oct 20 at 13pm (Europe/Istanbul)", now: now) == nil)
+    }
+
+    @Test func classifiesOutputWithoutLimits() {
+        #expect(ClaudeUsageProbe.parse("Current week (Opus): 10% used", now: now) == nil)
+        #expect(ClaudeUsageProbe.classify("Not logged in · Please run /login") == .signedOut)
+        #expect(ClaudeUsageProbe.classify("You are currently using an API key") == .noSubscription)
+        #expect(ClaudeUsageProbe.classify("Unknown command: /usage") == .unreadable)
+    }
+
+    @Test func newerSourceWins() {
+        let probe = ClaudeUsageMonitor.Usage(fiveHour: .init(usedPercentage: 30, resetsAt: nil), sevenDay: nil,
+                                             capturedAt: now, source: .claudeCode)
+        var older = probe
+        older.capturedAt = now.addingTimeInterval(-600)
+        older.source = .statusline
+        #expect(ClaudeUsageMonitor.shouldReplace(nil, with: older))
+        #expect(!ClaudeUsageMonitor.shouldReplace(probe, with: older))
+        #expect(ClaudeUsageMonitor.shouldReplace(older, with: probe))
+        #expect(!ClaudeUsageMonitor.shouldReplace(probe, with: probe))
+    }
+
+    @Test func findsDesktopBundledClaudeNewestFirst() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("probe-home-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: home) }
+        for version in ["2.1.9", "2.1.295"] {
+            let binary = home.appendingPathComponent("Library/Application Support/Claude/claude-code/\(version)/abc/claude.app/Contents/MacOS/claude")
+            try FileManager.default.createDirectory(at: binary.deletingLastPathComponent(), withIntermediateDirectories: true)
+            FileManager.default.createFile(atPath: binary.path, contents: Data(), attributes: [.posixPermissions: 0o755])
+        }
+        let found = ClaudeUsageProbe.desktopBundled(home: home, fileManager: .default)
+        #expect(found.first?.path.contains("/2.1.295/") == true)
+    }
+}

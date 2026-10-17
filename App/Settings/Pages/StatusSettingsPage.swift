@@ -21,7 +21,7 @@ struct StatusSettingsPage: View {
             Section("Claude") {
                 Toggle("Claude limitleri", isOn: $settings.claudeUsageEnabled).settingsAnchor("claude")
                 ShowInNotchToggle(settings: settings, page: .claude, isFeatureEnabled: settings.claudeUsageEnabled)
-                SettingsNote("Yüzdeler Claude Code'un durum satırı betiğinden gelir (Examples/claude-code/usage-statusline.sh); Browline Claude oturumunuza hiç dokunmaz.")
+                SettingsNote("Browline yüzdeleri kurulu Claude Code'a /usage sorarak okur; Claude Code kendi girişiyle yanıtlar, model kullanılmaz. Browline Claude girişinize hiç dokunmaz.")
             }
             Section("CI") {
                 Toggle("GitHub Actions durumu", isOn: $settings.ciEnabled).settingsAnchor("ci")

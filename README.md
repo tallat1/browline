@@ -47,7 +47,7 @@
 
 **Status.**
 - System: ten-minute CPU, memory and network charts, plus the battery of your Bluetooth devices.
-- Claude Code plan usage and limit resets, from Claude Code's own status line (opt-in). Browline never reads your Claude sign-in.
+- Claude Code plan usage and limit resets (opt-in), also when you use Claude Code in the Claude desktop app. Browline asks your installed Claude Code for `/usage` and never reads your Claude sign-in.
 - GitHub Actions runs for the repositories you choose, through your own `gh` CLI.
 
 **For developers and AI agents.**
@@ -123,13 +123,14 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 
 - **No accounts, analytics or telemetry.** The only connection Browline makes on its own is the update check, and only if you allow it.
 - **Your data stays local.** Settings, the shelf list and notes live in `~/Library/Application Support/com.talatozcoban.browline`. Clipboard history stays in memory and is gone when you quit.
-- **Claude limits** (opt-in) read Claude Code's local files on your Mac: the account name, the status line's usage numbers and limit notices in session logs. Nothing leaves your Mac.
+- **Claude limits** (opt-in) run your installed `claude` command with `/usage`: every 5 minutes while a Claude Code session is working, every 30 minutes otherwise. Claude Code answers with its own sign-in, which Browline never sees, and no model is used. Browline also reads the account name from `~/.claude.json` and limit notices in Claude Code's session logs.
 - **Network access only for features you turn on:**
 
 | Feature | Talks to | Sends |
 |---|---|---|
 | Weather | [Open-Meteo](https://open-meteo.com) | The coordinates of the city you pick, not your location |
 | CI status | GitHub, through your own `gh` CLI | Nothing from Browline itself; `gh` uses its own sign-in |
+| Claude limits | Anthropic, through your own `claude` CLI | Nothing from Browline itself; Claude Code uses its own sign-in |
 | Updates | GitHub (the release list and downloads) | Nothing beyond the request itself, which includes the app version |
 
 **Permissions.** Each one is asked only when its feature is on:

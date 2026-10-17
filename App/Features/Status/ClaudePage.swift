@@ -2,8 +2,8 @@ import Integrations
 import NotchShell
 import SwiftUI
 
-/// Claude plan limitleri: 5 saatlik oturum ve haftalık pencere. Veri Claude Code durum satırından
-/// gelir; yalnız bir oturum çalışırken tazelendiği için son güncelleme zamanı da gösterilir.
+/// Claude plan limitleri: 5 saatlik oturum ve haftalık pencere. Veri Claude Code'un `/usage` yanıtından
+/// (ya da terminaldeki durum satırından) gelir; ara ara tazelendiği için son güncelleme zamanı da gösterilir.
 struct ClaudePage: View {
     let usage: ClaudeUsageMonitor
 
@@ -21,8 +21,12 @@ struct ClaudePage: View {
             .notchAnimation(value: stateKey)
         }
         .notchAnimation(value: usage.account)
-        // Hesap ve durum satırı izi sekme her açıldığında yeniden okunur (hesap değişmiş olabilir).
-        .onAppear { usage.refreshSeen() }
+        // Hesap ve limit kayıtları sekme her açıldığında yeniden okunur; yüzdeler son yoklamadan 2 dakika
+        // geçtiyse yeniden sorulur.
+        .onAppear {
+            usage.refreshAccountAndLimits()
+            usage.refreshFromClaudeCode()
+        }
     }
 
     @ViewBuilder
@@ -35,7 +39,7 @@ struct ClaudePage: View {
                         WindowCard(title: "Haftalık", window: current.sevenDay, now: timeline.currentDate, relative: false)
                     }
                     .fixedSize(horizontal: false, vertical: true)
-                    Label(updatedText(current.capturedAt, now: timeline.currentDate), systemImage: "clock")
+                    Label(updatedText(current, now: timeline.currentDate), systemImage: "clock")
                         .font(NotchDesign.caption)
                         .foregroundStyle(NotchDesign.metadata)
                         .labelStyle(MetadataLabelStyle())
@@ -51,29 +55,43 @@ struct ClaudePage: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-        } else if usage.statuslineSeenAt != nil {
-            // Betik çalışıyor ama limit gelmiyor: hesap Pro/Max değil ya da oturumda henüz yanıt yok.
-            EmptyStateView(symbol: "sparkles", title: "Durum satırı çalışıyor, limit gelmedi",
-                           message: "Claude yalnız Pro ve Max aboneliklerinde, oturumdaki ilk yanıttan sonra limit bildirir.")
         } else {
-            // 2026-10-16: masaüstü uygulaması durum satırını çalıştırmıyor; yüzdeleri yalnız terminaldeki
-            // Claude Code bildiriyor.
-            EmptyStateView(symbol: "checkmark.circle", title: "Dolmuş bir limit yok",
-                           message: "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür. Kullanım yüzdelerini yalnız terminaldeki Claude Code bildiriyor.")
+            switch usage.probeState {
+            case .running:
+                EmptyStateView(symbol: "hourglass", title: "Limitler okunuyor",
+                               message: "Claude Code'a kullanım soruluyor.")
+            case .failed(.notInstalled):
+                EmptyStateView(symbol: "terminal", title: "Claude Code bulunamadı",
+                               message: "Yüzdeler için Claude Code'un claude komutu gerekir; kurulunca burada kendiliğinden görünür.")
+            case .failed(.signedOut):
+                EmptyStateView(symbol: "person.crop.circle.badge.questionmark", title: "Claude Code'da giriş yapılmamış",
+                               message: "Terminalde claude çalıştırıp /login ile giriş yapın.")
+            case .failed(.noSubscription):
+                EmptyStateView(symbol: "key", title: "Plan limiti yok",
+                               message: "Claude Code API anahtarıyla çalışıyor; limitler yalnız Pro ve Max aboneliklerinde var.")
+            case .failed(.unreadable):
+                EmptyStateView(symbol: "exclamationmark.triangle", title: "Limitler okunamadı",
+                               message: "Claude Code'un /usage yanıtı alınamadı ya da anlaşılamadı; daha sonra yeniden denenir.")
+            case .idle, .succeeded:
+                EmptyStateView(symbol: "checkmark.circle", title: "Dolmuş bir limit yok",
+                               message: "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür.")
+            }
         }
     }
 
-    private var stateKey: Int {
-        if usage.usage != nil { return 2 }
-        if !usage.activeLimits.isEmpty { return 3 }
-        return usage.statuslineSeenAt != nil ? 1 : 0
+    private var stateKey: String {
+        if usage.usage != nil { return "usage" }
+        if !usage.activeLimits.isEmpty { return "limits" }
+        return String(describing: usage.probeState)
     }
 
-    private func updatedText(_ captured: Date, now: Date) -> String {
-        let minutes = Int(now.timeIntervalSince(captured) / 60)
-        if minutes < 1 { return String(localized: "Az önce güncellendi") }
-        if minutes < 60 { return String(localized: "\(minutes) dk önce güncellendi · Claude Code oturumu açıkken tazelenir") }
-        return String(localized: "\(minutes / 60) sa önce güncellendi · Claude Code oturumu açıkken tazelenir")
+    private func updatedText(_ current: ClaudeUsageMonitor.Usage, now: Date) -> String {
+        let minutes = Int(now.timeIntervalSince(current.capturedAt) / 60)
+        // `/usage` kendiliğinden tazelenir; durum satırı yalnız terminalde bir oturum açıkken.
+        let note = current.source == .statusline ? String(localized: " · Claude Code oturumu açıkken tazelenir") : ""
+        if minutes < 1 { return String(localized: "Az önce güncellendi") + note }
+        if minutes < 60 { return String(localized: "\(minutes) dk önce güncellendi") + note }
+        return String(localized: "\(minutes / 60) sa önce güncellendi") + note
     }
 }
 

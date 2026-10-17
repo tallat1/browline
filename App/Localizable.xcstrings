@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "tr",
   "strings": {
+    " · Claude Code oturumu açıkken tazelenir": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " · refreshes while a Claude Code session is open"
+          }
+        }
+      }
+    },
     "#RRGGBB": {
       "localizations": {
         "en": {
@@ -245,12 +255,12 @@
         }
       }
     },
-    "%lld dk önce güncellendi · Claude Code oturumu açıkken tazelenir": {
+    "%lld dk önce güncellendi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Updated %lld min ago · refreshes while a Claude Code session is open"
+            "value": "Updated %lld min ago"
           }
         }
       }
@@ -297,12 +307,12 @@
         }
       }
     },
-    "%lld sa önce güncellendi · Claude Code oturumu açıkken tazelenir": {
+    "%lld sa önce güncellendi": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Updated %lld h ago · refreshes while a Claude Code session is open"
+            "value": "Updated %lld h ago"
           }
         }
       }
@@ -849,12 +859,12 @@
         }
       }
     },
-    "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür. Kullanım yüzdelerini yalnız terminaldeki Claude Code bildiriyor.": {
+    "Bir limit dolarsa ne zaman sıfırlanacağı burada görünür.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "If you hit a limit, when it resets shows here. Only Claude Code in the terminal reports usage percentages."
+            "value": "If you hit a limit, when it resets shows here."
           }
         }
       }
@@ -955,6 +965,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Browline is not ready yet; try again in a moment."
+          }
+        }
+      }
+    },
+    "Browline yüzdeleri kurulu Claude Code'a /usage sorarak okur; Claude Code kendi girişiyle yanıtlar, model kullanılmaz. Browline Claude girişinize hiç dokunmaz.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browline reads the percentages by asking your installed Claude Code for /usage. Claude Code answers with its own sign-in and no model is used. Browline never touches your Claude sign-in."
           }
         }
       }
@@ -1089,12 +1109,62 @@
         }
       }
     },
+    "Claude Code API anahtarıyla çalışıyor; limitler yalnız Pro ve Max aboneliklerinde var.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code is using an API key; plan limits exist only on Pro and Max subscriptions."
+          }
+        }
+      }
+    },
+    "Claude Code bulunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code not found"
+          }
+        }
+      }
+    },
     "Claude Code izin istemlerini notch'ta yanıtla": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Answer Claude Code permission prompts in the notch"
+          }
+        }
+      }
+    },
+    "Claude Code'a kullanım soruluyor.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asking Claude Code for usage."
+          }
+        }
+      }
+    },
+    "Claude Code'da giriş yapılmamış": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not signed in to Claude Code"
+          }
+        }
+      }
+    },
+    "Claude Code'un /usage yanıtı alınamadı ya da anlaşılamadı; daha sonra yeniden denenir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't get or understand Claude Code's /usage reply; Browline tries again later."
           }
         }
       }
@@ -1135,16 +1205,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Claude session"
-          }
-        }
-      }
-    },
-    "Claude yalnız Pro ve Max aboneliklerinde, oturumdaki ilk yanıttan sonra limit bildirir.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Claude reports limits only on Pro and Max plans, after the first response in a session."
           }
         }
       }
@@ -1355,16 +1415,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Status"
-          }
-        }
-      }
-    },
-    "Durum satırı çalışıyor, limit gelmedi": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "The status line runs, but no limits arrived"
           }
         }
       }
@@ -2331,6 +2381,26 @@
         }
       }
     },
+    "Limitler okunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read limits"
+          }
+        }
+      }
+    },
+    "Limitler okunuyor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading limits"
+          }
+        }
+      }
+    },
     "Lisans metni bulunamadı.": {
       "localizations": {
         "en": {
@@ -2959,6 +3029,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Battery, keep awake, notes and timer are always on."
+          }
+        }
+      }
+    },
+    "Plan limiti yok": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No plan limits"
           }
         }
       }
@@ -3695,6 +3775,16 @@
         }
       }
     },
+    "Terminalde claude çalıştırıp /login ile giriş yapın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run claude in Terminal and sign in with /login."
+          }
+        }
+      }
+    },
     "Toplantı": {
       "localizations": {
         "en": {
@@ -4087,12 +4177,12 @@
         }
       }
     },
-    "Yüzdeler Claude Code'un durum satırı betiğinden gelir (Examples/claude-code/usage-statusline.sh); Browline Claude oturumunuza hiç dokunmaz.": {
+    "Yüzdeler için Claude Code'un claude komutu gerekir; kurulunca burada kendiliğinden görünür.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Percentages come from Claude Code's status line script (Examples/claude-code/usage-statusline.sh); Browline never touches your Claude sign-in."
+            "value": "Percentages need Claude Code's claude command. Once it's installed, they show up here automatically."
           }
         }
       }

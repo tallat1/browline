@@ -47,7 +47,7 @@
 
 **Durum.**
 - Sistem: son on dakikanın işlemci, bellek ve ağ grafikleri; Bluetooth aygıtlarının pili.
-- Claude Code'un kendi durum satırından plan kullanımı ve limit sıfırlanma zamanları (isteğe bağlı). Browline Claude oturumunuzu hiç okumaz.
+- Claude Code plan kullanımı ve limit sıfırlanma zamanları (isteğe bağlı); Claude Code'u Claude masaüstü uygulamasında kullanırken de. Browline kurulu Claude Code'a `/usage` sorar, Claude girişinizi hiç okumaz.
 - Seçtiğiniz depoların GitHub Actions çalışmaları, kendi `gh` aracınız üzerinden.
 
 **Geliştiriciler ve yapay zekâ ajanları için.**
@@ -123,13 +123,14 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 
 - **Hesap, analiz ya da telemetri yok.** Browline'ın kendiliğinden kurduğu tek bağlantı güncelleme denetimi; o da yalnız izin verirseniz.
 - **Verileriniz yerelde kalır.** Ayarlar, raf listesi ve notlar `~/Library/Application Support/com.talatozcoban.browline` içinde durur. Pano geçmişi yalnız bellektedir, uygulama kapanınca silinir.
-- **Claude limitleri** (isteğe bağlı) Mac'inizdeki Claude Code dosyalarını okur: hesap adı, durum satırının kullanım değerleri ve oturum kayıtlarındaki limit bildirimleri. Hiçbir şey Mac'inizden çıkmaz.
+- **Claude limitleri** (isteğe bağlı) kurulu `claude` komutunu `/usage` ile çalıştırır: bir Claude Code oturumu çalışırken 5 dakikada, diğer zamanlarda 30 dakikada bir. Claude Code kendi girişiyle yanıtlar; Browline bu girişi hiç görmez ve model kullanılmaz. Browline ayrıca `~/.claude.json`'dan hesap adını ve Claude Code oturum kayıtlarındaki limit bildirimlerini okur.
 - **Ağ erişimi yalnız açtığınız özellikler için:**
 
 | Özellik | Bağlandığı yer | Gönderilen |
 |---|---|---|
 | Hava durumu | [Open-Meteo](https://open-meteo.com) | Seçtiğiniz şehrin koordinatları; konumunuz değil |
 | CI durumu | GitHub, kendi `gh` aracınız üzerinden | Browline'ın kendisi hiçbir şey göndermez; `gh` kendi oturumunu kullanır |
+| Claude limitleri | Anthropic, kendi `claude` aracınız üzerinden | Browline'ın kendisi hiçbir şey göndermez; Claude Code kendi girişini kullanır |
 | Güncellemeler | GitHub (sürüm listesi ve indirmeler) | İsteğin kendisi dışında hiçbir şey; istekte uygulama sürümü yer alır |
 
 **İzinler.** Her biri yalnız ilgili özellik açıksa istenir:

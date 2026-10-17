@@ -108,5 +108,7 @@ extension AppCoordinator {
             activities.setLive(ActivityID(ActivityKind.externalPrefix + activity.id), priority: activity.priority)
         }
         liveExternalIDs = wanted
+        // Claude Code kancası (`Examples/claude-code/notch-hook.sh`) oturum başına "claude.<oturum>" etkinliği tutar.
+        claudeUsage.isClaudeActive = list.contains { $0.id.hasPrefix("claude.") }
     }
 }

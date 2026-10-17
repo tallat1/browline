@@ -7,6 +7,7 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 ### Added
 - Answer Claude Code's multiple-choice questions in the notch (single and multiple choice); permission prompts and choice questions have separate switches.
 - Automatic updates with Sparkle: asks before checking, verifies every update with Browline's EdDSA key, and has a switch and a Check Now button in Settings › General and the menu bar.
+- Claude limits without the status line script: Browline asks your installed Claude Code for `/usage`, so the session and weekly percentages also show when you use Claude Code in the Claude desktop app. No model is used and Browline never sees your Claude sign-in.
 
 ### Fixed
 - A permission prompt answered in Claude Code itself no longer stays in the notch until it times out.

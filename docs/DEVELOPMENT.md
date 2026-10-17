@@ -428,12 +428,30 @@ yalnız yerel dosya okur: durum satırı betiği, `~/.claude.json` hesap adı ve
 bildirimleri. Aşağıdaki uç nokta notları geçmiş kayıt.
 
 Claude sekmesi 5 saatlik oturum ve haftalık limiti, sıfırlanma zamanıyla gösterir; oturum %80 ve %95'i geçince
-kompakt kanatta uyarı. Tek belgelenmiş kaynak Claude Code durum satırı JSON'undaki `rate_limits` (yalnız
-Pro/Max, oturumun ilk yanıtından sonra). `Examples/claude-code/usage-statusline.sh` iki yüzdeyi ve sıfırlanma
-zamanlarını `~/Library/Application Support/com.talatozcoban.browline/claude-usage.json`'a yazar (başka alan
-yazılmaz) ve "Model · oturum %N · hafta %N" durum satırını basar; uygulama klasörü olay güdümlü izler.
-Kurulum `~/.claude/settings.json`: `"statusLine": {"type": "command", "command": "/YOL/usage-statusline.sh"}`.
-⚠️ Veri yalnız bir Claude Code oturumu çalışırken tazelenir; sekme "son güncelleme" zamanını gösterir.
+kompakt kanatta uyarı. İki kaynak, `capturedAt`'i yeni olan kazanır (`ClaudeUsageMonitor.shouldReplace`):
+
+- **`claude -p /usage` yoklaması** (`ClaudeUsageProbe`, ana kaynak, 2026-10-17): kullanıcının kurulu Claude Code'u
+  çalıştırılır, Browline kimlik bilgisine dokunmaz; yanıtı Claude Code kendi girişiyle sunucudan alır, model
+  çağrısı yok (ölçüm: 2 sn, 0 token, $0; değerler sunucu taraflı, masaüstü ve claude.ai kullanımı dahil).
+  Bayraklar: `--no-session-persistence` (oturum kaydı yazılmaz), `--strict-mcp-config` (MCP başlatılmaz),
+  `--settings '{"disableAllHooks":true}'` (kullanıcının kancaları notch'a sahte oturum düşürmez); ortamda
+  `DISABLE_AUTOUPDATER`/`DISABLE_TELEMETRY`/`DISABLE_ERROR_REPORTING`, `CLAUDECODE` silinir. Çalışma klasörü
+  sabit (`…/com.talatozcoban.browline/claude-usage-probe`): Claude Code her klasöre `~/.claude/projects` altında
+  bir proje açtığı için tek proje birikir (içinde yalnız boş `memory/`). `--bare` KULLANILMAZ: Anahtar
+  Zinciri'ni okumaz, abonelik girişi çalışmaz. İkili sırası: `~/.local/bin`, `/opt/homebrew/bin`,
+  `/usr/local/bin`, `~/.claude/local`, npm/bun/volta, en son masaüstü uygulamasının kopyası
+  (`~/Library/Application Support/Claude/claude-code/<sürüm>/<özet>/claude.app/Contents/MacOS/claude`,
+  belgelenmemiş yerleşim). Sıklık: hook'tan `claude.<oturum>` etkinliği varken 5 dk, yoksa 30 dk; tur bitince ve
+  sekme açılınca en sık 2 dk'da bir (Claude Code'un limit ucu sık istekte kısıtlıyor). Çıktı düz metin
+  ("Current session: 29% used · resets Oct 17 at 10:09pm (Europe/Istanbul)", "Current week (all models): …");
+  model başına haftalık satır atlanır, yıl yazılmadığı için Aralık → Ocak geçişi çözümleyicide. ⚠️ Biçim
+  değişirse `parse` nil döner ve sekme "Limitler okunamadı" der; giriş yok / API anahtarı / kurulu değil
+  ayrı boş durumlar.
+- **Durum satırı betiği** (terminal): `rate_limits` (yalnız Pro/Max, oturumun ilk yanıtından sonra).
+  `Examples/claude-code/usage-statusline.sh` iki yüzdeyi ve sıfırlanma zamanlarını
+  `~/Library/Application Support/com.talatozcoban.browline/claude-usage.json`'a yazar (başka alan yazılmaz) ve
+  "Model · oturum %N · hafta %N" durum satırını basar; uygulama klasörü olay güdümlü izler. Kurulum
+  `~/.claude/settings.json`: `"statusLine": {"type": "command", "command": "/YOL/usage-statusline.sh"}`.
 Limit dolunca: oturum kayıtlarında (`~/.claude/projects/**/*.jsonl`, masaüstü oturumları dahil) kullanım
 yüzdesi yok, yalnız limit dolduğunda dönen hata satırında `apiErrorParams.rate_limit_info` / `quotaLimits`
 (tür, sıfırlanma zamanı) var. `ClaudeLimitLog` son 7 günde değişen en yeni 24 kaydın son 256 KB'ını okur
@@ -457,8 +475,9 @@ riskleri kabul edip istedi (2026-10-16); varsayılan kapalı.
 Sekmenin üstünde etkin hesap: `~/.claude.json` içindeki `oauthAccount` profilinden e-posta, kuruluş (kişisel
 hesapta e-postayı tekrarladığı için gizli) ve plan rozeti ("Max 20x"); kimlik bilgisi okunmaz.
 ⚠️ Claude masaüstü uygulamasının Code sekmesi durum satırını çalıştırmıyor (2026-10-16: yeni oturum bir yanıt
-verdi, betiğin iz dosyası `claude-statusline.seen` oluşmadı); veri yalnız terminaldeki `claude` oturumlarından gelir.
-Belgelenmemiş OAuth kullanım uç noktası (Anahtar Zinciri'ndeki oturum anahtarı) bilerek kullanılmadı.
+verdi, betiğin iz dosyası `claude-statusline.seen` oluşmadı; anthropics/claude-code#83534); `/usage` yoklaması
+bu yüzden eklendi. Rakiplerin çoğu (CodexBar, Atoll, Usage4Claude) Anahtar Zinciri'ndeki oturum anahtarını ya da
+claude.ai çerezini kullanıyor; ikisi de kurallara aykırı, bilerek kullanılmadı.
 
 ## Rakiplerden gelen küçük modüller
 

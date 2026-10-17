@@ -53,7 +53,7 @@ final class AppSettings {
     var keepAwakeEnabled: Bool { didSet { store(keepAwakeEnabled, "keepAwakeEnabled") } }
     var timerEnabled: Bool { didSet { store(timerEnabled, "timerEnabled") } }
     var notesEnabled: Bool { didSet { store(notesEnabled, "notesEnabled") } }
-    /// Veri Claude Code durum satırından; betik kurulu değilse sekme boş durum gösterir.
+    /// Veri Claude Code'un `/usage` yanıtından ve varsa terminaldeki durum satırı betiğinden.
     var claudeUsageEnabled: Bool { didSet { store(claudeUsageEnabled, "claudeUsageEnabled") } }
     var terminalEnabled: Bool { didSet { store(terminalEnabled, "terminalEnabled") } }
     /// Pano geçmişi: yalnız bellekte, gizli işaretli kopyalar alınmaz.

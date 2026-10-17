@@ -1,10 +1,11 @@
 import Foundation
 import Observation
 
-/// Claude planı limitleri (5 saatlik oturum, haftalık). Tek belgelenmiş kaynak Claude Code durum
-/// satırı JSON'undaki `rate_limits`: durum satırı betiği değerleri uygulama klasörüne yazar, burası
-/// klasörü olay güdümlü izler (yoklama yok). Veri yalnız bir Claude Code oturumu çalışırken tazelenir;
-/// bu yüzden yakalanma zamanı da tutulur.
+/// Claude planı limitleri (5 saatlik oturum, haftalık). İki kaynak, hangisi daha yeniyse o gösterilir:
+/// - Claude Code'a `/usage` sormak (`ClaudeUsageProbe`): masaüstü uygulamasında da çalışır. Claude oturumu
+///   çalışırken 5 dakikada, boşta 30 dakikada bir; ayrıca tur bitince ve sayfa açılınca (en sık 2 dakikada bir).
+/// - Terminaldeki durum satırı betiği: `rate_limits` değerlerini uygulama klasörüne yazar, klasör olay
+///   güdümlü izlenir.
 @MainActor
 @Observable
 public final class ClaudeUsageMonitor {
@@ -19,22 +20,47 @@ public final class ClaudeUsageMonitor {
         }
     }
 
+    public enum Source: Equatable, Sendable {
+        /// Terminaldeki durum satırı betiği; yalnız oturum çalışırken tazelenir.
+        case statusline
+        /// Claude Code'a `/usage` sorularak.
+        case claudeCode
+    }
+
     public struct Usage: Equatable, Sendable {
         public var fiveHour: Window?
         public var sevenDay: Window?
         public var capturedAt: Date
+        public var source: Source
 
-        public init(fiveHour: Window?, sevenDay: Window?, capturedAt: Date) {
+        public init(fiveHour: Window?, sevenDay: Window?, capturedAt: Date, source: Source = .statusline) {
             self.fiveHour = fiveHour
             self.sevenDay = sevenDay
             self.capturedAt = capturedAt
+            self.source = source
         }
     }
 
-    public private(set) var usage: Usage?
+    public enum ProbeState: Equatable, Sendable {
+        case idle
+        case running
+        case succeeded
+        case failed(ClaudeUsageProbe.Failure)
+    }
 
-    /// Durum satırı betiğinin en son çalıştığı an (limit gelmese de). nil: hiç çalışmadı, kurulu değil.
-    public private(set) var statuslineSeenAt: Date?
+    public private(set) var usage: Usage?
+    /// Son `/usage` yoklamasının durumu; veri yokken sayfa nedenini buradan söyler.
+    public private(set) var probeState: ProbeState = .idle
+
+    /// Hook etkinliklerinden: bir Claude oturumu çalışıyor ya da onay bekliyor. Yoklama sıklaşır; tur bitince
+    /// (etkin → boşta) bir kez hemen sorulur.
+    public var isClaudeActive = false {
+        didSet {
+            guard isClaudeActive != oldValue, isRunning else { return }
+            schedule(refreshNow: !isClaudeActive)
+        }
+    }
+
     /// Claude Code'un etkin hesabı (`~/.claude.json`); sekme her göründüğünde yeniden okunur.
     public private(set) var account: ClaudeAccount?
     /// Oturum kayıtlarından: dolmuş ve henüz sıfırlanmamış limitler (yüzde değil, yalnız "doldu").
@@ -44,9 +70,17 @@ public final class ClaudeUsageMonitor {
     /// 5 saatlik pencere %80 ve %95 eşiğini yukarı geçince.
     @ObservationIgnored public var onAlert: ((Int) -> Void)?
     @ObservationIgnored private let fileURL: URL
+    @ObservationIgnored private let probeDirectory: URL
     @ObservationIgnored private var source: DispatchSourceFileSystemObject?
+    @ObservationIgnored private var probeTask: Task<Void, Never>?
+    @ObservationIgnored private var scheduleTask: Task<Void, Never>?
+    @ObservationIgnored private var lastProbeAt: Date?
 
     public nonisolated static let alertThresholds = [80, 95]
+    nonisolated static let activeInterval: Duration = .seconds(5 * 60)
+    nonisolated static let idleInterval: Duration = .seconds(30 * 60)
+    /// Tur sonu ve sayfa açılışı bundan sık sormaz; Claude Code'un limit ucu sık istekte kısıtlıyor.
+    nonisolated static let minimumInterval: TimeInterval = 2 * 60
 
     public static var defaultDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -55,18 +89,14 @@ public final class ClaudeUsageMonitor {
 
     public init(directory: URL = ClaudeUsageMonitor.defaultDirectory) {
         fileURL = directory.appendingPathComponent("claude-usage.json")
-        seenURL = directory.appendingPathComponent("claude-statusline.seen")
+        probeDirectory = directory.appendingPathComponent("claude-usage-probe", isDirectory: true)
     }
 
-    @ObservationIgnored private let seenURL: URL
-
-    /// Sekme görünürken çağrılır: iz dosyasının yalnız zamanı değişir, klasör olayı gelmez.
-    public func refreshSeen() {
+    /// Sekme görünürken çağrılır: hesap değişmiş, oturum kayıtlarına yeni limit düşmüş olabilir.
+    public func refreshAccountAndLimits() {
         let loaded = ClaudeAccount.load()
         if loaded != account { account = loaded }
         refreshLimits()
-        let seen = (try? seenURL.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
-        if seen != statuslineSeenAt { statuslineSeenAt = seen }
     }
 
     public var isRunning: Bool { source != nil }
@@ -86,6 +116,7 @@ public final class ClaudeUsageMonitor {
         source.setCancelHandler { close(descriptor) }
         source.resume()
         self.source = source
+        schedule(refreshNow: true)
     }
 
     public func stop() {
@@ -95,6 +126,52 @@ public final class ClaudeUsageMonitor {
         limitTask?.cancel()
         limitTask = nil
         activeLimits = []
+        scheduleTask?.cancel()
+        scheduleTask = nil
+        probeTask?.cancel()
+        probeTask = nil
+        lastProbeAt = nil
+        probeState = .idle
+    }
+
+    /// Claude Code'a `/usage` sorar; en sık `minimumInterval`'da bir. Sonuç arka planda gelir.
+    public func refreshFromClaudeCode() {
+        guard isRunning, probeTask == nil else { return }
+        if let lastProbeAt, Date.now.timeIntervalSince(lastProbeAt) < Self.minimumInterval { return }
+        lastProbeAt = .now
+        probeState = .running
+        let directory = probeDirectory
+        probeTask = Task { [weak self] in
+            let result = await Task.detached(priority: .utility) { ClaudeUsageProbe.fetch(workingDirectory: directory) }.value
+            guard let self, !Task.isCancelled else { return }
+            probeTask = nil
+            switch result {
+            case .success(let new):
+                probeState = .succeeded
+                apply(new, alerting: true)
+            case .failure(let failure):
+                probeState = .failed(failure)
+                Log.integrations.notice("Claude /usage okunamadı: \(String(describing: failure), privacy: .public)")
+            }
+        }
+    }
+
+    /// Yoklama döngüsünü sıklığa göre yeniden kurar.
+    private func schedule(refreshNow: Bool) {
+        scheduleTask?.cancel()
+        scheduleTask = Task { [weak self] in
+            var first = true
+            while !Task.isCancelled {
+                let interval: Duration
+                do {
+                    guard let self else { return }
+                    if !first || refreshNow { refreshFromClaudeCode() }
+                    interval = isClaudeActive ? Self.activeInterval : Self.idleInterval
+                }
+                first = false
+                try? await Task.sleep(for: interval)
+            }
+        }
     }
 
     #if DEBUG
@@ -119,7 +196,7 @@ public final class ClaudeUsageMonitor {
     }
 
     private func reload(alerting: Bool) {
-        refreshSeen()
+        refreshAccountAndLimits()
         guard let data = try? Data(contentsOf: fileURL),
               let new = Self.parse(data, fallbackCapturedAt: (try? fileURL.resourceValues(forKeys: [.contentModificationDateKey]))?
                 .contentModificationDate ?? .now),
@@ -129,8 +206,10 @@ public final class ClaudeUsageMonitor {
 
     private func apply(_ new: Usage, alerting: Bool) {
         let old = usage
+        // İki kaynak var: eski bir durum satırı dosyası yeni `/usage` sonucunu ezmesin.
+        guard Self.shouldReplace(old, with: new) else { return }
         usage = new
-        Log.integrations.notice("Claude limitleri: oturum \(new.fiveHour.map { Int($0.usedPercentage) } ?? -1), hafta \(new.sevenDay.map { Int($0.usedPercentage) } ?? -1)")
+        Log.integrations.notice("Claude limitleri (\(String(describing: new.source), privacy: .public)): oturum \(new.fiveHour.map { Int($0.usedPercentage) } ?? -1), hafta \(new.sevenDay.map { Int($0.usedPercentage) } ?? -1)")
         if alerting, let percent = new.fiveHour?.usedPercentage,
            let threshold = Self.crossedThreshold(from: old?.fiveHour?.usedPercentage, to: percent) {
             onAlert?(threshold)
@@ -152,6 +231,11 @@ public final class ClaudeUsageMonitor {
         guard fiveHour != nil || sevenDay != nil else { return nil }
         let captured = (root["captured_at"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue) }
         return Usage(fiveHour: fiveHour, sevenDay: sevenDay, capturedAt: captured ?? fallbackCapturedAt)
+    }
+
+    nonisolated static func shouldReplace(_ current: Usage?, with new: Usage) -> Bool {
+        guard let current else { return true }
+        return new != current && new.capturedAt >= current.capturedAt
     }
 
     /// Yalnız yukarı doğru geçişte; ilk okuma (önceki yok) uyarı üretmez.
