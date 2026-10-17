@@ -75,9 +75,10 @@ public enum ClaudeDesktop {
     }
 
     private static func executablePath(_ pid: pid_t) -> String? {
-        var buffer = [CChar](repeating: 0, count: 4 * Int(MAXPATHLEN))
-        guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0 else { return nil }
-        return String(cString: buffer)
+        var buffer = [UInt8](repeating: 0, count: 4 * Int(MAXPATHLEN))
+        let length = proc_pidpath(pid, &buffer, UInt32(buffer.count))
+        guard length > 0 else { return nil }
+        return String(decoding: buffer.prefix(Int(length)), as: UTF8.self)
     }
 
     /// `KERN_PROCARGS2`: argc, çalıştırılabilir yol, boşluk, sonra argv. Aynı kullanıcının süreçleri okunabilir.

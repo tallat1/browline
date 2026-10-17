@@ -13,7 +13,6 @@ enum NotchDesign {
     static let bodyEmphasized = Font.system(size: 12, weight: .semibold)
     static let caption = Font.system(size: 11)
     static let captionEmphasized = Font.system(size: 11, weight: .semibold)
-    static let micro = Font.system(size: 10, weight: .medium)
     /// Zamanlayıcının büyük geri sayımı.
     static let figure = Font.system(size: 30, weight: .semibold, design: .rounded).monospacedDigit()
 

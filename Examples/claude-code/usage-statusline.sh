@@ -14,8 +14,6 @@ week_reset=$(field rate_limits.seven_day.resets_at)
 
 dir="$HOME/Library/Application Support/com.talatozcoban.browline"
 mkdir -p "$dir"
-# Çalıştığının izi (içeriksiz): limit gelmese de uygulama "durum satırı çalışıyor" diyebilsin.
-touch "$dir/claude-statusline.seen"
 
 if [ -n "$five$week" ]; then
     json="{\"captured_at\":$(date +%s)"

@@ -513,7 +513,7 @@ riskleri kabul edip istedi (2026-10-16); varsayılan kapalı.
 Sekmenin üstünde etkin hesap: `~/.claude.json` içindeki `oauthAccount` profilinden e-posta, kuruluş (kişisel
 hesapta e-postayı tekrarladığı için gizli) ve plan rozeti ("Max 20x"); kimlik bilgisi okunmaz.
 ⚠️ Claude masaüstü uygulamasının Code sekmesi durum satırını çalıştırmıyor (2026-10-16: yeni oturum bir yanıt
-verdi, betiğin iz dosyası `claude-statusline.seen` oluşmadı; anthropics/claude-code#83534); `/usage` yoklaması
+verdi, betiğin o zamanki iz dosyası `claude-statusline.seen` oluşmadı — 2026-10-17'de kaldırıldı; anthropics/claude-code#83534); `/usage` yoklaması
 bu yüzden eklendi. Rakiplerin çoğu (CodexBar, Atoll, Usage4Claude) Anahtar Zinciri'ndeki oturum anahtarını ya da
 claude.ai çerezini kullanıyor; ikisi de kurallara aykırı, bilerek kullanılmadı.
 

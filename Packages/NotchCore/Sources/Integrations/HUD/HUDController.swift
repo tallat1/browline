@@ -46,12 +46,6 @@ public final class HUDController {
 
     public static var isAccessibilityTrusted: Bool { AXIsProcessTrusted() }
 
-    public static func openAccessibilitySettings() {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     public var isBrightnessAvailable: Bool { DisplayBrightness.isAvailable && Self.builtInDisplay() != nil }
 
     public func setMode(_ newMode: Mode) {
@@ -64,18 +58,16 @@ public final class HUDController {
         case .overlay:
             installVolumeListeners()
         case .replace:
-            startTap(prompt: true)
+            startTap()
         }
     }
 
     // MARK: - replace
 
-    private func startTap(prompt: Bool) {
+    /// İzin yoksa sistem penceresi açılmaz: macOS 27'de uygulamayı listeye eklemiyor, kullanıcı yolunu bulamıyordu
+    /// (2026-10-17). İzin, ayarlarda kipin altındaki satırdan yönlendirmeyle verilir; gelince tap kendiliğinden kurulur.
+    private func startTap() {
         if !Self.isAccessibilityTrusted {
-            if prompt {
-                // kAXTrustedCheckOptionPrompt'un değeri; global değişken Swift 6'da eşzamanlılık açısından güvensiz.
-                _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-            }
             Log.integrations.notice("HUD: Erişilebilirlik izni bekleniyor")
             // İzin verilince sistem bu dağıtık bildirimi gönderir; tap o zaman kurulur.
             trustObserver = DistributedNotificationCenter.default().addObserver(
