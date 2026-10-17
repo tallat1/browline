@@ -33,6 +33,7 @@ enum SettingsSearch {
             .init(id: "urlScheme", page: .now, title: String(localized: "browline:// bağlantıları"), keywords: ["url", "şema", "scheme", "raycast", "alfred", "kestirme", "shortcuts", "bağlantı", "link"]),
             .init(id: "questions", page: .now, title: String(localized: "Claude Code izin istemlerini notch'ta yanıtla"), keywords: ["claude", "izin", "permission", "onay", "approve"]),
             .init(id: "choiceQuestions", page: .now, title: String(localized: "Claude'un seçenekli sorularını notch'ta yanıtla"), keywords: ["claude", "soru", "question", "seçenek", "choice", "askuserquestion"]),
+            .init(id: "decisionCards", page: .now, title: String(localized: "Claude'un karar kutularını notch'ta göster"), keywords: ["claude", "karar", "decision", "masaüstü", "desktop", "bekliyor", "waiting"]),
             .init(id: "shelf", page: .shelf, title: String(localized: "Dosya rafı"), keywords: ["raf", "shelf", "dosya", "file", "airdrop", "sürükle", "drag", "ekran görüntüsü", "screenshot"]),
             .init(id: "clipboard", page: .shelf, title: String(localized: "Pano geçmişi"), keywords: ["pano", "clipboard", "kopyala", "copy", "yapıştır", "paste"]),
             .init(id: "calendar", page: .calendar, title: String(localized: "Takvim ve toplantılar"), keywords: ["takvim", "calendar", "toplantı", "meeting", "etkinlik", "event"]),

@@ -57,7 +57,7 @@ enum OnboardingProfile: String, CaseIterable, Identifiable, Sendable {
              \.screenRecordingIndicatorEnabled]
         case .developer:
             [\.terminalEnabled, \.ciEnabled, \.claudeUsageEnabled, \.activityAPIEnabled, \.questionsEnabled, \.choiceQuestionsEnabled,
-             \.systemStatsEnabled]
+             \.decisionCardsEnabled, \.systemStatsEnabled]
         case .files:
             [\.shelfEnabled, \.clipboardEnabled]
         }

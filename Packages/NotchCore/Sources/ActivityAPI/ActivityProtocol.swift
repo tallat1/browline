@@ -32,6 +32,9 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
         /// Bekleyen soruyu yanıtsız kapatır: soru başka yerde (ör. Claude'un kendi penceresinde) yanıtlandı.
         /// `id` `*` ile biterse önekle eşleşenlerin hepsi. Yalnız soket üzerinden.
         case dismiss
+        /// Yanıt beklemeyen soru (ör. Claude masaüstünün karar kutusu): notch'ta kart olarak görünür, düğmesi soruyu
+        /// soran uygulamayı açar; bağlantı hemen döner. Aynı id yenisiyle değişir, `dismiss` ile düşer. Yalnız soket.
+        case handoff
     }
 
     public var op: Operation
@@ -58,11 +61,18 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
     public var choiceDetails: [String]?
     /// Birden çok seçenek seçilebilir.
     public var multiple: Bool?
+    /// handoff: soruya eşlik eden kısa özet; en çok `ExternalQuestion.maximumContextLength`.
+    public var context: String?
+    /// handoff: Claude masaüstü oturumu (`local_…`); kartın düğmesi o oturumu açar, yoksa yalnız Claude öne gelir.
+    public var session: String?
 
     public init(op: Operation, id: String? = nil, title: String? = nil, subtitle: String? = nil,
                 progress: Double? = nil, symbol: String? = nil, tint: String? = nil, priority: Int? = nil,
                 ttl: Double? = nil, duration: Double? = nil, detail: String? = nil,
-                choices: [String]? = nil, choiceDetails: [String]? = nil, multiple: Bool? = nil) {
+                choices: [String]? = nil, choiceDetails: [String]? = nil, multiple: Bool? = nil,
+                context: String? = nil, session: String? = nil) {
+        self.context = context
+        self.session = session
         self.detail = detail
         self.choices = choices
         self.choiceDetails = choiceDetails

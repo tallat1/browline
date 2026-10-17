@@ -1,7 +1,8 @@
 import Foundation
 import Observation
 
-/// Dışarıdan gelen onay sorusu (ör. Claude Code izin istemi). Notch'ta düğmelerle yanıtlanır.
+/// Dışarıdan gelen soru: onay (ör. Claude Code izin istemi), seçenekli (AskUserQuestion) ya da yanıt beklemeyen
+/// karar kartı (`handoff`; Claude masaüstünün karar kutusu, yanıtı Claude'da verilir).
 public struct ExternalQuestion: Equatable, Sendable, Identifiable {
     public var id: String
     public var title: String
@@ -15,16 +16,25 @@ public struct ExternalQuestion: Equatable, Sendable, Identifiable {
     public var choices: [String] = []
     public var choiceDetails: [String] = []
     public var allowsMultiple = false
+    /// Karar kartı: kimse yanıt beklemez; `choices` yalnız bilgi, düğme soruyu soran uygulamayı açar.
+    public var isHandoff = false
+    /// Karar kartının özeti.
+    public var context: String?
+    /// Karar kartının Claude masaüstü oturumu (`local_…`).
+    public var session: String?
 
-    public var isChoice: Bool { !choices.isEmpty }
+    public var isChoice: Bool { !choices.isEmpty && !isHandoff }
 
     public static let maximumDetailLength = 2000
     public static let maximumChoices = 6
     public static let maximumChoiceLength = 120
     public static let maximumChoiceDetailLength = 300
+    public static let maximumContextLength = 600
     /// Kanca zaman aşımından (Claude'da varsayılan 600 sn) önce düşsün.
     public static let defaultTTL: TimeInterval = 110
     public static let ttlRange: ClosedRange<TimeInterval> = 1...590
+    /// Karar kartı kimseyi bekletmez; kullanıcı masadan uzaktaysa da bir süre görünsün.
+    public static let handoffTTLRange: ClosedRange<TimeInterval> = 1...3600
 
     /// Başlık, alt başlık, simge ve renk etkinlikle aynı kurallarla; ayrıntı ve süre ayrıca.
     public static func validated(from request: ActivityRequest, now: Date = .now)
@@ -33,8 +43,19 @@ public struct ExternalQuestion: Equatable, Sendable, Identifiable {
         if let detail = request.detail, detail.count > maximumDetailLength {
             throw .invalid("detail", rule: "≤ \(maximumDetailLength)")
         }
+        let isHandoff = request.op == .handoff
         let ttl = request.ttl ?? defaultTTL
-        guard ttlRange.contains(ttl) else { throw .invalid("ttl", rule: "1…590 s") }
+        if isHandoff {
+            guard handoffTTLRange.contains(ttl) else { throw .invalid("ttl", rule: "1…3600 s") }
+        } else {
+            guard ttlRange.contains(ttl) else { throw .invalid("ttl", rule: "1…590 s") }
+        }
+        if let context = request.context, context.count > maximumContextLength {
+            throw .invalid("context", rule: "≤ \(maximumContextLength)")
+        }
+        if let session = request.session, !ClaudeStopHook.isDesktopSessionID(session) {
+            throw .invalid("session", rule: "local_[A-Za-z0-9-]{1,64}")
+        }
         let choices = request.choices ?? []
         let details = request.choiceDetails ?? []
         guard choices.count <= maximumChoices,
@@ -48,7 +69,8 @@ public struct ExternalQuestion: Equatable, Sendable, Identifiable {
         return ExternalQuestion(id: base.id, title: base.title, subtitle: base.subtitle, detail: request.detail,
                                 symbol: base.symbol, tint: base.tint, askedAt: now,
                                 expiresAt: now.addingTimeInterval(ttl), choices: choices, choiceDetails: details,
-                                allowsMultiple: request.multiple ?? false)
+                                allowsMultiple: request.multiple ?? false, isHandoff: isHandoff,
+                                context: isHandoff ? request.context : nil, session: isHandoff ? request.session : nil)
     }
 }
 
@@ -64,9 +86,12 @@ public final class QuestionStore {
     /// Tür başına: onay soruları (İzin ver/Reddet) ve seçenekli sorular ayrı açılıp kapanır.
     @ObservationIgnored public var acceptsApprovals = true
     @ObservationIgnored public var acceptsChoices = true
+    @ObservationIgnored public var acceptsHandoffs = true
 
     public func accepts(_ question: ExternalQuestion) -> Bool {
-        isEnabled && (question.isChoice ? acceptsChoices : acceptsApprovals)
+        guard isEnabled else { return false }
+        if question.isHandoff { return acceptsHandoffs }
+        return question.isChoice ? acceptsChoices : acceptsApprovals
     }
     @ObservationIgnored public var onQuestionsChanged: (([ExternalQuestion]) -> Void)?
     /// Soru nasıl kapandı: tanı için (ör. masaüstü uygulamasında yanıtlanınca kanca kapatılıyor mu).
@@ -92,8 +117,9 @@ public final class QuestionStore {
 
     public init() {}
 
-    /// Şu an gösterilen soru (en eskisi).
-    public var current: ExternalQuestion? { questions.first }
+    /// Şu an gösterilen soru: bekleyen istemcisi olan en eski soru, yoksa en eski karar kartı. Kart yarım saat
+    /// durabilir; arkasından gelen süreli izin istemini örtmesin.
+    public var current: ExternalQuestion? { questions.first { !$0.isHandoff } ?? questions.first }
 
     public func ask(_ request: ActivityRequest, now: Date = .now) async -> ActivityResponse {
         let isChoice = !(request.choices ?? []).isEmpty
@@ -126,6 +152,31 @@ public final class QuestionStore {
             Task { @MainActor [weak self] in self?.resolve(id, with: nil, reason: .cancelled) }
         }
         return ActivityResponse(ok: true, decision: decision, selection: selections.removeValue(forKey: id))
+    }
+
+    /// Karar kartı: gösterilir ve hemen döner; aynı id'li eski kart yenisiyle değişir. Kapalıysa hata döner
+    /// (kanca "Claude bitti" bildirimine geçer).
+    public func handoff(_ request: ActivityRequest, now: Date = .now) -> ActivityResponse {
+        guard isEnabled, acceptsHandoffs else {
+            return .failure(APILanguage.current.text("karar kartları kapalı", "decision cards are off"))
+        }
+        let question: ExternalQuestion
+        do {
+            question = try ExternalQuestion.validated(from: request, now: now)
+        } catch {
+            return .failure(error.description)
+        }
+        if questions.contains(where: { $0.id == question.id }) { resolve(question.id, with: nil, reason: .dismissed) }
+        guard questions.count < Self.maximumQuestions else { return .failure(APILanguage.current.text("en çok \(Self.maximumQuestions) soru bekleyebilir", "at most \(Self.maximumQuestions) questions can wait")) }
+        questions.append(question)
+        let id = question.id
+        expiryTasks[id] = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(max(0, question.expiresAt.timeIntervalSince(now))))
+            guard !Task.isCancelled else { return }
+            self?.resolve(id, with: nil, reason: .expired)
+        }
+        onQuestionsChanged?(questions)
+        return .success
     }
 
     /// `dismiss` isteği: `id` tam eşleşir; `*` ile biterse önek. Kapatılan soru sayısı döner, bekleyen
@@ -162,7 +213,7 @@ public final class QuestionStore {
         expiryTasks.removeValue(forKey: id)?.cancel()
         if let waiter = waiters.removeValue(forKey: id) {
             waiter.resume(returning: decision)
-        } else {
+        } else if !question.isHandoff {
             // Görev iptali beklemeye girilmeden geldiyse: bekleme başlarken hemen çözülsün.
             resolvedEarly.insert(id)
         }

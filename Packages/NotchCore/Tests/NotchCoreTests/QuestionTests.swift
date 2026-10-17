@@ -267,3 +267,118 @@ struct QuestionSocketTests {
         #expect(questions.questions.isEmpty)
     }
 }
+
+@MainActor
+struct DecisionCardTests {
+    private func card(_ id: String = "claude-perm-abc-turn", session: String? = "local_9b9e-1") -> ActivityRequest {
+        ActivityRequest(op: .handoff, id: id, title: "Claude seni bekliyor", subtitle: "notch-mvp", ttl: 1800,
+                        detail: "Push edeyim mi?", choices: ["Evet, it", "Şimdilik kalsın"], context: "Commit hazır.",
+                        session: session)
+    }
+
+    @Test func handoffShowsWithoutWaitingAndDismissesByPrefix() {
+        let store = QuestionStore()
+        #expect(store.handoff(card()).ok)
+        let question = try? #require(store.current)
+        #expect(question?.isHandoff == true)
+        #expect(question?.isChoice == false)
+        #expect(question?.session == "local_9b9e-1")
+        #expect(question?.context == "Commit hazır.")
+        // Aynı oturumun yeni kartı eskisinin yerine geçer.
+        #expect(store.handoff(card()).ok)
+        #expect(store.questions.count == 1)
+        // Yeni istem: kanca betiği oturumun önekiyle düşürür.
+        #expect(store.dismiss(ActivityRequest(op: .dismiss, id: "claude-perm-abc-*")).dismissed == 1)
+        #expect(store.questions.isEmpty)
+    }
+
+    @Test func approvalWaitingBehindACardIsShownFirst() async {
+        let store = QuestionStore()
+        _ = store.handoff(card())
+        let task = Task { await store.ask(ActivityRequest(op: .ask, id: "claude-perm-def-1", title: "Bash", ttl: 30)) }
+        while store.questions.count < 2 { await Task.yield() }
+        #expect(store.current?.id == "claude-perm-def-1")
+        store.answer("claude-perm-def-1", with: .allow)
+        #expect(await task.value.decision == .allow)
+        #expect(store.current?.isHandoff == true)
+    }
+
+    @Test func handoffValidationAndSwitch() {
+        let store = QuestionStore()
+        #expect(!store.handoff(card(session: "../etc")).ok)
+        #expect(!store.handoff(ActivityRequest(op: .handoff, id: "x", title: "t", ttl: 7200)).ok)
+        // İzin sorusu sınırı (590 sn) kartı bağlamaz.
+        #expect(store.handoff(ActivityRequest(op: .handoff, id: "x", title: "t", ttl: 1800)).ok)
+        store.acceptsHandoffs = false
+        #expect(!store.handoff(card()).ok)
+        #expect(!store.accepts(store.questions[0]))
+        #expect(!ExternalActivityStore().handle(card()).ok)
+    }
+}
+
+struct ClaudeStopHookTests {
+    private func line(_ object: [String: Any]) -> String {
+        String(decoding: try! JSONSerialization.data(withJSONObject: object), as: UTF8.self)
+    }
+
+    private func assistant(_ blocks: [[String: Any]]) -> String {
+        line(["type": "assistant", "message": ["role": "assistant", "content": blocks]])
+    }
+
+    private func wrapUp(_ input: [String: Any]) -> String {
+        assistant([["type": "tool_use", "id": "t1", "name": "mcp__ccd_turn__wrap_up", "input": input]])
+    }
+
+    private let prompt = #"{"type":"user","message":{"role":"user","content":"push et"}}"#
+    private let toolResult = #"{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"t1","content":"ok"}]}}"#
+
+    private func decision(_ lines: [String]) -> ClaudeStopHook.Decision? {
+        ClaudeStopHook.decision(inTail: Data(lines.joined(separator: "\n").utf8), isPartial: false)
+    }
+
+    @Test func readsThisTurnsDecisionBox() {
+        let box = wrapUp(["recap": "Commit hazır.", "ask": "Push edeyim mi?",
+                          "actions": [["label": "Evet, it", "message": "Evet"], ["action": "commit"], ["label": " "]]])
+        let found = decision([prompt, box, toolResult, assistant([["type": "text", "text": "Tamam."]])])
+        #expect(found == .init(ask: "Push edeyim mi?", recap: "Commit hazır.", options: ["Evet, it", "commit"]))
+        // Düğmeler metin olarak gelmiş olabilir.
+        let stringActions = wrapUp(["ask": "Hangisi?", "actions": #"[{"label":"A"},{"label":"B"}]"#])
+        #expect(decision([stringActions])?.options == ["A", "B"])
+    }
+
+    @Test func noCardWithoutAQuestionInThisTurn() {
+        // Sorusuz kutu: tur bitti, beklenen bir şey yok.
+        #expect(decision([prompt, wrapUp(["recap": "Bitti."])]) == nil)
+        // Önceki turun kutusu yeni istemin arkasında kalır.
+        #expect(decision([wrapUp(["ask": "Eski?"]), toolResult, prompt, assistant([["type": "text", "text": "x"]])]) == nil)
+        // Kısmi ilk satır atlanır, bozuk satırlar yok sayılır.
+        let tail = Data((#"ssage":{"content":"yarım"}}"# + "\n" + "{bozuk\n" + wrapUp(["ask": "Tamam mı?"])).utf8)
+        #expect(ClaudeStopHook.decision(inTail: tail, isPartial: true)?.ask == "Tamam mı?")
+    }
+
+    @Test func mapsHookSessionToDesktopSession() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("desktop-sessions-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let folder = root.appendingPathComponent("a/b")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try Data(#"{"sessionId":"local_111","cliSessionId":"other"}"#.utf8).write(to: folder.appendingPathComponent("local_111.json"))
+        try Data(#"{"sessionId":"local_222","cliSessionId":"b3c667b6-1a87"}"#.utf8).write(to: folder.appendingPathComponent("local_222.json"))
+        try Data(#"{"sessionId":"bad id","cliSessionId":"zzz"}"#.utf8).write(to: folder.appendingPathComponent("local_333.json"))
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "b3c667b6-1a87", in: root) == "local_222")
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "zzz", in: root) == nil)
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "", in: root) == nil)
+    }
+
+    @Test @MainActor func requestIsAValidCard() throws {
+        let input = try #require(ClaudeStopHook.parse(Data(#"{"session_id":"b3c6-67b6-1a87","transcript_path":"/tmp/t.jsonl","cwd":"/Users/x/notch-mvp"}"#.utf8)))
+        #expect(input.sessionPrefix == "b3c667b6")
+        let decision = ClaudeStopHook.Decision(ask: String(repeating: "?", count: 3000), recap: String(repeating: "r", count: 900),
+                                               options: (1...8).map { "Seçenek \($0)" })
+        let request = ClaudeStopHook.request(for: input, decision: decision, desktopSession: "local_222", language: .turkish)
+        #expect(request.op == .handoff)
+        // Kanca betiğinin `dismiss claude-perm-<oturum>-*` önekiyle düşer.
+        #expect(request.id == "claude-perm-b3c667b6-turn")
+        #expect(request.subtitle == "notch-mvp")
+        #expect(QuestionStore().handoff(request).ok)
+    }
+}

@@ -1239,6 +1239,16 @@
         }
       }
     },
+    "Claude'un karar kutularını notch'ta göster": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Claude's decision boxes in the notch"
+          }
+        }
+      }
+    },
     "Claude'un seçenekli sorularını notch'ta yanıtla": {
       "localizations": {
         "en": {
@@ -2883,6 +2893,16 @@
         }
       }
     },
+    "Oturumu Claude'da açar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the session in Claude"
+          }
+        }
+      }
+    },
     "Oynat": {
       "localizations": {
         "en": {
@@ -3431,6 +3451,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Suggest my recent repositories"
+          }
+        }
+      }
+    },
+    "Sonra": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Later"
           }
         }
       }
@@ -4047,6 +4077,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Only when there is an activity to show"
+          }
+        }
+      }
+    },
+    "Yalnız kartı kapatır; soru Claude'da bekler": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closes the card only; the question keeps waiting in Claude"
           }
         }
       }

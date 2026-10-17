@@ -52,6 +52,7 @@ extension AppCoordinator {
                 switch request.op {
                 case .ask: await questions.ask(request)
                 case .dismiss: await questions.dismiss(request)
+                case .handoff: await questions.handoff(request)
                 default: await store.handle(request)
                 }
             }
@@ -78,7 +79,7 @@ extension AppCoordinator {
         let ids = Set(list.map(\.id))
         let arrived = !ids.subtracting(shownQuestionIDs).isEmpty
         shownQuestionIDs = ids
-        if let first = list.first {
+        if let first = questions.current {
             _ = externalActivities.handle(ActivityRequest(
                 op: .push, id: Self.questionActivityID, title: first.title, subtitle: first.subtitle,
                 symbol: first.symbol ?? "hand.raised.fill", tint: first.tint ?? "#FF9F0A",
@@ -100,6 +101,21 @@ extension AppCoordinator {
     }
 
     static let questionActivityID = "notch.question"
+
+    /// Karar kartının düğmesi: Claude masaüstünde kartın oturumu; kimlik yoksa yalnız Claude öne gelir. Kart kapanır,
+    /// yanıt Claude'un kendi kutusunda verilir. ⚠️ `claude://code/needs-input?session=` DEĞİL: yalnız izin bekleyen
+    /// oturumları tanıyor, karar kutusuyla biten oturumu bulamayınca listedeki ilk oturuma gidiyor (2026-10-17).
+    func openClaude(for question: ExternalQuestion) {
+        var components = URLComponents(string: "claude://code/continue")
+        components?.queryItems = question.session.map { [URLQueryItem(name: "session", value: $0)] }
+        if question.session != nil, let url = components?.url {
+            NSWorkspace.shared.open(url)
+        } else if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.anthropic.claudefordesktop") {
+            NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
+        }
+        AppLog.coordinator.notice("karar kartı Claude'da açıldı (oturum \(question.session == nil ? "yok" : "var", privacy: .public))")
+        questions.answer(question.id, with: nil)
+    }
 
     func syncExternal(_ list: [ExternalActivity]) {
         let wanted = Set(list.map { ActivityID(ActivityKind.externalPrefix + $0.id) })

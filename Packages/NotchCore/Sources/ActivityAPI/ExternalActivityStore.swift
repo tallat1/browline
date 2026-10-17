@@ -57,6 +57,8 @@ public final class ExternalActivityStore {
                 return .failure(APILanguage.current.text("ask yalnız soket üzerinden çalışır", "ask only works over the socket"))
             case .dismiss:
                 return .failure(APILanguage.current.text("dismiss yalnız soket üzerinden çalışır", "dismiss only works over the socket"))
+            case .handoff:
+                return .failure(APILanguage.current.text("handoff yalnız soket üzerinden çalışır", "handoff only works over the socket"))
             case .flash:
                 let activity = try ExternalActivity.validated(from: request, now: now, requireID: false)
                 let seconds = request.duration ?? 3

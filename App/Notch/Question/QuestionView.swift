@@ -7,11 +7,15 @@ import SwiftUI
 /// yanıtlar, çoklu seçimde işaretlenip Gönder'e basılır. Karar yalnız bu düğmelerle verilir. Notch soru gelince
 /// kendiliğinden açıldığı için düğmeler ilk 0,8 sn pasif: o anda üst ortaya tıklayan yanlışlıkla yanıtlamasın.
 /// "Claude'da yanıtla" soruyu bırakır, istemci kendi penceresini gösterir (serbest metin yanıtı için de).
+/// Karar kartı (Claude masaüstünün turun sonundaki kutusu): soru, özet ve Claude'daki düğmelerin adları; kimse
+/// yanıt beklemez, "Claude'da yanıtla" oturumu Claude'da açar, "Sonra" yalnız kartı kapatır.
 struct QuestionView: View {
     let question: ExternalQuestion
     let waitingCount: Int
     let answer: (ActivityResponse.Decision?) -> Void
     let choose: ([Int]) -> Void
+    /// Karar kartı: soruyu soran uygulamayı (Claude) açar.
+    let openSource: () -> Void
     @State private var isArmed = false
     @State private var selected: Set<Int> = []
 
@@ -20,15 +24,34 @@ struct QuestionView: View {
 
     /// İçerik boyu: onay sorusu sabit; seçenekli soruda iki sütunlu kart satırı başına artar.
     static func height(for question: ExternalQuestion?) -> CGFloat {
+        if let question, question.isHandoff { return handoffHeight(for: question) }
         guard let question, question.isChoice else { return 156 }
         let rows = CGFloat((question.choices.count + 1) / 2)
         return 120 + rows * choiceRowHeight + (rows - 1) * 6
     }
 
+    /// Karar kartı içeriğe göre: soru en çok 2, özet en çok 3 satır (satır başına yaklaşık karakter ile).
+    static func handoffHeight(for question: ExternalQuestion) -> CGFloat {
+        func lines(_ text: String?, perLine: Int, limit: Int) -> CGFloat {
+            guard let text, !text.isEmpty else { return 0 }
+            return CGFloat(min(limit, (text.count + perLine - 1) / perLine))
+        }
+        let ask = lines(question.detail, perLine: 75, limit: 2)
+        let context = lines(question.context, perLine: 90, limit: 3)
+        // Başlık, düğmeler ve aralıklar 58; soru satırı 17, özet satırı 15.
+        return 58 + ask * 17 + (context > 0 ? 4 + context * 15 : 0)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             header
-            if question.isChoice { choiceBody } else { approvalBody }
+            if question.isHandoff {
+                handoffBody
+            } else if question.isChoice {
+                choiceBody
+            } else {
+                approvalBody
+            }
         }
         .task(id: question.id) {
             isArmed = false
@@ -110,6 +133,40 @@ struct QuestionView: View {
         .notchAnimation(value: isArmed)
     }
 
+    @ViewBuilder
+    private var handoffBody: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let ask = question.detail, !ask.isEmpty {
+                Text(verbatim: ask).font(NotchDesign.bodyEmphasized).lineLimit(2)
+            }
+            if let context = question.context, !context.isEmpty {
+                Text(verbatim: context).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(3)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .textSelection(.enabled)
+        HStack(spacing: 8) {
+            Button("Sonra") { answer(nil) }
+                .buttonStyle(QuietButtonStyle())
+                .help("Yalnız kartı kapatır; soru Claude'da bekler")
+            // Claude'daki düğmelerin adları: yanıt orada verilir, burada yalnız ne beklendiği görünsün.
+            if !question.choices.isEmpty {
+                Text(verbatim: question.choices.joined(separator: " · "))
+                    .font(NotchDesign.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            Spacer(minLength: 8)
+            Button("Claude'da yanıtla") { openSource() }
+                .buttonStyle(CapsuleButtonStyle(prominent: true, tint: tint))
+                .disabled(!isArmed)
+                .help("Oturumu Claude'da açar")
+        }
+        .opacity(isArmed ? 1 : 0.6)
+        .notchAnimation(value: isArmed)
+    }
+
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: question.symbol ?? "hand.raised.fill")
@@ -132,13 +189,19 @@ struct QuestionView: View {
                     .background(Capsule().fill(NotchDesign.selectionFill))
                     .help("Bekleyen diğer sorular")
             }
-            // Kalan süre: dolunca soru düşer ve istemci kendi penceresini gösterir.
-            TimelineView(.periodic(from: .now, by: 1)) { timeline in
-                let remaining = max(0, Int(question.expiresAt.timeIntervalSince(timeline.date).rounded(.up)))
-                Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60))
-                    .font(NotchDesign.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
+            // Kalan süre: dolunca soru düşer ve istemci kendi penceresini gösterir. Karar kartında kimse beklemiyor.
+            if !question.isHandoff {
+                countdown
             }
+        }
+    }
+
+    private var countdown: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { timeline in
+            let remaining = max(0, Int(question.expiresAt.timeIntervalSince(timeline.date).rounded(.up)))
+            Text(verbatim: String(format: "%d:%02d", remaining / 60, remaining % 60))
+                .font(NotchDesign.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
         }
     }
 

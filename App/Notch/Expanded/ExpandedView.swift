@@ -58,7 +58,8 @@ struct ExpandedView: View {
                                  choose: { selection in
                                      AppLog.coordinator.notice("seçenekli soru yanıtlandı: \(selection.count) seçim")
                                      coordinator.questions.answer(question.id, selection: selection)
-                                 })
+                                 },
+                                 openSource: { coordinator.openClaude(for: question) })
                 } else {
                     content(page)
                 }

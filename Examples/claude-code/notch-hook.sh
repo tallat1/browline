@@ -2,7 +2,9 @@
 # Claude Code kancası: oturumun durumunu notch'ta gösterir.
 #   istem gönderildi / araç bitti → "Claude çalışıyor" (proje adıyla)
 #   izin istendi                  → "Claude onay bekliyor" (turuncu, öne çıkar)
-#   yanıt bitti                   → etkinlik kalkar, "Claude bitti" kısa bildirimi
+#   yanıt bitti                   → etkinlik kalkar, "Claude bitti" kısa bildirimi; tur Claude masaüstünün karar
+#                                   kutusuyla bittiyse onun yerine "Claude seni bekliyor" kartı (notch claude-stop),
+#                                   düğmesi oturumu Claude'da açar; yeni istemde düşer
 #   izin Claude'un kendi penceresinde yanıtlandı → notch'taki izin sorusu düşer (araç çalıştı ya da
 #                                   tur ilerledi); soru kimliği ClaudePermissionHook.questionID ile aynı kural:
 #                                   claude-perm-<oturum>-<parmak izi>-…
@@ -68,7 +70,8 @@ Notification)
 Stop)
     dismiss "${questions}*"
     "$NOTCH" end --id "$id"
-    "$NOTCH" flash --title "Claude bitti" --subtitle "$project" --symbol checkmark.circle.fill --tint "#34C759"
+    printf '%s' "$input" | "$NOTCH" claude-stop ||
+        "$NOTCH" flash --title "Claude bitti" --subtitle "$project" --symbol checkmark.circle.fill --tint "#34C759"
     ;;
 SessionEnd)
     dismiss "${questions}*"

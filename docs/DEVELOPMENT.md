@@ -253,6 +253,23 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     (iki soru, tek ve çoklu seçim, yanıtlar Claude'a ulaştı). Biri yanıtsız kalırsa kanca hiçbir şey yazmaz.
     Ayarlar › Şimdi'de iki ayrı anahtar: izin istemleri (`questionsEnabled`) ve seçenekli sorular
     (`choiceQuestionsEnabled`); kapalı tür hemen yanıtsız döner.
+  - **Karar kartı** (Claude masaüstünün turun sonundaki kutusu, 2026-10-17): kutu masaüstünün belgelenmemiş
+    `mcp__ccd_turn__wrap_up` aracı; girdisi (`recap`, `ask`, `actions[].label`) oturum kaydına yazılıyor. `Stop`
+    kancası `notch claude-stop`'u çağırır: kaydın son 1 MB'ında sondan geriye bu turun kutusunu arar (kullanıcı
+    istemine varırsa ya da kutu sorusuzsa yok; araç sonuçları istem sayılmaz), yoksa çıkış 1 ve betik "Claude
+    bitti" bildirimine döner. Varsa soket işlemi `handoff`: yanıt beklemeyen soru, kimliği `claude-perm-<oturum8>-turn`
+    (yeni istem ve oturum sonu mevcut `dismiss claude-perm-<oturum>-*` ile düşürür), süre 30 dk, aynı kimlik
+    yenisiyle değişir. `QuestionStore.current` süreli soruları karttan önce gösterir (kart yarım saat durur, izin
+    istemini örtmesin). Kartta soru, özet ve Claude'daki düğmelerin adları yalnız bilgi olarak; "Claude'da
+    yanıtla" oturumu açar, "Sonra" kartı kapatır. ⛔ Yanıt notch'tan VERİLEMEZ: Claude var olan oturuma dışarıdan
+    mesaj gönderme yolu sunmuyor (`claude://code/new?q=` yalnız yeni oturumda; app.asar'daki bağlantı işleyicisi
+    okundu). Stop kancasıyla turu bloke edip seçimi "kanca geri bildirimi" olarak vermek mümkündü; kullanıcı
+    seçmedi (oturum çalışıyor görünür, onay kullanıcı mesajı sayılmaz). Kanca kimliği → masaüstü kimliği:
+    `~/Library/Application Support/Claude/claude-code-sessions/*/*/local_*.json` içindeki `cliSessionId`, en son
+    değişen dosyadan. Bağlantı `claude://code/continue?session=local_…` (tam kimlikle bulur). ⚠️
+    `claude://code/needs-input?session=` KULLANILMAZ: yalnız izin bekleyen (`pendingToolPermissions`) oturumları
+    tanıyor, bulamayınca listedeki ilk oturuma gidiyor (denemede başka bir oturum açıldı). Ayar: Ayarlar › Şimdi ›
+    "Claude'un karar kutularını notch'ta göster" (`decisionCardsEnabled`; yoksa seçenekli soruların değeriyle başlar).
   - Notch soru gelince kendiliğinden açılır; karar düğmeleri ilk 0,8 sn pasif (yanlışlıkla tıklama).
   - Genel API: `notch ask --id ID --title … [--detail …] [--timeout SN]` yanıtı yazar (`allow` | `deny`), yanıt
     yoksa çıkış 4. Ayarlar › Şimdi › "Claude Code izin istemlerini notch'ta yanıtla" kapalıysa hemen yanıtsız döner.

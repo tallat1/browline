@@ -116,7 +116,8 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
   - Kalıcı kural hiç yazılmaz.
   - Yanıt vermezseniz Claude Code kendi sorusuyla devam eder. Claude'un kendisinde yanıtlarsanız araç çalışır çalışmaz notch'taki kopyası kalkar.
 - **Seçenekli sorular:** Claude seçenekler arasından seçmenizi istediğinde aynı kanca seçenekleri notch'ta gösterir. Birine tıklayın (ya da birkaçını işaretleyip Gönder'e basın), yanıt doğrudan Claude'a gider. "Claude'da yanıtla" soruyu Claude'un kendi penceresine bırakır; örneğin kendi yanıtınızı yazmak için.
-  - Ayarlar › Şimdi'de izin soruları ve seçenekli sorular ayrı ayrı açılıp kapanır.
+- **Karar kutuları (Claude masaüstü uygulaması):** Claude masaüstünde bir tur soru ve düğmelerle bitince `Stop` kancası notch'ta "Claude seni bekliyor" kartını gösterir: soru, özet ve düğmelerin adları. "Claude'da yanıtla" o oturumu açar, yanıtı orada verirsiniz; Claude başka uygulamaların bir oturuma mesaj göndermesine izin vermiyor. Sonraki mesajınızı gönderince kart kalkar.
+  - Ayarlar › Şimdi'de izin soruları, seçenekli sorular ve karar kutuları ayrı ayrı açılıp kapanır.
 - **Codex CLI:** `~/.codex/config.toml` içinde `notify = ["/bin/bash", "/yol/Examples/codex/notch-notify.sh"]`.
 
 ## Gizlilik

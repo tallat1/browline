@@ -48,9 +48,11 @@ extension AppCoordinator {
         if !settings.calendarEnabled { activities.removeLive(ActivityKind.meeting) }
         if !settings.batteryEnabled { activities.cancelFlash(ActivityKind.power) }
         if !availablePages.contains(ui.selectedPage), let first = availablePages.first { ui.selectedPage = first }
-        questions.isEnabled = settings.activityAPIEnabled && (settings.questionsEnabled || settings.choiceQuestionsEnabled)
+        questions.isEnabled = settings.activityAPIEnabled
+            && (settings.questionsEnabled || settings.choiceQuestionsEnabled || settings.decisionCardsEnabled)
         questions.acceptsApprovals = settings.questionsEnabled
         questions.acceptsChoices = settings.choiceQuestionsEnabled
+        questions.acceptsHandoffs = settings.decisionCardsEnabled
         // Kapatılan türün bekleyen soruları "yanıt yok"la çözülür: istemci kendi akışına döner.
         for question in questions.questions where !questions.accepts(question) { questions.answer(question.id, with: nil) }
     }

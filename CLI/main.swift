@@ -22,6 +22,9 @@ Kullanım:
   notch claude-permission [--timeout SANİYE]
               Claude Code PermissionRequest kancası: stdin'deki isteği notch'ta sorar, kararı Claude'a
               yazar. Yanıt yoksa ya da uygulama kapalıysa hiçbir şey yazmaz (Claude kendi penceresini gösterir).
+  notch claude-stop
+              Claude Code Stop kancası: tur Claude masaüstünün karar kutusuyla bittiyse kutuyu notch'ta gösterir,
+              düğmesi oturumu Claude'da açar. Karar kutusu yoksa çıkış 1 (kanca "Claude bitti" bildirimine geçer).
 
 Örnek:
   notch push --id build --title "Derleme" --progress 40% --symbol hammer
@@ -45,6 +48,10 @@ Usage:
               Claude Code PermissionRequest hook: asks the request from stdin in the notch and writes the
               decision for Claude. Writes nothing if there is no answer or the app isn't running (Claude then
               shows its own prompt).
+  notch claude-stop
+              Claude Code Stop hook: if the turn ended with the Claude desktop app's decision box, shows it in the
+              notch with a button that opens the session in Claude. Exits with 1 if there is no decision box (the
+              hook then shows "Claude done").
 
 Example:
   notch push --id build --title "Building" --progress 40% --symbol hammer
@@ -94,6 +101,18 @@ func runClaudeQuestions(_ parsed: ClaudePermissionHook.Input, timeout: TimeInter
     exit(0)
 }
 
+/// Stop kancası: karar kutusu notch'ta gösterildiyse 0, gösterilmediyse 1. Claude'a hiçbir şey yazmaz.
+@MainActor
+func runClaudeStop() -> Never {
+    let input = FileHandle.standardInput.readDataToEndOfFile()
+    guard let parsed = ClaudeStopHook.parse(input), let path = parsed.transcriptPath,
+          let decision = ClaudeStopHook.decision(transcript: URL(fileURLWithPath: path)) else { exit(1) }
+    let session = ClaudeStopHook.desktopSessionID(forCLISession: parsed.sessionID)
+    let request = ClaudeStopHook.request(for: parsed, decision: decision, desktopSession: session, language: language)
+    guard let response = try? ActivitySocketClient.send(request, timeout: 3), response.ok else { exit(1) }
+    exit(0)
+}
+
 var arguments = Array(CommandLine.arguments.dropFirst())
 guard let command = arguments.first, !["-h", "--help", "help"].contains(command) else {
     print(usage)
@@ -111,6 +130,11 @@ if command == "claude-permission" {
                            "Usage: notch claude-permission [--timeout 1-590]"), code: 2)
     }
     runClaudePermission(timeout: timeout)
+}
+
+if command == "claude-stop" {
+    guard arguments.isEmpty else { fail(language.text("Kullanım: notch claude-stop", "Usage: notch claude-stop"), code: 2) }
+    runClaudeStop()
 }
 
 var options: [String: String] = [:]

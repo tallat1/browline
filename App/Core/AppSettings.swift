@@ -34,6 +34,8 @@ final class AppSettings {
     var questionsEnabled: Bool { didSet { store(questionsEnabled, "questionsEnabled") } }
     /// Claude'un seçenekli soruları (AskUserQuestion) notch'ta yanıtlanır; izin istemlerinden ayrı.
     var choiceQuestionsEnabled: Bool { didSet { store(choiceQuestionsEnabled, "choiceQuestionsEnabled") } }
+    /// Claude masaüstünün karar kutusu (turun sonundaki soru ve düğmeler) notch'ta kart olarak görünür; yanıt Claude'da.
+    var decisionCardsEnabled: Bool { didSet { store(decisionCardsEnabled, "decisionCardsEnabled") } }
     var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
     var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
     /// GitHub Actions durumu (`gh` ile); izlenen depolar "sahip/depo".
@@ -149,6 +151,8 @@ final class AppSettings {
         urlSchemeEnabled = defaults.bool(forKey: "urlSchemeEnabled")
         questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? false
         choiceQuestionsEnabled = defaults.bool(forKey: "choiceQuestionsEnabled")
+        // Yeni ayar: Claude sorularını notch'a almış olan kullanıcıda açık başlar.
+        decisionCardsEnabled = defaults.object(forKey: "decisionCardsEnabled") as? Bool ?? defaults.bool(forKey: "choiceQuestionsEnabled")
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? false
         screenRecordingIndicatorEnabled = defaults.object(forKey: "screenRecordingIndicatorEnabled") as? Bool ?? false

@@ -43,7 +43,7 @@ App/
 ├─ Notch/
 │  ├─ Closed/     NotchRootView, compact leading/trailing wings, lock screen views
 │  ├─ Expanded/   ExpandedView, section bar, page picker, detail header, status area, page sizes
-│  └─ Question/   Allow / Deny question view
+│  └─ Question/   Questions: Allow / Deny, multiple choice and Claude decision cards
 ├─ Features/      One folder per feature: its notch pages, cards and presentation extensions
 │                 (Now, Media, Shelf, Calendar, Tools, Status, Indicators, Meetings)
 ├─ DesignSystem/  NotchDesign tokens, button styles, marquee text, indicators, formatters
