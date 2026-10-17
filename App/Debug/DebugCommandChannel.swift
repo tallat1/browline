@@ -156,6 +156,11 @@ final class DebugCommandChannel {
             debugLog.info("pano geçmişi: \(kinds.count) öğe [\(kinds.joined(separator: ", "), privacy: .public)], çalışıyor \(running), engelli \(blocked)")
         case let section where section.hasPrefix("section:"):
             if let value = NotchSection(rawValue: String(section.dropFirst(8))) { coordinator.select(value) }
+        case let choice where choice.hasPrefix("decision:choose:"):
+            // Karar kartında seçeneğe basmak (sıra 0'dan); izin yoksa izin adımları görünür.
+            if let question = coordinator.questions.current, question.isHandoff, let index = Int(choice.dropFirst(16)) {
+                coordinator.answerDecision(question, choice: index)
+            }
         case let tab where tab.hasPrefix("tab:"):
             // "media" eski ad: Şimdi.
             let name = String(tab.dropFirst(4))

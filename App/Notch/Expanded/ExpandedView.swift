@@ -65,7 +65,9 @@ struct ExpandedView: View {
                                      } else {
                                          coordinator.openClaude(for: question)
                                      }
-                                 })
+                                 },
+                                 needsAccessibility: question.isHandoff && ui.decisionCardNeedsAccessibility,
+                                 setUpAccessibility: { coordinator.showAccessibilitySetup() })
                 } else {
                     content(page)
                 }
@@ -94,6 +96,10 @@ struct ExpandedView: View {
         .onChange(of: question?.id) { _, _ in
             model.preferredOpenSize = openSize(for: page)
         }
+        // Karar kartı izin adımlarına geçince (ve geri dönünce) boyu değişir.
+        .onChange(of: ui.decisionCardNeedsAccessibility) { _, _ in
+            model.preferredOpenSize = openSize(for: page)
+        }
         // Seçicinin görünüp kaybolması (bir modül açılıp kapanınca) boyu da değiştirir.
         .onChange(of: sectionPages) { _, _ in
             model.preferredOpenSize = openSize(for: page)
@@ -104,7 +110,9 @@ struct ExpandedView: View {
     /// İstenen tüm açık boyut: bant + (seçici) + boşluk + içerik (soru varsa soru) + alt boşluk.
     private func openSize(for page: NotchPage) -> CGSize {
         let hasQuestion = coordinator.questions.current != nil
-        let body = hasQuestion ? QuestionView.height(for: coordinator.questions.current) : page.bodyHeight
+        let body = hasQuestion
+            ? QuestionView.height(for: coordinator.questions.current, needsAccessibility: coordinator.ui.decisionCardNeedsAccessibility)
+            : page.bodyHeight
         let hasHeader = !hasQuestion && (page.isDetailPage || coordinator.pages(in: page.section).count > 1)
         let header = hasHeader ? NotchDesign.headerSpacing + NotchDesign.Control.small : 0
         return CGSize(width: NotchDesign.openWidth,

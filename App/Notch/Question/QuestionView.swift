@@ -17,6 +17,9 @@ struct QuestionView: View {
     let choose: ([Int]) -> Void
     /// Karar kartı: seçenek sırası (Claude'daki aynı düğmeye basılır) ya da nil (yalnız oturum açılır).
     let respond: (Int?) -> Void
+    /// Karar kartında seçeneğe basıldı, Erişilebilirlik izni yok: seçenekler yerine izin adımları.
+    var needsAccessibility = false
+    var setUpAccessibility: () -> Void = {}
     @State private var isArmed = false
     @State private var selected: Set<Int> = []
 
@@ -24,23 +27,24 @@ struct QuestionView: View {
     static let choiceRowHeight: CGFloat = 46
 
     /// İçerik boyu: onay sorusu sabit; seçenekli soruda iki sütunlu kart satırı başına artar.
-    static func height(for question: ExternalQuestion?) -> CGFloat {
-        if let question, question.isHandoff { return handoffHeight(for: question) }
+    static func height(for question: ExternalQuestion?, needsAccessibility: Bool = false) -> CGFloat {
+        if let question, question.isHandoff { return handoffHeight(for: question, needsAccessibility: needsAccessibility) }
         guard let question, question.isChoice else { return 156 }
         let rows = CGFloat((question.choices.count + 1) / 2)
         return 120 + rows * choiceRowHeight + (rows - 1) * 6
     }
 
     /// Karar kartı içeriğe göre: soru en çok 2, özet en çok 3 satır (satır başına yaklaşık karakter ile).
-    static func handoffHeight(for question: ExternalQuestion) -> CGFloat {
+    static func handoffHeight(for question: ExternalQuestion, needsAccessibility: Bool = false) -> CGFloat {
         func lines(_ text: String?, perLine: Int, limit: Int) -> CGFloat {
             guard let text, !text.isEmpty else { return 0 }
             return CGFloat(min(limit, (text.count + perLine - 1) / perLine))
         }
         let ask = lines(question.detail, perLine: 75, limit: 2)
-        let context = lines(question.context, perLine: 90, limit: 3)
+        // İzin adımları özetin yerine geçer: 3 satır ve daha büyük düğme payı.
+        let context = needsAccessibility ? 3 : lines(question.context, perLine: 90, limit: 3)
         // Başlık, düğmeler ve aralıklar 58; soru satırı 17, özet satırı 15.
-        return 58 + ask * 17 + (context > 0 ? 4 + context * 15 : 0)
+        return 58 + ask * 17 + (context > 0 ? 4 + context * 15 : 0) + (needsAccessibility ? 8 : 0)
     }
 
     var body: some View {
@@ -140,7 +144,13 @@ struct QuestionView: View {
             if let ask = question.detail, !ask.isEmpty {
                 Text(verbatim: ask).font(NotchDesign.bodyEmphasized).lineLimit(2)
             }
-            if let context = question.context, !context.isEmpty {
+            if needsAccessibility {
+                // Sistemin istemi macOS 27'de uygulamayı listeye eklemedi; adımlar bölmenin bu Mac'teki adıyla.
+                Text("Claude'daki düğmeye basmak için izin gerekli. İzin ver… Gizlilik ve Güvenlik › \(PermissionKind.accessibility.systemName) bölmesini ve Finder'da Browline'ı açar: Browline'ı listeye sürükleyip anahtarını açın.")
+                    .font(NotchDesign.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+            } else if let context = question.context, !context.isEmpty {
                 Text(verbatim: context).font(NotchDesign.caption).foregroundStyle(.secondary).lineLimit(3)
             }
         }
@@ -151,7 +161,14 @@ struct QuestionView: View {
                 .buttonStyle(QuietButtonStyle())
                 .help("Yalnız kartı kapatır; soru Claude'da bekler")
             Spacer(minLength: 8)
-            if question.choices.isEmpty {
+            if needsAccessibility {
+                Button("Claude'da yanıtla") { respond(nil) }
+                    .buttonStyle(QuietButtonStyle())
+                    .help("Oturumu Claude'da açar; yanıtı orada verirsiniz")
+                Button("İzin ver…") { setUpAccessibility() }
+                    .buttonStyle(CapsuleButtonStyle(prominent: true, tint: .blue))
+                    .help("İzin bölmesini ve Finder'da Browline'ı açar")
+            } else if question.choices.isEmpty {
                 Button("Claude'da yanıtla") { respond(nil) }
                     .buttonStyle(CapsuleButtonStyle(prominent: true, tint: tint))
                     .disabled(!isArmed)

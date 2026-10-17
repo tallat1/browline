@@ -87,6 +87,8 @@ final class AppCoordinator {
     var lastTrackInfo: NowPlayingInfo?
     /// Şarkı geçişinde oynatıcı bir an duraklıyor; kanat hemen kapanmasın.
     var nowPlayingRemovalTask: Task<Void, Never>?
+    /// Karar kartı izin beklerken Erişilebilirlik izninin gelmesini izler.
+    var accessibilityWatch: Task<Void, Never>?
 
     init() {
         panels = PanelManager(options: settings.panelOptions) { [unowned self] model in

@@ -1249,6 +1249,16 @@
         }
       }
     },
+    "Claude'daki düğmeye basmak için izin gerekli. İzin ver… Gizlilik ve Güvenlik › %@ bölmesini ve Finder'da Browline'ı açar: Browline'ı listeye sürükleyip anahtarını açın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clicking the button in Claude needs permission. Allow… opens Privacy & Security › %@ and shows Browline in Finder: drag Browline into the list and turn it on."
+          }
+        }
+      }
+    },
     "Claude'un karar kutularını notch'ta göster": {
       "localizations": {
         "en": {
@@ -2923,6 +2933,16 @@
         }
       }
     },
+    "Oturumu Claude'da açar; yanıtı orada verirsiniz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the session in Claude, where you answer"
+          }
+        }
+      }
+    },
     "Oynat": {
       "localizations": {
         "en": {
@@ -3253,12 +3273,12 @@
         }
       }
     },
-    "Ses ve parlaklık tuşlarını notch'a almak (yalnız \"sistemin yerine\" seçiliyse)": {
+    "Ses ve parlaklık tuşlarını notch'a almak ve karar kartında seçtiğiniz Claude düğmesine basmak": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Show volume and brightness keys in the notch (only when \"instead of the system\" is chosen)"
+            "value": "Volume and brightness keys in the notch, and clicking the Claude button you choose on a decision card"
           }
         }
       }
@@ -4783,6 +4803,16 @@
         }
       }
     },
+    "İzin bölmesini ve Finder'da Browline'ı açar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens the permission pane and shows Browline in Finder"
+          }
+        }
+      }
+    },
     "İzin her özelliğin kendi sayfasında da görünür. Sistem Ayarları'ndan dönünce durum kendiliğinden yenilenir.": {
       "localizations": {
         "en": {
@@ -4809,6 +4839,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Data you allow stays on this Mac and is never sent anywhere."
+          }
+        }
+      }
+    },
+    "İzin ver…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow…"
           }
         }
       }

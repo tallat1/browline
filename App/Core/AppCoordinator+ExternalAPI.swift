@@ -113,9 +113,16 @@ extension AppCoordinator {
 
     /// Karar kartındaki seçenek: Claude'daki kutunun aynı adlı düğmesine basılır, yanıt kullanıcının mesajı olarak
     /// gider. Önce Claude öne gelmeden denenir (oturum zaten açıksa); bulunamazsa oturum açılır ve kutunun çizilmesi
-    /// 4 sn beklenir. Basılamazsa oturum açık kalır, yanıt orada verilir. Erişilebilirlik izni yoksa sistem sorar.
+    /// 4 sn beklenir. Basılamazsa oturum açık kalır, yanıt orada verilir. Erişilebilirlik izni yoksa kart kapanmaz,
+    /// izin adımlarını gösterir (macOS 27'de uygulama listeye kendiliğinden eklenmiyor, kullanıcı yolunu bulamadı).
     func answerDecision(_ question: ExternalQuestion, choice index: Int) {
         guard question.isHandoff, question.choices.indices.contains(index) else { return }
+        guard AXIsProcessTrusted() else {
+            ui.decisionCardNeedsAccessibility = true
+            watchAccessibilityTrust()
+            AppLog.coordinator.notice("karar kartı seçeneği: Erişilebilirlik izni yok, adımlar gösterildi")
+            return
+        }
         let label = question.choices[index], ask = question.detail, options = question.choices, session = question.session
         questions.answer(question.id, with: nil)
         Task { [weak self] in
@@ -131,10 +138,34 @@ extension AppCoordinator {
             } else if outcome != .pressed {
                 self?.openClaudeSession(session)
             }
-            if outcome == .notTrusted {
-                _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
-            }
             AppLog.coordinator.notice("karar kartı seçeneği: \(String(describing: outcome), privacy: .public)")
+        }
+    }
+
+    /// Kartın "İzin ver…" düğmesi: izin bölmesi ve Finder'da seçili Browline; kullanıcı uygulamayı listeye sürükler.
+    func showAccessibilitySetup() {
+        PermissionCenter.openAccessibilitySetup()
+        watchAccessibilityTrust()
+    }
+
+    /// İzin gelince (ya da kart kalkınca) izin adımları kapanır; en çok 10 dk izlenir.
+    func watchAccessibilityTrust() {
+        accessibilityWatch?.cancel()
+        accessibilityWatch = Task { [weak self] in
+            for _ in 0..<600 {
+                try? await Task.sleep(for: .seconds(1))
+                guard let self, !Task.isCancelled else { return }
+                if AXIsProcessTrusted() {
+                    AppLog.coordinator.notice("Erişilebilirlik izni verildi")
+                    ui.decisionCardNeedsAccessibility = false
+                    return
+                }
+                if questions.current?.isHandoff != true {
+                    ui.decisionCardNeedsAccessibility = false
+                    return
+                }
+            }
+            self?.ui.decisionCardNeedsAccessibility = false
         }
     }
 

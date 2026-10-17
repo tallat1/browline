@@ -46,7 +46,7 @@ enum PermissionKind: String, CaseIterable, Identifiable, Sendable {
         case .calendar: String(localized: "Yaklaşan toplantı ve Katıl düğmesi")
         case .reminders: String(localized: "Bugünün anımsatıcıları Takvim'de")
         case .camera: String(localized: "Ayna sayfası; görüntü kaydedilmez")
-        case .accessibility: String(localized: "Ses ve parlaklık tuşlarını notch'a almak (yalnız \"sistemin yerine\" seçiliyse)")
+        case .accessibility: String(localized: "Ses ve parlaklık tuşlarını notch'a almak ve karar kartında seçtiğiniz Claude düğmesine basmak")
         case .systemAudio: String(localized: "Müziğe tepki veren çubuklar; ses kaydedilmez")
         case .automation: String(localized: "MediaRemote çalışmazsa Spotify ve Music denetimi")
         case .downloads: String(localized: "Biten indirmeleri göstermek (İndirilenler klasörü)")
@@ -154,7 +154,7 @@ final class PermissionCenter {
         case .calendar: settings.calendarEnabled
         case .reminders: settings.calendarEnabled && settings.remindersEnabled
         case .camera: settings.mirrorEnabled
-        case .accessibility: settings.hudMode == .replace
+        case .accessibility: settings.hudMode == .replace || (settings.activityAPIEnabled && settings.decisionCardsEnabled)
         case .systemAudio: settings.animatedEqualizer && settings.reactiveEqualizer
         case .automation: settings.nowPlayingEnabled
         case .downloads: settings.downloadsEnabled
@@ -193,8 +193,7 @@ final class PermissionCenter {
                 refresh()
             }
         case (.accessibility, .notDetermined):
-            // Sistem penceresi listeye ekler; kullanıcı bölmede açar, dönünce yenilenir.
-            _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+            Self.openAccessibilitySetup()
         default:
             openPane(kind)
         }
@@ -202,6 +201,14 @@ final class PermissionCenter {
 
     func openPane(_ kind: PermissionKind) {
         if let url = kind.paneURL { NSWorkspace.shared.open(url) }
+    }
+
+    /// Erişilebilirlik: bölme açılır ve Browline Finder'da seçili gösterilir; kullanıcı uygulamayı listeye sürükleyip
+    /// anahtarını açar. ⚠️ macOS 27'de (2026-10-17) uygulama listeye kendiliğinden EKLENMİYOR: ne sistemin istemi
+    /// (`AXIsProcessTrustedWithOptions`) ne izinsiz bir AX çağrısı ekledi, kullanıcı açacak satır bulamadı.
+    static func openAccessibilitySetup() {
+        if let url = PermissionKind.accessibility.paneURL { NSWorkspace.shared.open(url) }
+        NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
     }
 
     private static func map(_ access: CalendarMonitor.Access) -> PermissionStatus {

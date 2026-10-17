@@ -144,4 +144,7 @@ final class NotchUIState {
     /// Ayarlar penceresinde açık sayfa ve vurgulanacak ayar (arama ya da notch'tan doğrudan gelince).
     var settingsPage: SettingsPage = .general
     var settingsHighlight: String?
+    /// Karar kartında seçeneğe basıldı ama Erişilebilirlik izni yok: kart izin adımlarını gösterir, izin gelince
+    /// kendiliğinden kalkar ve seçenekler geri gelir.
+    var decisionCardNeedsAccessibility = false
 }
