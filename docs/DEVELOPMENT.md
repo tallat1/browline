@@ -265,8 +265,10 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     mesaj gönderme yolu sunmuyor (`claude://code/new?q=` yalnız yeni oturumda; `continue` yalnız `artifact`/`org`
     aktarıyor; app.asar'daki bağlantı işleyicisi okundu). Bu yüzden karttaki seçenek `ClaudeDecisionPresser` ile
     Claude'daki AYNI düğmeye Erişilebilirlik üzerinden basar (yanıt kullanıcının mesajı olarak gider): Electron
-    ağacı `AXManualAccessibility` ile açılır (ilk sorguda boş, 1–3 sn sonra dolu), yalnız `AXButton`, ad ⌘↩ ve
-    Markdown imleri atılarak birebir; soruyu ya da diğer seçenekleri içeren EN YAKIN üst grupta bu adda tek düğme
+    ağacı `AXManualAccessibility` ile açılır (ilk sorguda boş, 1–3 sn sonra dolu; bu yüzden kart görününce önceden
+    açılır, kart kalkınca eski hâline döner), yalnız `AXButton`; adı başlık, açıklama ve çocuk metin AYRI AYRI
+    denenir (⚠️ Claude'daki 18 düğmede ad hem başlıkta hem çocuk metinde; birleştirilince "X X" olup hiç eşleşmedi,
+    ilk canlı denemede `notFound`), sondaki kısayol ipucu (⌘↵, "Enter") ve Markdown imleri atılır; soruyu ya da diğer seçenekleri içeren EN YAKIN üst grupta bu adda tek düğme
     olmalı (daha yukarısı sohbetin tamamını, eski mesajdaki aynı adlı düğmeyi de kapsar — testte yakalandı), iki
     aday varsa basılmaz. Önce Claude öne gelmeden 1 sn denenir, bulunamazsa oturum açılıp 4 sn; olmazsa oturum
     açık kalır. İzin yoksa kart kapanmaz, izin adımlarını bölmenin bu Mac'teki adıyla gösterir; "İzin ver…" bölmeyi
@@ -274,7 +276,8 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     gelir. ⚠️ macOS 27'de (2026-10-17) uygulama listeye kendiliğinden EKLENMİYOR: ne `AXIsProcessTrustedWithOptions`
     istemi ne izinsiz bir AX çağrısı ekledi (bölme ekran görüntüsüyle doğrulandı); kullanıcı istemi görüp ne
     yapacağını bulamadı. Bölmenin adı "Aygıt Denetimi ve Veri Erişimi" / "Device Control and Data Access".
-    Debug: `decision:choose:<sıra>` karttaki seçeneğe basmış gibi. Diğer seçenek (Stop kancasıyla turu bloke edip seçimi "kanca
+    Debug: `decision:choose:<sıra>` karttaki seçeneğe basmış gibi; basılamazsa kutunun çevresinin yapısı
+    `~/Library/Application Support/com.talatozcoban.browline/debug-decision-ax.txt`'e yazılır (yalnız debug). Diğer seçenek (Stop kancasıyla turu bloke edip seçimi "kanca
     geri bildirimi" olarak vermek) kullanıcı tarafından seçilmedi. Kanca kimliği → masaüstü kimliği:
     `~/Library/Application Support/Claude/claude-code-sessions/*/*/local_*.json` içindeki `cliSessionId`, en son
     değişen dosyadan. Bağlantı `claude://code/continue?session=local_…` (tam kimlikle bulur). ⚠️

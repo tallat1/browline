@@ -212,8 +212,21 @@ struct ClaudeDecisionPresserTests {
         }
     }
 
+    @Test func buttonNamesAreComparedOneByOne() {
+        // Electron: ad hem düğmenin başlığında hem çocuk metinde; birleşince iki kez geçerdi (ilk canlı denemede notFound).
+        let doubled = Node(role: "AXButton", texts: ["Evet, karttan bastım"], children: [text("Evet, karttan bastım"), text("⌘"), text("↵")])
+        #expect(ClaudeDecisionPresser.isNamed(doubled, "evet, karttan bastım"))
+        let described = Node(role: "AXButton", texts: ["", "Evet, karttan bastım ⌘ Enter"].filter { !$0.isEmpty })
+        #expect(ClaudeDecisionPresser.isNamed(described, "evet, karttan bastım"))
+        // Benzer ama farklı ad eşleşmez.
+        let longer = Node(role: "AXButton", texts: ["Evet, karttan bastım ama"])
+        #expect(!ClaudeDecisionPresser.isNamed(longer, "evet, karttan bastım"))
+        #expect(!ClaudeDecisionPresser.isNamed(Node(role: "AXButton", texts: ["Evetler"]), "evet"))
+    }
+
     @Test func normalizesShortcutGlyphsAndMarkdown() {
         #expect(ClaudeDecisionPresser.normalize("Evet,  uygula ⌘ ↩") == "evet, uygula")
+        #expect(ClaudeDecisionPresser.normalize("Evet ⌘↵") == "evet")
         #expect(ClaudeDecisionPresser.normalize("`602efb2` **commit**'ini") == "602efb2 commit'ini")
     }
 }

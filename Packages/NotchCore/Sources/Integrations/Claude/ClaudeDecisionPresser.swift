@@ -5,10 +5,12 @@ import ApplicationServices
 /// kullanıcının kendi mesajı olarak gider. Claude var olan oturuma dışarıdan mesaj göndermeye izin vermediği için
 /// tek yol bu; kutu Claude penceresinde görünür olmalı (çağıran önce oturumu açar).
 ///
-/// Yanlış düğmeye basmamak için: yalnız `AXButton`, adı (⌘↩ işaretleri atılmış) seçenekle birebir aynı; kutunun
-/// sorusunu ya da diğer seçenekleri içeren en yakın üst grupta bu adda tek düğme var; birden çok aday varsa basılmaz.
-/// Electron erişilebilirlik ağacını yalnız istenince ve biraz gecikmeyle kurar (`AXManualAccessibility`, 2026-10-17
-/// ölçümü: ilk sorguda 3 düğme, 1–3 sn sonra 75); iş bitince eski hâline döner.
+/// Yanlış düğmeye basmamak için: yalnız `AXButton`; başlığı, açıklaması ya da içindeki metin (her biri AYRI; Electron
+/// adı hem düğmeye hem çocuk metne koyar, birleşince iki kez geçer) seçenekle birebir aynı, sondaki kısayol ipucu
+/// (⌘↵, "Enter") hariç; kutunun sorusunu ya da diğer seçenekleri içeren en yakın üst grupta bu adda tek düğme var;
+/// birden çok aday varsa basılmaz. Electron erişilebilirlik ağacını yalnız istenince ve gecikmeyle kurar
+/// (`AXManualAccessibility`, 2026-10-17 ölçümü: ilk sorguda 3 düğme, 1–3 sn sonra 75): uygulama kart görününce
+/// `setTreeEnabled(true)` ile önceden açar, kart kalkınca eski hâline döndürür.
 public enum ClaudeDecisionPresser {
     public enum Outcome: Equatable, Sendable {
         case pressed
@@ -21,9 +23,10 @@ public enum ClaudeDecisionPresser {
 
     public static let bundleIdentifier = "com.anthropic.claudefordesktop"
 
-    /// Arka planda çağrılmalı (AX çağrıları süreçler arası, ağaç birkaç yüz öğe). `attempts` boyunca yarım saniye
-    /// arayla arar: oturum yeni açıldıysa kutu birazdan çizilir.
-    public nonisolated static func press(label: String, ask: String?, options: [String], attempts: Int = 1) -> Outcome {
+    /// Arka planda çağrılmalı (AX çağrıları süreçler arası, ağaç birkaç yüz öğe). Yarım saniye arayla `firstAttempts`
+    /// kez arar; bulamazsa `beforeRetry` (ör. oturumu açmak) çağrılır ve `retryAttempts` kez daha aranır.
+    public nonisolated static func press(label: String, ask: String?, options: [String], firstAttempts: Int = 1,
+                                         retryAttempts: Int = 0, beforeRetry: (@Sendable () -> Void)? = nil) -> Outcome {
         guard AXIsProcessTrusted() else { return .notTrusted }
         guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else {
             return .claudeNotRunning
@@ -37,7 +40,9 @@ public enum ClaudeDecisionPresser {
         defer { if !wasOn { AXUIElementSetAttributeValue(root, manual, kCFBooleanFalse) } }
 
         var outcome = Outcome.notFound
-        for attempt in 0..<max(1, attempts) {
+        let first = max(1, firstAttempts)
+        for attempt in 0..<(first + max(0, retryAttempts)) {
+            if attempt == first, outcome == .notFound { beforeRetry?() }
             if attempt > 0 { Thread.sleep(forTimeInterval: 0.5) }
             var windows: CFTypeRef?
             AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &windows)
@@ -57,14 +62,70 @@ public enum ClaudeDecisionPresser {
         return outcome
     }
 
+    /// Claude'un erişilebilirlik ağacını açar ya da kapatır; önceki değer döner (Claude kapalıysa ya da izin yoksa nil).
+    @discardableResult
+    public nonisolated static func setTreeEnabled(_ enabled: Bool) -> Bool? {
+        guard AXIsProcessTrusted(),
+              let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else { return nil }
+        let root = AXUIElementCreateApplication(app.processIdentifier)
+        var previous: CFTypeRef?
+        AXUIElementCopyAttributeValue(root, "AXManualAccessibility" as CFString, &previous)
+        AXUIElementSetAttributeValue(root, "AXManualAccessibility" as CFString, enabled ? kCFBooleanTrue : kCFBooleanFalse)
+        return (previous as? Bool) == true
+    }
+
+    /// Bulunamayınca tanı (yalnız debug derlemesi yazar): seçeneğin ya da sorunun metnini taşıyan öğelerin 4 üst
+    /// grubunun yapısı (rol ve metinler, kısaltılmış). Sohbetin tamamını değil, kutunun çevresini gösterir.
+    public nonisolated static func diagnosis(label: String, ask: String?, options: [String]) -> String {
+        guard AXIsProcessTrusted(),
+              let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else { return "izin yok ya da Claude kapalı" }
+        let root = AXUIElementCreateApplication(app.processIdentifier)
+        var windows: CFTypeRef?
+        AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &windows)
+        let trees = ((windows as? [AXUIElement]) ?? []).map { snapshot($0) }
+        let keys = ([label] + options + [ask.map { String($0.prefix(30)) } ?? ""]).map(normalize).filter { !$0.isEmpty }
+        var lines = ["pencere \(trees.count), aranan: \(keys)"]
+        var shown = 0
+        func outline(_ node: Node, depth: Int, limit: Int) {
+            let texts = node.texts.map { "\"\($0.prefix(60))\"" }.joined(separator: " ")
+            lines.append(String(repeating: "  ", count: depth) + node.role + (texts.isEmpty ? "" : " " + texts))
+            guard depth < limit else { return }
+            for child in node.children { outline(child, depth: depth + 1, limit: limit) }
+        }
+        func visit(_ node: Node, path: [Node]) {
+            guard shown < 3 else { return }
+            if node.texts.contains(where: { text in keys.contains { normalize(text).contains($0) } }) {
+                shown += 1
+                lines.append("--- eşleşen \(node.role), üst gruplar: \(path.prefix(4).map(\.role))")
+                outline(path.prefix(4).last ?? node, depth: 0, limit: 7)
+                return
+            }
+            for child in node.children { visit(child, path: [node] + path) }
+        }
+        for tree in trees { visit(tree, path: []) }
+        if shown == 0 { lines.append("hiçbir öğede seçenek ya da soru metni yok") }
+        return lines.joined(separator: "\n")
+    }
+
     // MARK: - Ağaç ve eşleştirme (test edilebilir)
 
-    /// AX ağacının anlık görüntüsü: rol, görünen metinler, çocuklar.
+    /// AX ağacının anlık görüntüsü: rol, görünen metinler (başlık, açıklama, değer; boşlar yok), çocuklar.
     struct Node {
         var role: String
-        var text: String
+        var texts: [String]
         var children: [Node] = []
         var element: AnyObject?
+
+        init(role: String, text: String, children: [Node] = [], element: AnyObject? = nil) {
+            self.init(role: role, texts: text.isEmpty ? [] : [text], children: children, element: element)
+        }
+
+        init(role: String, texts: [String], children: [Node] = [], element: AnyObject? = nil) {
+            self.role = role
+            self.texts = texts
+            self.children = children
+            self.element = element
+        }
     }
 
     enum Match {
@@ -80,9 +141,8 @@ public enum ClaudeDecisionPresser {
             return value as? String ?? ""
         }
         let role = string(kAXRoleAttribute)
-        let text = [string(kAXTitleAttribute), string(kAXDescriptionAttribute), string(kAXValueAttribute)]
-            .filter { !$0.isEmpty }.joined(separator: " ")
-        var node = Node(role: role, text: text, element: element)
+        let texts = [string(kAXTitleAttribute), string(kAXDescriptionAttribute), string(kAXValueAttribute)].filter { !$0.isEmpty }
+        var node = Node(role: role, texts: texts, element: element)
         guard depth < 80 else { return node }
         var children: CFTypeRef?
         AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &children)
@@ -92,13 +152,28 @@ public enum ClaudeDecisionPresser {
 
     /// Küçük harf, kısayol işaretleri ve Markdown imleri atılmış, boşluklar tek.
     nonisolated static func normalize(_ text: String) -> String {
-        let dropped = text.lowercased().unicodeScalars.filter { !"⌘↩⏎⌥⇧⌃`*_".unicodeScalars.contains($0) }
+        let dropped = text.lowercased().unicodeScalars.filter { !"⌘↩↵⏎⌥⇧⌃`*_".unicodeScalars.contains($0) }
         return String(String.UnicodeScalarView(dropped)).split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 
-    /// Düğmenin adı: kendi metni yoksa çocuklarının metni (Electron çoğu düğmede metni çocuğa koyar).
+    /// Öğenin ve altının bütün metni (kutuda soruyu aramak için).
     nonisolated static func fullText(_ node: Node) -> String {
-        ([node.text] + node.children.map(fullText)).filter { !$0.isEmpty }.joined(separator: " ")
+        (node.texts + node.children.map(fullText)).filter { !$0.isEmpty }.joined(separator: " ")
+    }
+
+    /// Kısayol ipucu kelimeleri: düğmenin adının sonunda olabilir ("Evet ⌘ Enter").
+    nonisolated static let shortcutWords: Set<String> = ["enter", "return", "cmd", "command", "ctrl", "control", "shift", "option", "alt", "+"]
+
+    /// Düğmenin adlarından biri seçenekle aynı mı: başlık, açıklama ve değer tek tek, sonra içindeki metin; sondaki
+    /// kısayol ipucu sayılmaz.
+    nonisolated static func isNamed(_ node: Node, _ target: String) -> Bool {
+        let names = node.texts + [node.children.map(fullText).filter { !$0.isEmpty }.joined(separator: " ")]
+        return names.contains { name in
+            let normalized = normalize(name)
+            guard normalized.hasPrefix(target) else { return false }
+            let rest = normalized.dropFirst(target.count).split(separator: " ").map(String.init)
+            return rest.allSatisfy(shortcutWords.contains)
+        }
     }
 
     nonisolated static func match(in trees: [Node], label: String, ask: String?, options: [String]) -> Match {
@@ -110,7 +185,7 @@ public enum ClaudeDecisionPresser {
 
         var found: [Node] = []
         func isButton(_ node: Node, named name: String) -> Bool {
-            node.role == "AXButton" && normalize(fullText(node)) == name
+            node.role == "AXButton" && isNamed(node, name)
         }
         func buttons(in node: Node, named name: String) -> [Node] {
             (isButton(node, named: name) ? [node] : []) + node.children.flatMap { buttons(in: $0, named: name) }

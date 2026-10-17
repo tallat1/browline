@@ -79,6 +79,7 @@ extension AppCoordinator {
         let ids = Set(list.map(\.id))
         let arrived = !ids.subtracting(shownQuestionIDs).isEmpty
         shownQuestionIDs = ids
+        prepareClaudeTree()
         if let first = questions.current {
             _ = externalActivities.handle(ActivityRequest(
                 op: .push, id: Self.questionActivityID, title: first.title, subtitle: first.subtitle,
@@ -106,7 +107,7 @@ extension AppCoordinator {
     /// yanıt Claude'un kendi kutusunda verilir. ⚠️ `claude://code/needs-input?session=` DEĞİL: yalnız izin bekleyen
     /// oturumları tanıyor, karar kutusuyla biten oturumu bulamayınca listedeki ilk oturuma gidiyor (2026-10-17).
     func openClaude(for question: ExternalQuestion) {
-        openClaudeSession(question.session)
+        Self.openClaudeSession(question.session)
         AppLog.coordinator.notice("karar kartı Claude'da açıldı (oturum \(question.session == nil ? "yok" : "var", privacy: .public))")
         questions.answer(question.id, with: nil)
     }
@@ -125,20 +126,46 @@ extension AppCoordinator {
         }
         let label = question.choices[index], ask = question.detail, options = question.choices, session = question.session
         questions.answer(question.id, with: nil)
-        Task { [weak self] in
-            // Ağaç gecikmeyle kurulur: oturum zaten açıksa 1 sn içinde bulunur, Claude öne gelmez.
-            var outcome = await Task.detached(priority: .userInitiated) {
-                ClaudeDecisionPresser.press(label: label, ask: ask, options: options, attempts: 3)
-            }.value
-            if outcome == .notFound || outcome == .claudeNotRunning {
-                self?.openClaudeSession(session)
-                outcome = await Task.detached(priority: .userInitiated) {
-                    ClaudeDecisionPresser.press(label: label, ask: ask, options: options, attempts: 8)
-                }.value
-            } else if outcome != .pressed {
-                self?.openClaudeSession(session)
+        Task.detached(priority: .userInitiated) {
+            // Ağaç kart görününce açıldı (`prepareClaudeTree`): oturum ekrandaysa 1 sn içinde bulunur, Claude öne
+            // gelmez. Bulunamazsa oturum açılır, kutunun çizilmesi 5 sn beklenir; bağlantı her yerden açılabilir.
+            let outcome = ClaudeDecisionPresser.press(label: label, ask: ask, options: options, firstAttempts: 2,
+                                                      retryAttempts: 10, beforeRetry: { AppCoordinator.openClaudeSession(session) })
+            if outcome == .claudeNotRunning {
+                AppCoordinator.openClaudeSession(session)
+            } else if outcome != .pressed && outcome != .notFound {
+                // Belirsiz: hangi düğme olduğu bilinmiyor, kullanıcı Claude'da kendisi seçer.
+                AppCoordinator.openClaudeSession(session)
             }
+            #if DEBUG
+            if outcome != .pressed {
+                // Tanı: kutunun çevresinin yapısı; neden bulunamadığını görmek için (yalnız debug, elle silinir).
+                let report = ClaudeDecisionPresser.diagnosis(label: label, ask: ask, options: options)
+                let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent("com.talatozcoban.browline/debug-decision-ax.txt")
+                try? report.write(to: url, atomically: true, encoding: .utf8)
+            }
+            #endif
             AppLog.coordinator.notice("karar kartı seçeneği: \(String(describing: outcome), privacy: .public)")
+        }
+    }
+
+    /// Karar kartı varken Claude'un erişilebilirlik ağacı açık tutulur: Electron onu 1–3 sn'de kurar, tıklayınca
+    /// beklenmesin. Kart kalkınca eski hâline (kapalıysa kapalıya) döner. İzin yoksa hiçbir şey yapılmaz.
+    func prepareClaudeTree() {
+        let wanted = questions.questions.contains(where: \.isHandoff) && AXIsProcessTrusted()
+        if wanted, claudeTreeWasOn == nil {
+            claudeTreeWasOn = false
+            Task.detached(priority: .utility) {
+                let previous = ClaudeDecisionPresser.setTreeEnabled(true)
+                // Bu arada kart kalktıysa (nil) dokunulmaz: ağaç zaten geri kapatıldı.
+                await MainActor.run { [weak self] in
+                    if self?.claudeTreeWasOn != nil { self?.claudeTreeWasOn = previous ?? false }
+                }
+            }
+        } else if !wanted, let wasOn = claudeTreeWasOn {
+            claudeTreeWasOn = nil
+            if !wasOn { Task.detached(priority: .utility) { ClaudeDecisionPresser.setTreeEnabled(false) } }
         }
     }
 
@@ -158,6 +185,7 @@ extension AppCoordinator {
                 if AXIsProcessTrusted() {
                     AppLog.coordinator.notice("Erişilebilirlik izni verildi")
                     ui.decisionCardNeedsAccessibility = false
+                    prepareClaudeTree()
                     return
                 }
                 if questions.current?.isHandoff != true {
@@ -169,8 +197,8 @@ extension AppCoordinator {
         }
     }
 
-    /// Claude masaüstünde oturum; kimlik yoksa yalnız Claude öne gelir.
-    func openClaudeSession(_ session: String?) {
+    /// Claude masaüstünde oturum; kimlik yoksa yalnız Claude öne gelir. Her iş parçacığından çağrılabilir.
+    nonisolated static func openClaudeSession(_ session: String?) {
         var components = URLComponents(string: "claude://code/continue")
         components?.queryItems = session.map { [URLQueryItem(name: "session", value: $0)] }
         if session != nil, let url = components?.url {

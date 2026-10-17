@@ -89,6 +89,8 @@ final class AppCoordinator {
     var nowPlayingRemovalTask: Task<Void, Never>?
     /// Karar kartı izin beklerken Erişilebilirlik izninin gelmesini izler.
     var accessibilityWatch: Task<Void, Never>?
+    /// Kart için Claude'un erişilebilirlik ağacı açıldıysa önceki değeri (kart kalkınca geri konur); nil: açılmadı.
+    var claudeTreeWasOn: Bool?
 
     init() {
         panels = PanelManager(options: settings.panelOptions) { [unowned self] model in
