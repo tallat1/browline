@@ -4,8 +4,9 @@ import Foundation
 /// "Claude seni bekliyor" kartı olarak görünür, düğmesi oturumu Claude'da açar.
 ///
 /// Kutu, masaüstünün `mcp__ccd_turn__wrap_up` aracı: girdisinde `recap`, `ask` ve düğmeler (`actions[].label`)
-/// var ve oturum kaydına (`transcript_path`, JSONL) yazılıyor. Yanıt notch'tan verilemez: Claude var olan bir
-/// oturuma dışarıdan mesaj göndermeye izin vermiyor (`claude://code/new?q=` yalnız yeni oturum); kart yalnız
+/// var ve oturum kaydına (`transcript_path`, JSONL) yazılıyor. Claude var olan bir oturuma dışarıdan mesaj
+/// göndermeye izin vermiyor (`claude://code/new?q=` yalnız yeni oturum): karttaki seçenek, uygulamanın Erişilebilirlik
+/// ile Claude'daki aynı düğmeye basmasıyla yanıtlanır (`ClaudeDecisionPresser`, uygulama tarafı); kart
 /// `claude://code/continue?session=local_…` ile doğru oturumu açar (`needs-input` yalnız izin bekleyenleri tanıyor). Kanca kimliği (`session_id`) ile masaüstü
 /// kimliği (`local_…`) arasındaki eşleme masaüstünün oturum dosyalarında (`cliSessionId`). Araç, bağlantı ve
 /// dosyalar belgelenmemiş (2026-10-17, Claude masaüstü + Claude Code 2.1.295); bulunamazsa kart yok, kanca
@@ -22,7 +23,8 @@ public enum ClaudeStopHook {
     public struct Decision: Equatable, Sendable {
         public var ask: String
         public var recap: String?
-        /// Düğme etiketleri; notch'ta yalnız bilgi (tıklanınca yanıt gitmez).
+        /// Yanıt düğmelerinin etiketleri; notch'ta basılınca Browline Claude'daki aynı düğmeye basar
+        /// (`ClaudeDecisionPresser`). Uygulama eylemleri (commit, PR…) etiketsiz, kartta yok.
         public var options: [String]
     }
 
@@ -85,9 +87,10 @@ public enum ClaudeStopHook {
         if actions == nil, let text = input["actions"] as? String, let data = text.data(using: .utf8) {
             actions = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
         }
+        // Etiketi masaüstü koyan uygulama eylemleri (`action`) atlanır: adları bilinmeyen düğmeye basılmasın.
         let options = (actions ?? []).compactMap { action -> String? in
-            let label = (action["label"] as? String ?? action["action"] as? String)?.trimmingCharacters(in: .whitespaces)
-            return label?.isEmpty == false ? label : nil
+            guard action["action"] == nil, let label = (action["label"] as? String)?.trimmingCharacters(in: .whitespaces) else { return nil }
+            return label.isEmpty ? nil : label
         }
         let recap = (input["recap"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
         return Decision(ask: ask, recap: recap?.isEmpty == false ? recap : nil, options: options)

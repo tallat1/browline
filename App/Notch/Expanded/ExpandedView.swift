@@ -59,7 +59,13 @@ struct ExpandedView: View {
                                      AppLog.coordinator.notice("seçenekli soru yanıtlandı: \(selection.count) seçim")
                                      coordinator.questions.answer(question.id, selection: selection)
                                  },
-                                 openSource: { coordinator.openClaude(for: question) })
+                                 respond: { choice in
+                                     if let choice {
+                                         coordinator.answerDecision(question, choice: choice)
+                                     } else {
+                                         coordinator.openClaude(for: question)
+                                     }
+                                 })
                 } else {
                     content(page)
                 }

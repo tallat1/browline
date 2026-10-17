@@ -116,7 +116,7 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
   - Kalıcı kural hiç yazılmaz.
   - Yanıt vermezseniz Claude Code kendi sorusuyla devam eder. Claude'un kendisinde yanıtlarsanız araç çalışır çalışmaz notch'taki kopyası kalkar.
 - **Seçenekli sorular:** Claude seçenekler arasından seçmenizi istediğinde aynı kanca seçenekleri notch'ta gösterir. Birine tıklayın (ya da birkaçını işaretleyip Gönder'e basın), yanıt doğrudan Claude'a gider. "Claude'da yanıtla" soruyu Claude'un kendi penceresine bırakır; örneğin kendi yanıtınızı yazmak için.
-- **Karar kutuları (Claude masaüstü uygulaması):** Claude masaüstünde bir tur soru ve düğmelerle bitince `Stop` kancası notch'ta "Claude seni bekliyor" kartını gösterir: soru, özet ve düğmelerin adları. "Claude'da yanıtla" o oturumu açar, yanıtı orada verirsiniz; Claude başka uygulamaların bir oturuma mesaj göndermesine izin vermiyor. Sonraki mesajınızı gönderince kart kalkar.
+- **Karar kutuları (Claude masaüstü uygulaması):** Claude masaüstünde bir tur soru ve düğmelerle bitince `Stop` kancası notch'ta "Claude seni bekliyor" kartını gösterir: soru, özet ve aynı düğmeler. Birine basınca Browline Claude'daki aynı düğmeye sizin yerinize basar, yanıt sizin mesajınız olarak gider. Claude başka uygulamaların bir oturuma mesaj göndermesine izin vermediği için bunun için Erişilebilirlik izni gerekir; izin yoksa ya da düğme tek başına bulunamazsa Browline yalnız oturumu açar. "Claude'da yanıtla" kendi yanıtınızı yazmanız için oturumu açar. Sonraki mesajınızı gönderince kart kalkar.
   - Ayarlar › Şimdi'de izin soruları, seçenekli sorular ve karar kutuları ayrı ayrı açılıp kapanır.
 - **Codex CLI:** `~/.codex/config.toml` içinde `notify = ["/bin/bash", "/yol/Examples/codex/notch-notify.sh"]`.
 
@@ -142,7 +142,7 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 | Kamera | Ayna, yalnız açıkken |
 | Sistem sesi kaydı | Müziğe tepki veren çubuklar. Hiçbir şey kaydedilmez ya da saklanmaz. |
 | Otomasyon | Sistem medya hizmeti kullanılamadığında Music ve Spotify'ı denetlemek |
-| Erişilebilirlik | Sistemin ses ve parlaklık göstergesinin yerine geçmek (isteğe bağlı) |
+| Erişilebilirlik | Sistemin ses ve parlaklık göstergesinin yerine geçmek ve notch'ta seçtiğiniz Claude karar düğmesine basmak (ikisi de isteğe bağlı) |
 | Diğer uygulamalardan yapıştırma | Pano geçmişi (isteğe bağlı) |
 
 ## Belgelenmemiş API'ler

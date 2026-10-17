@@ -161,3 +161,59 @@ struct ClaudeUsageProbeTests {
         #expect(found.first?.path.contains("/2.1.295/") == true)
     }
 }
+
+struct ClaudeDecisionPresserTests {
+    typealias Node = ClaudeDecisionPresser.Node
+
+    private func text(_ value: String) -> Node { Node(role: "AXStaticText", text: value) }
+    /// Electron'daki gibi: düğmenin adı çocuk metinde, birincil düğmede kısayol işaretleri.
+    private func button(_ label: String, shortcut: Bool = false, id: String) -> Node {
+        Node(role: "AXButton", text: "", children: [text(label)] + (shortcut ? [text("⌘"), text("↩")] : []), element: id as NSString)
+    }
+
+    private func box(ask: String, id: String) -> Node {
+        Node(role: "AXGroup", text: "", children: [
+            text("Recap metni."),
+            Node(role: "AXGroup", text: "", children: [text(ask)]),
+            Node(role: "AXGroup", text: "", children: [button("Evet, it", shortcut: true, id: "\(id)-1"), button("Şimdilik kalsın", id: "\(id)-2")]),
+        ])
+    }
+
+    private func pressed(_ match: ClaudeDecisionPresser.Match) -> String? {
+        if case .one(let node) = match { return node.element as? String }
+        return nil
+    }
+
+    @Test func pressesOnlyTheBoxButton() {
+        // Kutunun dışında aynı adlı bir düğme (ör. eski bir mesajdaki) yok sayılır.
+        let page = Node(role: "AXWebArea", text: "", children: [
+            Node(role: "AXGroup", text: "", children: [button("Evet, it", id: "outside")]),
+            box(ask: "`35e1bb5` commit'ini origin/main'e iteyim mi?", id: "box"),
+        ])
+        let match = ClaudeDecisionPresser.match(in: [page], label: "Evet, it", ask: "35e1bb5 commit'ini origin/main'e iteyim mi?",
+                                                options: ["Evet, it", "Şimdilik kalsın"])
+        #expect(pressed(match) == "box-1")
+        let second = ClaudeDecisionPresser.match(in: [page], label: "Şimdilik kalsın", ask: nil, options: ["Evet, it", "Şimdilik kalsın"])
+        #expect(pressed(second) == "box-2")
+    }
+
+    @Test func refusesWhenUnsure() {
+        let two = Node(role: "AXWebArea", text: "", children: [box(ask: "Push?", id: "a"), box(ask: "Push?", id: "b")])
+        if case .many = ClaudeDecisionPresser.match(in: [two], label: "Evet, it", ask: "Push?", options: ["Evet, it"]) {} else {
+            Issue.record("iki kutu: basılmamalı")
+        }
+        // Soru da diğer seçenekler de yoksa kutu tanınamaz.
+        if case .none = ClaudeDecisionPresser.match(in: [two], label: "Evet, it", ask: nil, options: ["Evet, it"]) {} else {
+            Issue.record("dayanak yok: basılmamalı")
+        }
+        // Kutu başka bir sorunun: yeni soru aranınca bulunmaz.
+        if case .none = ClaudeDecisionPresser.match(in: [box(ask: "Eski soru?", id: "x")], label: "Evet, it", ask: "Yeni soru?", options: ["Evet, it"]) {} else {
+            Issue.record("başka kutu: basılmamalı")
+        }
+    }
+
+    @Test func normalizesShortcutGlyphsAndMarkdown() {
+        #expect(ClaudeDecisionPresser.normalize("Evet,  uygula ⌘ ↩") == "evet, uygula")
+        #expect(ClaudeDecisionPresser.normalize("`602efb2` **commit**'ini") == "602efb2 commit'ini")
+    }
+}

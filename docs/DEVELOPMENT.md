@@ -260,11 +260,17 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     bitti" bildirimine döner. Varsa soket işlemi `handoff`: yanıt beklemeyen soru, kimliği `claude-perm-<oturum8>-turn`
     (yeni istem ve oturum sonu mevcut `dismiss claude-perm-<oturum>-*` ile düşürür), süre 30 dk, aynı kimlik
     yenisiyle değişir. `QuestionStore.current` süreli soruları karttan önce gösterir (kart yarım saat durur, izin
-    istemini örtmesin). Kartta soru, özet ve Claude'daki düğmelerin adları yalnız bilgi olarak; "Claude'da
-    yanıtla" oturumu açar, "Sonra" kartı kapatır. ⛔ Yanıt notch'tan VERİLEMEZ: Claude var olan oturuma dışarıdan
-    mesaj gönderme yolu sunmuyor (`claude://code/new?q=` yalnız yeni oturumda; app.asar'daki bağlantı işleyicisi
-    okundu). Stop kancasıyla turu bloke edip seçimi "kanca geri bildirimi" olarak vermek mümkündü; kullanıcı
-    seçmedi (oturum çalışıyor görünür, onay kullanıcı mesajı sayılmaz). Kanca kimliği → masaüstü kimliği:
+    istemini örtmesin). Kartta soru, özet ve kutunun yanıt düğmeleri (uygulama eylemleri — commit, PR — etiketsiz,
+    kartta yok); "Claude'da yanıtla" yalnız oturumu açar, "Sonra" kartı kapatır. Claude var olan oturuma dışarıdan
+    mesaj gönderme yolu sunmuyor (`claude://code/new?q=` yalnız yeni oturumda; `continue` yalnız `artifact`/`org`
+    aktarıyor; app.asar'daki bağlantı işleyicisi okundu). Bu yüzden karttaki seçenek `ClaudeDecisionPresser` ile
+    Claude'daki AYNI düğmeye Erişilebilirlik üzerinden basar (yanıt kullanıcının mesajı olarak gider): Electron
+    ağacı `AXManualAccessibility` ile açılır (ilk sorguda boş, 1–3 sn sonra dolu), yalnız `AXButton`, ad ⌘↩ ve
+    Markdown imleri atılarak birebir; soruyu ya da diğer seçenekleri içeren EN YAKIN üst grupta bu adda tek düğme
+    olmalı (daha yukarısı sohbetin tamamını, eski mesajdaki aynı adlı düğmeyi de kapsar — testte yakalandı), iki
+    aday varsa basılmaz. Önce Claude öne gelmeden 1 sn denenir, bulunamazsa oturum açılıp 4 sn; olmazsa oturum
+    açık kalır. İzin yoksa sistem sorar, oturum açılır. Diğer seçenek (Stop kancasıyla turu bloke edip seçimi "kanca
+    geri bildirimi" olarak vermek) kullanıcı tarafından seçilmedi. Kanca kimliği → masaüstü kimliği:
     `~/Library/Application Support/Claude/claude-code-sessions/*/*/local_*.json` içindeki `cliSessionId`, en son
     değişen dosyadan. Bağlantı `claude://code/continue?session=local_…` (tam kimlikle bulur). ⚠️
     `claude://code/needs-input?session=` KULLANILMAZ: yalnız izin bekleyen (`pendingToolPermissions`) oturumları

@@ -106,15 +106,47 @@ extension AppCoordinator {
     /// yanıt Claude'un kendi kutusunda verilir. ⚠️ `claude://code/needs-input?session=` DEĞİL: yalnız izin bekleyen
     /// oturumları tanıyor, karar kutusuyla biten oturumu bulamayınca listedeki ilk oturuma gidiyor (2026-10-17).
     func openClaude(for question: ExternalQuestion) {
-        var components = URLComponents(string: "claude://code/continue")
-        components?.queryItems = question.session.map { [URLQueryItem(name: "session", value: $0)] }
-        if question.session != nil, let url = components?.url {
-            NSWorkspace.shared.open(url)
-        } else if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.anthropic.claudefordesktop") {
-            NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
-        }
+        openClaudeSession(question.session)
         AppLog.coordinator.notice("karar kartı Claude'da açıldı (oturum \(question.session == nil ? "yok" : "var", privacy: .public))")
         questions.answer(question.id, with: nil)
+    }
+
+    /// Karar kartındaki seçenek: Claude'daki kutunun aynı adlı düğmesine basılır, yanıt kullanıcının mesajı olarak
+    /// gider. Önce Claude öne gelmeden denenir (oturum zaten açıksa); bulunamazsa oturum açılır ve kutunun çizilmesi
+    /// 4 sn beklenir. Basılamazsa oturum açık kalır, yanıt orada verilir. Erişilebilirlik izni yoksa sistem sorar.
+    func answerDecision(_ question: ExternalQuestion, choice index: Int) {
+        guard question.isHandoff, question.choices.indices.contains(index) else { return }
+        let label = question.choices[index], ask = question.detail, options = question.choices, session = question.session
+        questions.answer(question.id, with: nil)
+        Task { [weak self] in
+            // Ağaç gecikmeyle kurulur: oturum zaten açıksa 1 sn içinde bulunur, Claude öne gelmez.
+            var outcome = await Task.detached(priority: .userInitiated) {
+                ClaudeDecisionPresser.press(label: label, ask: ask, options: options, attempts: 3)
+            }.value
+            if outcome == .notFound || outcome == .claudeNotRunning {
+                self?.openClaudeSession(session)
+                outcome = await Task.detached(priority: .userInitiated) {
+                    ClaudeDecisionPresser.press(label: label, ask: ask, options: options, attempts: 8)
+                }.value
+            } else if outcome != .pressed {
+                self?.openClaudeSession(session)
+            }
+            if outcome == .notTrusted {
+                _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+            }
+            AppLog.coordinator.notice("karar kartı seçeneği: \(String(describing: outcome), privacy: .public)")
+        }
+    }
+
+    /// Claude masaüstünde oturum; kimlik yoksa yalnız Claude öne gelir.
+    func openClaudeSession(_ session: String?) {
+        var components = URLComponents(string: "claude://code/continue")
+        components?.queryItems = session.map { [URLQueryItem(name: "session", value: $0)] }
+        if session != nil, let url = components?.url {
+            NSWorkspace.shared.open(url)
+        } else if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: ClaudeDecisionPresser.bundleIdentifier) {
+            NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())
+        }
     }
 
     func syncExternal(_ list: [ExternalActivity]) {

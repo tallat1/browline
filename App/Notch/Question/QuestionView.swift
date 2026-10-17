@@ -7,15 +7,16 @@ import SwiftUI
 /// yanıtlar, çoklu seçimde işaretlenip Gönder'e basılır. Karar yalnız bu düğmelerle verilir. Notch soru gelince
 /// kendiliğinden açıldığı için düğmeler ilk 0,8 sn pasif: o anda üst ortaya tıklayan yanlışlıkla yanıtlamasın.
 /// "Claude'da yanıtla" soruyu bırakır, istemci kendi penceresini gösterir (serbest metin yanıtı için de).
-/// Karar kartı (Claude masaüstünün turun sonundaki kutusu): soru, özet ve Claude'daki düğmelerin adları; kimse
-/// yanıt beklemez, "Claude'da yanıtla" oturumu Claude'da açar, "Sonra" yalnız kartı kapatır.
+/// Karar kartı (Claude masaüstünün turun sonundaki kutusu): soru, özet ve kutunun yanıt düğmeleri. Seçeneğe basınca
+/// Browline Claude'daki aynı düğmeye basar; "Claude'da yanıtla" yalnız oturumu açar (kendi yanıtını yazmak için),
+/// "Sonra" kartı kapatır.
 struct QuestionView: View {
     let question: ExternalQuestion
     let waitingCount: Int
     let answer: (ActivityResponse.Decision?) -> Void
     let choose: ([Int]) -> Void
-    /// Karar kartı: soruyu soran uygulamayı (Claude) açar.
-    let openSource: () -> Void
+    /// Karar kartı: seçenek sırası (Claude'daki aynı düğmeye basılır) ya da nil (yalnız oturum açılır).
+    let respond: (Int?) -> Void
     @State private var isArmed = false
     @State private var selected: Set<Int> = []
 
@@ -149,19 +150,24 @@ struct QuestionView: View {
             Button("Sonra") { answer(nil) }
                 .buttonStyle(QuietButtonStyle())
                 .help("Yalnız kartı kapatır; soru Claude'da bekler")
-            // Claude'daki düğmelerin adları: yanıt orada verilir, burada yalnız ne beklendiği görünsün.
-            if !question.choices.isEmpty {
-                Text(verbatim: question.choices.joined(separator: " · "))
-                    .font(NotchDesign.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
             Spacer(minLength: 8)
-            Button("Claude'da yanıtla") { openSource() }
-                .buttonStyle(CapsuleButtonStyle(prominent: true, tint: tint))
-                .disabled(!isArmed)
-                .help("Oturumu Claude'da açar")
+            if question.choices.isEmpty {
+                Button("Claude'da yanıtla") { respond(nil) }
+                    .buttonStyle(CapsuleButtonStyle(prominent: true, tint: tint))
+                    .disabled(!isArmed)
+                    .help("Oturumu Claude'da açar")
+            } else {
+                Button("Claude'da yanıtla") { respond(nil) }
+                    .buttonStyle(QuietButtonStyle())
+                    .help("Oturumu Claude'da açar; kendi yanıtını yazmak için")
+                // Kutunun yanıt düğmeleri; ilki Claude'un önerisi.
+                ForEach(Array(question.choices.prefix(3).enumerated()), id: \.offset) { index, label in
+                    Button { respond(index) } label: { Text(verbatim: label).lineLimit(1) }
+                        .buttonStyle(CapsuleButtonStyle(prominent: index == 0, tint: tint))
+                        .disabled(!isArmed)
+                        .help("Claude'daki aynı düğmeye basar (Erişilebilirlik izni gerekir)")
+                }
+            }
         }
         .opacity(isArmed ? 1 : 0.6)
         .notchAnimation(value: isArmed)

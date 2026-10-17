@@ -340,7 +340,8 @@ struct ClaudeStopHookTests {
         let box = wrapUp(["recap": "Commit hazır.", "ask": "Push edeyim mi?",
                           "actions": [["label": "Evet, it", "message": "Evet"], ["action": "commit"], ["label": " "]]])
         let found = decision([prompt, box, toolResult, assistant([["type": "text", "text": "Tamam."]])])
-        #expect(found == .init(ask: "Push edeyim mi?", recap: "Commit hazır.", options: ["Evet, it", "commit"]))
+        // Uygulama eylemi (`action`, etiketi masaüstü koyar) ve boş etiket kartta yok.
+        #expect(found == .init(ask: "Push edeyim mi?", recap: "Commit hazır.", options: ["Evet, it"]))
         // Düğmeler metin olarak gelmiş olabilir.
         let stringActions = wrapUp(["ask": "Hangisi?", "actions": #"[{"label":"A"},{"label":"B"}]"#])
         #expect(decision([stringActions])?.options == ["A", "B"])
