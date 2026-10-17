@@ -114,7 +114,9 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 - **Permission prompts:** the `PermissionRequest` entry in the same file opens the notch with the tool, project and full command, and offers Allow or Deny for that single request.
   - A decision only ever comes from your click.
   - No permanent rule is ever written.
-  - If you don't answer, Claude Code falls back to its own prompt.
+  - If you don't answer, Claude Code falls back to its own prompt. If you answer in Claude itself, the notch copy disappears as soon as the tool runs.
+- **Multiple-choice questions:** when Claude asks you to pick between options, the same hook shows them in the notch. Click one (or tick several and press Send) and the answer goes straight back to Claude. Answer in Claude leaves the question to Claude's own window, for example to type your own answer.
+  - Settings › Now turns permission prompts and multiple-choice questions on or off separately.
 - **Codex CLI:** set `notify = ["/bin/bash", "/path/to/Examples/codex/notch-notify.sh"]` in `~/.codex/config.toml`.
 
 ## Privacy

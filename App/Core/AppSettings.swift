@@ -32,6 +32,8 @@ final class AppSettings {
     var urlSchemeEnabled: Bool { didSet { store(urlSchemeEnabled, "urlSchemeEnabled") } }
     /// Dış onay soruları (ör. Claude Code izin istemleri) notch'ta yanıtlanır; kapalıysa istemci kendi akışına döner.
     var questionsEnabled: Bool { didSet { store(questionsEnabled, "questionsEnabled") } }
+    /// Claude'un seçenekli soruları (AskUserQuestion) notch'ta yanıtlanır; izin istemlerinden ayrı.
+    var choiceQuestionsEnabled: Bool { didSet { store(choiceQuestionsEnabled, "choiceQuestionsEnabled") } }
     var hudMode: HUDController.Mode { didSet { store(hudMode.rawValue, "hudMode") } }
     var privacyIndicatorEnabled: Bool { didSet { store(privacyIndicatorEnabled, "privacyIndicatorEnabled") } }
     /// GitHub Actions durumu (`gh` ile); izlenen depolar "sahip/depo".
@@ -146,6 +148,7 @@ final class AppSettings {
         activityAPIEnabled = defaults.object(forKey: "activityAPIEnabled") as? Bool ?? false
         urlSchemeEnabled = defaults.bool(forKey: "urlSchemeEnabled")
         questionsEnabled = defaults.object(forKey: "questionsEnabled") as? Bool ?? false
+        choiceQuestionsEnabled = defaults.bool(forKey: "choiceQuestionsEnabled")
         hudMode = HUDController.Mode(rawValue: defaults.string(forKey: "hudMode") ?? "") ?? .off
         privacyIndicatorEnabled = defaults.object(forKey: "privacyIndicatorEnabled") as? Bool ?? false
         screenRecordingIndicatorEnabled = defaults.object(forKey: "screenRecordingIndicatorEnabled") as? Bool ?? false

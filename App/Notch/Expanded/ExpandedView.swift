@@ -50,10 +50,15 @@ struct ExpandedView: View {
             // Bekleyen onay sorusu sayfanın önüne geçer; yanıtlanınca sayfa geri gelir.
             Group {
                 if let question {
-                    QuestionView(question: question, waitingCount: coordinator.questions.questions.count) { decision in
-                        AppLog.coordinator.notice("onay sorusu yanıtlandı: \(decision?.rawValue ?? "uygulamaya bırakıldı", privacy: .public)")
-                        coordinator.questions.answer(question.id, with: decision)
-                    }
+                    QuestionView(question: question, waitingCount: coordinator.questions.questions.count,
+                                 answer: { decision in
+                                     AppLog.coordinator.notice("onay sorusu yanıtlandı: \(decision?.rawValue ?? "uygulamaya bırakıldı", privacy: .public)")
+                                     coordinator.questions.answer(question.id, with: decision)
+                                 },
+                                 choose: { selection in
+                                     AppLog.coordinator.notice("seçenekli soru yanıtlandı: \(selection.count) seçim")
+                                     coordinator.questions.answer(question.id, selection: selection)
+                                 })
                 } else {
                     content(page)
                 }
@@ -92,7 +97,7 @@ struct ExpandedView: View {
     /// İstenen tüm açık boyut: bant + (seçici) + boşluk + içerik (soru varsa soru) + alt boşluk.
     private func openSize(for page: NotchPage) -> CGSize {
         let hasQuestion = coordinator.questions.current != nil
-        let body = hasQuestion ? QuestionView.height : page.bodyHeight
+        let body = hasQuestion ? QuestionView.height(for: coordinator.questions.current) : page.bodyHeight
         let hasHeader = !hasQuestion && (page.isDetailPage || coordinator.pages(in: page.section).count > 1)
         let header = hasHeader ? NotchDesign.headerSpacing + NotchDesign.Control.small : 0
         return CGSize(width: NotchDesign.openWidth,

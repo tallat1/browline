@@ -1179,6 +1179,16 @@
         }
       }
     },
+    "Claude'un seçenekli sorularını notch'ta yanıtla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer Claude's multiple-choice questions in the notch"
+          }
+        }
+      }
+    },
     "Debug derlemesinde güncelleme kapalı.": {
       "localizations": {
         "en": {
@@ -1711,6 +1721,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow Browline in Privacy & Security › Paste from Other Apps."
+          }
+        }
+      }
+    },
+    "Gönder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
           }
         }
       }
@@ -3371,6 +3391,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Results"
+          }
+        }
+      }
+    },
+    "Soruyu bırakır; Claude kendi penceresinde sorar (kendi yanıtını yazmak için de)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leaves the question to Claude's own window (also for typing your own answer)"
           }
         }
       }

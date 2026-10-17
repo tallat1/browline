@@ -17,6 +17,8 @@ Kullanım:
   notch ping
   notch ask   --id ID --title METİN [--subtitle METİN] [--detail METİN] [--symbol] [--tint] [--timeout SANİYE]
               Notch'ta İzin ver / Reddet sorusu; yanıtı yazar (allow | deny). Yanıt yoksa çıkış 4.
+  notch dismiss --id ID|ÖNEK*
+              Bekleyen soruyu yanıtsız kapatır (başka yerde yanıtlandı); * ile biten id önek.
   notch claude-permission [--timeout SANİYE]
               Claude Code PermissionRequest kancası: stdin'deki isteği notch'ta sorar, kararı Claude'a
               yazar. Yanıt yoksa ya da uygulama kapalıysa hiçbir şey yazmaz (Claude kendi penceresini gösterir).
@@ -37,6 +39,8 @@ Usage:
   notch ask   --id ID --title TEXT [--subtitle TEXT] [--detail TEXT] [--symbol] [--tint] [--timeout SECONDS]
               Shows an Allow / Deny question in the notch and prints the answer (allow | deny).
               Exits with 4 if nobody answers.
+  notch dismiss --id ID|PREFIX*
+              Closes a waiting question without an answer (it was answered elsewhere); an id ending in * is a prefix.
   notch claude-permission [--timeout SECONDS]
               Claude Code PermissionRequest hook: asks the request from stdin in the notch and writes the
               decision for Claude. Writes nothing if there is no answer or the app isn't running (Claude then
@@ -59,10 +63,33 @@ func fail(_ message: String, code: Int32) -> Never {
 func runClaudePermission(timeout: TimeInterval) -> Never {
     let input = FileHandle.standardInput.readDataToEndOfFile()
     guard let parsed = ClaudePermissionHook.parse(input) else { exit(0) }
+    if !parsed.choiceQuestions.isEmpty { runClaudeQuestions(parsed, timeout: timeout) }
     let request = ClaudePermissionHook.request(for: parsed, timeout: timeout, language: language)
     // Soket okuma süresi sorudan biraz uzun: soru notch'ta düşünce yanıt gelir.
     guard let response = try? ActivitySocketClient.send(request, timeout: timeout + 5), response.ok,
           let output = ClaudePermissionHook.output(for: response.decision, language: language) else { exit(0) }
+    print(output)
+    exit(0)
+}
+
+/// AskUserQuestion: sorular sırayla notch'ta, toplam süre kanca süresini aşmaz. Hepsi yanıtlanırsa yanıtlar
+/// Claude'a döner (kendi ekranı gösterilmez); biri yanıtsız kalırsa hiçbir şey yazılmaz, Claude kendisi sorar.
+@MainActor
+func runClaudeQuestions(_ parsed: ClaudePermissionHook.Input, timeout: TimeInterval) -> Never {
+    let deadline = Date.now.addingTimeInterval(timeout)
+    var answers: [String: String] = [:]
+    for (question, request) in ClaudePermissionHook.choiceRequests(for: parsed, timeout: timeout, language: language) {
+        let remaining = deadline.timeIntervalSinceNow
+        guard remaining >= 5 else { exit(0) }
+        var timed = request
+        timed.ttl = min(timeout, remaining)
+        guard let response = try? ActivitySocketClient.send(timed, timeout: remaining + 5), response.ok,
+              let selection = response.selection, !selection.isEmpty else { exit(0) }
+        let labels = selection.compactMap { question.options.indices.contains($0) ? question.options[$0].label : nil }
+        guard !labels.isEmpty else { exit(0) }
+        answers[question.question] = labels.joined(separator: ", ")
+    }
+    guard let output = ClaudePermissionHook.answerOutput(answers: answers, toolInputJSON: parsed.toolInputJSON) else { exit(0) }
     print(output)
     exit(0)
 }
@@ -124,6 +151,7 @@ case "flash": operation = .flash
 case "list": operation = .list
 case "ping": operation = .ping
 case "ask": operation = .ask
+case "dismiss": operation = .dismiss
 default: fail(language.text("Bilinmeyen komut: \(command)", "Unknown command: \(command)") + "\n\n\(usage)", code: 2)
 }
 

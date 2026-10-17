@@ -49,7 +49,11 @@ extension AppCoordinator {
             let store = externalActivities
             let questions = questions
             let server = ActivitySocketServer { request in
-                request.op == .ask ? await questions.ask(request) : await store.handle(request)
+                switch request.op {
+                case .ask: await questions.ask(request)
+                case .dismiss: await questions.dismiss(request)
+                default: await store.handle(request)
+                }
             }
             do {
                 try server.start()

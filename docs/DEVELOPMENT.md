@@ -234,8 +234,25 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
   - Karar yalnız kullanıcının tıklamasıyla; kalıcı izin kuralı (`updatedPermissions`) hiç yazılmaz.
   - Yanıt yoksa (süre dolar, "Claude'da yanıtla", uygulama kapalı, hata) kanca hiçbir şey yazmaz ve 0 ile çıkar:
     Claude kendi izin penceresiyle devam eder. Soru 110 sn'de düşer, kanca zaman aşımı 120 sn.
-  - Masaüstü uygulamasında kanca uygulamanın kendi onay penceresiyle yarışır, önce karar veren geçerli (belge).
-    Orada yanıtlanırsa kanca süreci kapanır, soket bağlantısı kopar, soru notch'tan düşer.
+  - Masaüstü uygulamasında kanca uygulamanın kendi onay penceresiyle yarışır, önce karar veren geçerli.
+    ⛔ Orada yanıtlanınca Claude kancayı KAPATMIYOR (2026-10-17 ölçümü: 24 saatte 18 soru, 17 notch'tan yanıt,
+    1 süre doldu, 0 bağlantı kopması; belge de iptali tanımlamıyor). Bu yüzden soru 110 sn kalıyordu. Çözüm:
+    `notch dismiss` (soket işlemi; `*` ile biten kimlik önek) ve kanca betiği. `PermissionRequest` girdisinde
+    `tool_use_id` YOK (belge), eşleşme parmak iziyle: araç adı + ana alan (Bash komutu, dosya yolu, adres, sorgu,
+    ilk soru metni) SHA-256'nın ilk 10 hanesi (`ClaudePermissionHook.fingerprint`, betikte `fingerprint()`, aynı
+    tablo). Soru kimliği `claude-perm-<oturum8>-<parmak izi>-<rastgele>`. `PostToolUse` o parmak izinin sorularını,
+    `UserPromptSubmit` / `Stop` / `SessionEnd` oturumun bütün sorularını düşürür (Claude'da reddedilen istekte araç
+    çalışmaz; belgeli bir olay yok, tur ilerleyince düşer). ✓ Canlı: sahte istek + gerçek betik `PostToolUse` →
+    2,5 sn'de "dismissed", kanca çıktısız 0. ⚠️ Eşlik testi `Process` argümanıyla NFD Unicode üretip yanlış
+    alarm verdi; JSON stdin'den verilir (gerçek kanca gibi).
+  - **Seçenekli sorular** (AskUserQuestion, 2026-10-17): aynı `PermissionRequest` kancası tetikleniyor (günlükle
+    doğrulandı). Kanca soruları sırayla `ask` + `choices`/`choiceDetails`/`multiple` ile sorar (toplam süre kanca
+    süresini aşmaz); yanıt `selection` (sıra numarası, özgün etiket Claude'a gider). Hepsi yanıtlanınca
+    `decision: allow` + `updatedInput` = özgün `tool_input` + `answers` (soru metni → etiket, çoklu ", "). Bu biçim
+    yalnız Agent SDK `canUseTool` için belgeli, kanca için belgelenmemiş; ✓ Claude masaüstünde canlı çalıştı
+    (iki soru, tek ve çoklu seçim, yanıtlar Claude'a ulaştı). Biri yanıtsız kalırsa kanca hiçbir şey yazmaz.
+    Ayarlar › Şimdi'de iki ayrı anahtar: izin istemleri (`questionsEnabled`) ve seçenekli sorular
+    (`choiceQuestionsEnabled`); kapalı tür hemen yanıtsız döner.
   - Notch soru gelince kendiliğinden açılır; karar düğmeleri ilk 0,8 sn pasif (yanlışlıkla tıklama).
   - Genel API: `notch ask --id ID --title … [--detail …] [--timeout SN]` yanıtı yazar (`allow` | `deny`), yanıt
     yoksa çıkış 4. Ayarlar › Şimdi › "Claude Code izin istemlerini notch'ta yanıtla" kapalıysa hemen yanıtsız döner.

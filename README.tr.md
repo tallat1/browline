@@ -114,7 +114,9 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 - **İzin soruları:** aynı dosyadaki `PermissionRequest` girdisi çentiği araç, proje ve tam komutla açar; yalnız o istek için İzin ver ya da Reddet sunar.
   - Karar yalnız sizin tıklamanızla verilir.
   - Kalıcı kural hiç yazılmaz.
-  - Yanıt vermezseniz Claude Code kendi sorusuyla devam eder.
+  - Yanıt vermezseniz Claude Code kendi sorusuyla devam eder. Claude'un kendisinde yanıtlarsanız araç çalışır çalışmaz notch'taki kopyası kalkar.
+- **Seçenekli sorular:** Claude seçenekler arasından seçmenizi istediğinde aynı kanca seçenekleri notch'ta gösterir. Birine tıklayın (ya da birkaçını işaretleyip Gönder'e basın), yanıt doğrudan Claude'a gider. "Claude'da yanıtla" soruyu Claude'un kendi penceresine bırakır; örneğin kendi yanıtınızı yazmak için.
+  - Ayarlar › Şimdi'de izin soruları ve seçenekli sorular ayrı ayrı açılıp kapanır.
 - **Codex CLI:** `~/.codex/config.toml` içinde `notify = ["/bin/bash", "/yol/Examples/codex/notch-notify.sh"]`.
 
 ## Gizlilik

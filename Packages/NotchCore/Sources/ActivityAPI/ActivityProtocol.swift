@@ -29,6 +29,9 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
         /// Onay sorusu: bağlantı açık kalır, kullanıcı notch'tan yanıtlayınca `decision` döner.
         /// Bağlantı kapanırsa soru iptal edilir. Yalnız soket üzerinden (URL şemasında yanıt kanalı yok).
         case ask
+        /// Bekleyen soruyu yanıtsız kapatır: soru başka yerde (ör. Claude'un kendi penceresinde) yanıtlandı.
+        /// `id` `*` ile biterse önekle eşleşenlerin hepsi. Yalnız soket üzerinden.
+        case dismiss
     }
 
     public var op: Operation
@@ -49,11 +52,21 @@ public struct ActivityRequest: Codable, Equatable, Sendable {
     public var duration: Double?
     /// ask için uzun metin (ör. çalıştırılacak komut); en çok `ExternalQuestion.maximumDetailLength`.
     public var detail: String?
+    /// ask: İzin ver/Reddet yerine seçenekler (ör. Claude'un AskUserQuestion sorusu); yanıt `selection`.
+    public var choices: [String]?
+    /// Seçeneklerin açıklamaları; varsa `choices` ile aynı sayıda.
+    public var choiceDetails: [String]?
+    /// Birden çok seçenek seçilebilir.
+    public var multiple: Bool?
 
     public init(op: Operation, id: String? = nil, title: String? = nil, subtitle: String? = nil,
                 progress: Double? = nil, symbol: String? = nil, tint: String? = nil, priority: Int? = nil,
-                ttl: Double? = nil, duration: Double? = nil, detail: String? = nil) {
+                ttl: Double? = nil, duration: Double? = nil, detail: String? = nil,
+                choices: [String]? = nil, choiceDetails: [String]? = nil, multiple: Bool? = nil) {
         self.detail = detail
+        self.choices = choices
+        self.choiceDetails = choiceDetails
+        self.multiple = multiple
         self.op = op
         self.id = id
         self.title = title
@@ -78,14 +91,21 @@ public struct ActivityResponse: Codable, Equatable, Sendable {
     public var error: String?
     public var activities: [ExternalActivity]?
     public var decision: Decision?
+    /// dismiss yanıtı: kapatılan soru sayısı.
+    public var dismissed: Int?
+    /// Seçenekli ask yanıtı: seçilen seçeneklerin sırası (0'dan). Yanıt yoksa nil.
+    public var selection: [Int]?
 
     public static let success = ActivityResponse(ok: true)
 
-    public init(ok: Bool, error: String? = nil, activities: [ExternalActivity]? = nil, decision: Decision? = nil) {
+    public init(ok: Bool, error: String? = nil, activities: [ExternalActivity]? = nil, decision: Decision? = nil,
+                dismissed: Int? = nil, selection: [Int]? = nil) {
         self.ok = ok
+        self.selection = selection
         self.error = error
         self.activities = activities
         self.decision = decision
+        self.dismissed = dismissed
     }
 
     public static func failure(_ message: String) -> ActivityResponse { ActivityResponse(ok: false, error: message) }

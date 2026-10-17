@@ -5,7 +5,11 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 ## [Unreleased]
 
 ### Added
+- Answer Claude Code's multiple-choice questions in the notch (single and multiple choice); permission prompts and choice questions have separate switches.
 - Automatic updates with Sparkle: asks before checking, verifies every update with Browline's EdDSA key, and has a switch and a Check Now button in Settings › General and the menu bar.
+
+### Fixed
+- A permission prompt answered in Claude Code itself no longer stays in the notch until it times out.
 
 ### Changed
 - Source code reorganized by feature with a documented architecture ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); no behavior change.
