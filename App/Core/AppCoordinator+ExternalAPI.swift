@@ -127,9 +127,10 @@ extension AppCoordinator {
         let label = question.choices[index], ask = question.detail, options = question.choices, session = question.session
         questions.answer(question.id, with: nil)
         Task.detached(priority: .userInitiated) {
+            let pid = session.flatMap { ClaudeDesktop.owner(ofDesktopSession: $0)?.pid }
             // Ağaç kart görününce açıldı (`prepareClaudeTree`): oturum ekrandaysa 1 sn içinde bulunur, Claude öne
             // gelmez. Bulunamazsa oturum açılır, kutunun çizilmesi 5 sn beklenir; bağlantı her yerden açılabilir.
-            let outcome = ClaudeDecisionPresser.press(label: label, ask: ask, options: options, firstAttempts: 2,
+            let outcome = ClaudeDecisionPresser.press(label: label, ask: ask, options: options, pid: pid, firstAttempts: 2,
                                                       retryAttempts: 10, beforeRetry: { AppCoordinator.openClaudeSession(session) })
             if outcome == .claudeNotRunning {
                 AppCoordinator.openClaudeSession(session)
@@ -140,7 +141,7 @@ extension AppCoordinator {
             #if DEBUG
             if outcome != .pressed {
                 // Tanı: kutunun çevresinin yapısı; neden bulunamadığını görmek için (yalnız debug, elle silinir).
-                let report = ClaudeDecisionPresser.diagnosis(label: label, ask: ask, options: options)
+                let report = ClaudeDecisionPresser.diagnosis(label: label, ask: ask, options: options, pid: pid)
                 let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                     .appendingPathComponent("com.talatozcoban.browline/debug-decision-ax.txt")
                 try? report.write(to: url, atomically: true, encoding: .utf8)
@@ -153,19 +154,28 @@ extension AppCoordinator {
     /// Karar kartı varken Claude'un erişilebilirlik ağacı açık tutulur: Electron onu 1–3 sn'de kurar, tıklayınca
     /// beklenmesin. Kart kalkınca eski hâline (kapalıysa kapalıya) döner. İzin yoksa hiçbir şey yapılmaz.
     func prepareClaudeTree() {
-        let wanted = questions.questions.contains(where: \.isHandoff) && AXIsProcessTrusted()
-        if wanted, claudeTreeWasOn == nil {
-            claudeTreeWasOn = false
+        let session = questions.questions.first(where: \.isHandoff)?.session
+        let wanted = session != nil && AXIsProcessTrusted()
+        if wanted, claudeTree == nil, let session {
+            claudeTree = (0, false)
             Task.detached(priority: .utility) {
-                let previous = ClaudeDecisionPresser.setTreeEnabled(true)
-                // Bu arada kart kalktıysa (nil) dokunulmaz: ağaç zaten geri kapatıldı.
+                // Kart, oturumun sahibi olan örnek için; başka hesabın Claude'una dokunulmaz.
+                guard let owner = ClaudeDesktop.owner(ofDesktopSession: session) else { return }
+                let previous = ClaudeDecisionPresser.setTreeEnabled(true, pid: owner.pid)
                 await MainActor.run { [weak self] in
-                    if self?.claudeTreeWasOn != nil { self?.claudeTreeWasOn = previous ?? false }
+                    // Bu arada kart kalktıysa (nil) ağaç hemen eski hâline döner.
+                    if self?.claudeTree != nil {
+                        self?.claudeTree = (owner.pid, previous ?? false)
+                    } else if previous == false {
+                        Task.detached(priority: .utility) { ClaudeDecisionPresser.setTreeEnabled(false, pid: owner.pid) }
+                    }
                 }
             }
-        } else if !wanted, let wasOn = claudeTreeWasOn {
-            claudeTreeWasOn = nil
-            if !wasOn { Task.detached(priority: .utility) { ClaudeDecisionPresser.setTreeEnabled(false) } }
+        } else if !wanted, let tree = claudeTree {
+            claudeTree = nil
+            if tree.pid > 0, !tree.wasOn {
+                Task.detached(priority: .utility) { ClaudeDecisionPresser.setTreeEnabled(false, pid: tree.pid) }
+            }
         }
     }
 
@@ -198,10 +208,17 @@ extension AppCoordinator {
     }
 
     /// Claude masaüstünde oturum; kimlik yoksa yalnız Claude öne gelir. Her iş parçacığından çağrılabilir.
+    /// Birden çok hesap açıksa bağlantı oturumun sahibi olan örneğe Apple Event ile gider: `open` hep en eski örneğe
+    /// verir (2026-10-17: diğer hesabın penceresi öne geliyordu). İzin yoksa ya da sahip bulunamazsa `open`.
     nonisolated static func openClaudeSession(_ session: String?) {
         var components = URLComponents(string: "claude://code/continue")
         components?.queryItems = session.map { [URLQueryItem(name: "session", value: $0)] }
-        if session != nil, let url = components?.url {
+        if let session, let url = components?.url {
+            if let owner = ClaudeDesktop.owner(ofDesktopSession: session) {
+                NSRunningApplication(processIdentifier: owner.pid)?.activate()
+                if ClaudeDesktop.open(url, in: owner) { return }
+                AppLog.coordinator.notice("Claude bağlantısı Apple Event ile gönderilemedi; open ile açılıyor")
+            }
             NSWorkspace.shared.open(url)
         } else if let app = NSWorkspace.shared.urlForApplication(withBundleIdentifier: ClaudeDecisionPresser.bundleIdentifier) {
             NSWorkspace.shared.openApplication(at: app, configuration: NSWorkspace.OpenConfiguration())

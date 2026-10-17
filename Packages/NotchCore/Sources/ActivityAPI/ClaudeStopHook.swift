@@ -32,11 +32,6 @@ public enum ClaudeStopHook {
     /// Kart, oturumdaki yeni istemle (kanca betiği `dismiss claude-perm-<oturum>-*`) ya da bu sürede düşer.
     public static let cardTTL: TimeInterval = 1800
 
-    public static var desktopSessionsDirectory: URL {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Application Support/Claude/claude-code-sessions", isDirectory: true)
-    }
-
     public static func parse(_ data: Data) -> Input? {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let session = object["session_id"] as? String, !session.isEmpty else { return nil }
@@ -105,13 +100,17 @@ public enum ClaudeStopHook {
     // MARK: - Masaüstü oturumu
 
     /// Kanca oturumunun masaüstü kimliği (`local_…`); en son değişen dosyadan başlar. Yoksa nil (terminal oturumu).
-    public static func desktopSessionID(forCLISession id: String, in root: URL = desktopSessionsDirectory) -> String? {
+    /// Kökler: varsayılan veri klasörü ve çalışan her Claude örneğininki (başka hesap, `--user-data-dir`).
+    public static func desktopSessionID(forCLISession id: String, in roots: [URL] = ClaudeDesktop.sessionRoots()) -> String? {
         let fileManager = FileManager.default
-        guard !id.isEmpty, let enumerator = fileManager.enumerator(
-            at: root, includingPropertiesForKeys: [.contentModificationDateKey], options: [.skipsHiddenFiles]) else { return nil }
+        guard !id.isEmpty else { return nil }
         var files: [(URL, Date)] = []
-        for case let url as URL in enumerator where url.lastPathComponent.hasPrefix("local_") && url.pathExtension == "json" {
-            files.append((url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast))
+        for root in roots {
+            guard let enumerator = fileManager.enumerator(
+                at: root, includingPropertiesForKeys: [.contentModificationDateKey], options: [.skipsHiddenFiles]) else { continue }
+            for case let url as URL in enumerator where url.lastPathComponent.hasPrefix("local_") && url.pathExtension == "json" {
+                files.append((url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast))
+            }
         }
         let needle = Data(id.utf8)
         for (url, _) in files.sorted(by: { $0.1 > $1.1 }) {

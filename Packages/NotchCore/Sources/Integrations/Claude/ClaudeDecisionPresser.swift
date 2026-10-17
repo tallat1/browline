@@ -25,28 +25,32 @@ public enum ClaudeDecisionPresser {
 
     /// Arka planda çağrılmalı (AX çağrıları süreçler arası, ağaç birkaç yüz öğe). Yarım saniye arayla `firstAttempts`
     /// kez arar; bulamazsa `beforeRetry` (ör. oturumu açmak) çağrılır ve `retryAttempts` kez daha aranır.
-    public nonisolated static func press(label: String, ask: String?, options: [String], firstAttempts: Int = 1,
+    /// `pid`: oturumun sahibi olan Claude örneği (birden çok hesap aynı anda açık olabilir); nil ise hepsinde aranır
+    /// ve tümünde tek eşleşme olmalı.
+    public nonisolated static func press(label: String, ask: String?, options: [String], pid: pid_t? = nil, firstAttempts: Int = 1,
                                          retryAttempts: Int = 0, beforeRetry: (@Sendable () -> Void)? = nil) -> Outcome {
         guard AXIsProcessTrusted() else { return .notTrusted }
-        guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else {
-            return .claudeNotRunning
-        }
-        let root = AXUIElementCreateApplication(app.processIdentifier)
+        let roots = applications(pid).map { AXUIElementCreateApplication($0) }
+        guard !roots.isEmpty else { return .claudeNotRunning }
         let manual = "AXManualAccessibility" as CFString
-        var previous: CFTypeRef?
-        AXUIElementCopyAttributeValue(root, manual, &previous)
-        let wasOn = (previous as? Bool) == true
-        if !wasOn { AXUIElementSetAttributeValue(root, manual, kCFBooleanTrue) }
-        defer { if !wasOn { AXUIElementSetAttributeValue(root, manual, kCFBooleanFalse) } }
+        let wasOn = roots.map { root -> Bool in
+            var previous: CFTypeRef?
+            AXUIElementCopyAttributeValue(root, manual, &previous)
+            return (previous as? Bool) == true
+        }
+        for (root, on) in zip(roots, wasOn) where !on { AXUIElementSetAttributeValue(root, manual, kCFBooleanTrue) }
+        defer { for (root, on) in zip(roots, wasOn) where !on { AXUIElementSetAttributeValue(root, manual, kCFBooleanFalse) } }
 
         var outcome = Outcome.notFound
         let first = max(1, firstAttempts)
         for attempt in 0..<(first + max(0, retryAttempts)) {
             if attempt == first, outcome == .notFound { beforeRetry?() }
             if attempt > 0 { Thread.sleep(forTimeInterval: 0.5) }
-            var windows: CFTypeRef?
-            AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &windows)
-            let trees = ((windows as? [AXUIElement]) ?? []).map { snapshot($0) }
+            let trees = roots.flatMap { root -> [Node] in
+                var windows: CFTypeRef?
+                AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &windows)
+                return ((windows as? [AXUIElement]) ?? []).map { snapshot($0) }
+            }
             switch match(in: trees, label: label, ask: ask, options: options) {
             case .one(let node):
                 guard let element = node.element else { return .notFound }
@@ -62,12 +66,19 @@ public enum ClaudeDecisionPresser {
         return outcome
     }
 
-    /// Claude'un erişilebilirlik ağacını açar ya da kapatır; önceki değer döner (Claude kapalıysa ya da izin yoksa nil).
+    /// Verilen örnek ya da çalışan bütün Claude örnekleri.
+    nonisolated static func applications(_ pid: pid_t?) -> [pid_t] {
+        let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).map(\.processIdentifier)
+        guard let pid else { return running }
+        return running.contains(pid) ? [pid] : []
+    }
+
+    /// Bir Claude örneğinin erişilebilirlik ağacını açar ya da kapatır; önceki değer döner (örnek yoksa ya da izin
+    /// yoksa nil).
     @discardableResult
-    public nonisolated static func setTreeEnabled(_ enabled: Bool) -> Bool? {
-        guard AXIsProcessTrusted(),
-              let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else { return nil }
-        let root = AXUIElementCreateApplication(app.processIdentifier)
+    public nonisolated static func setTreeEnabled(_ enabled: Bool, pid: pid_t) -> Bool? {
+        guard AXIsProcessTrusted(), applications(pid) == [pid] else { return nil }
+        let root = AXUIElementCreateApplication(pid)
         var previous: CFTypeRef?
         AXUIElementCopyAttributeValue(root, "AXManualAccessibility" as CFString, &previous)
         AXUIElementSetAttributeValue(root, "AXManualAccessibility" as CFString, enabled ? kCFBooleanTrue : kCFBooleanFalse)
@@ -76,15 +87,16 @@ public enum ClaudeDecisionPresser {
 
     /// Bulunamayınca tanı (yalnız debug derlemesi yazar): seçeneğin ya da sorunun metnini taşıyan öğelerin 4 üst
     /// grubunun yapısı (rol ve metinler, kısaltılmış). Sohbetin tamamını değil, kutunun çevresini gösterir.
-    public nonisolated static func diagnosis(label: String, ask: String?, options: [String]) -> String {
-        guard AXIsProcessTrusted(),
-              let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleIdentifier).first else { return "izin yok ya da Claude kapalı" }
-        let root = AXUIElementCreateApplication(app.processIdentifier)
-        var windows: CFTypeRef?
-        AXUIElementCopyAttributeValue(root, kAXWindowsAttribute as CFString, &windows)
-        let trees = ((windows as? [AXUIElement]) ?? []).map { snapshot($0) }
+    public nonisolated static func diagnosis(label: String, ask: String?, options: [String], pid: pid_t? = nil) -> String {
+        let pids = applications(pid)
+        guard AXIsProcessTrusted(), !pids.isEmpty else { return "izin yok ya da Claude kapalı" }
+        let trees = pids.flatMap { pid -> [Node] in
+            var windows: CFTypeRef?
+            AXUIElementCopyAttributeValue(AXUIElementCreateApplication(pid), kAXWindowsAttribute as CFString, &windows)
+            return ((windows as? [AXUIElement]) ?? []).map { snapshot($0) }
+        }
         let keys = ([label] + options + [ask.map { String($0.prefix(30)) } ?? ""]).map(normalize).filter { !$0.isEmpty }
-        var lines = ["pencere \(trees.count), aranan: \(keys)"]
+        var lines = ["örnekler \(pids) (istenen \(pid.map(String.init) ?? "hepsi")), pencere \(trees.count), aranan: \(keys)"]
         var shown = 0
         func outline(_ node: Node, depth: Int, limit: Int) {
             let texts = node.texts.map { "\"\($0.prefix(60))\"" }.joined(separator: " ")

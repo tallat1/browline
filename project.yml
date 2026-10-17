@@ -60,7 +60,7 @@ targets:
         # Ajan uygulama: Dock simgesi ve uygulama menüsü yok.
         LSUIElement: true
         NSHumanReadableCopyright: "© 2026 Browline"
-        NSAppleEventsUsageDescription: "Music ve Spotify'da çalanı denetlemek için: oynat/duraklat, parça geçişi ve konuma atlama."
+        NSAppleEventsUsageDescription: "Music ve Spotify'da çalanı denetlemek ve karar kartından doğru Claude penceresini açmak için."
         NSDesktopFolderUsageDescription: "Rafa bırakılan ekran görüntülerini kaydetmek ve dönüştürülen dosyaları asıllarının yanına yazmak için."
         NSDownloadsFolderUsageDescription: "İndirmeleri notch'ta göstermek ve sıkıştırılan ya da dönüştürülen dosyaları İndirilenler'e kaydetmek için."
         NSDocumentsFolderUsageDescription: "Dönüştürülen dosyaları Belgeler'deki asıllarının yanına kaydetmek için."

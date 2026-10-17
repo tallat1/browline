@@ -365,9 +365,9 @@ struct ClaudeStopHookTests {
         try Data(#"{"sessionId":"local_111","cliSessionId":"other"}"#.utf8).write(to: folder.appendingPathComponent("local_111.json"))
         try Data(#"{"sessionId":"local_222","cliSessionId":"b3c667b6-1a87"}"#.utf8).write(to: folder.appendingPathComponent("local_222.json"))
         try Data(#"{"sessionId":"bad id","cliSessionId":"zzz"}"#.utf8).write(to: folder.appendingPathComponent("local_333.json"))
-        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "b3c667b6-1a87", in: root) == "local_222")
-        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "zzz", in: root) == nil)
-        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "", in: root) == nil)
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "b3c667b6-1a87", in: [root]) == "local_222")
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "zzz", in: [root]) == nil)
+        #expect(ClaudeStopHook.desktopSessionID(forCLISession: "", in: [root]) == nil)
     }
 
     @Test @MainActor func requestIsAValidCard() throws {
@@ -381,5 +381,32 @@ struct ClaudeStopHookTests {
         #expect(request.id == "claude-perm-b3c667b6-turn")
         #expect(request.subtitle == "notch-mvp")
         #expect(QuestionStore().handoff(request).ok)
+    }
+}
+
+struct ClaudeDesktopTests {
+    @Test func readsDataDirectoryFromArguments() {
+        #expect(ClaudeDesktop.dataDirectory(fromArguments: ["/Applications/Claude.app/Contents/MacOS/Claude", "--user-data-dir=/Users/x/Claude-2"])?.path == "/Users/x/Claude-2")
+        #expect(ClaudeDesktop.dataDirectory(fromArguments: ["Claude", "--user-data-dir", "/tmp/c"])?.path == "/tmp/c")
+        #expect(ClaudeDesktop.dataDirectory(fromArguments: ["Claude", "--lang=en-US"]) == nil)
+    }
+
+    @Test func findsTheInstanceThatOwnsASession() throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("claude-instances-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: base) }
+        let first = base.appendingPathComponent("first"), second = base.appendingPathComponent("second")
+        let folder = second.appendingPathComponent("claude-code-sessions/acct/org")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try Data("{}".utf8).write(to: folder.appendingPathComponent("local_abc.json"))
+        let instances = [ClaudeDesktop.Instance(pid: 10, dataDirectory: first), ClaudeDesktop.Instance(pid: 20, dataDirectory: second)]
+        // Bağlantı en eski örneğe (10) değil, oturumun sahibine (20) gitmeli.
+        #expect(ClaudeDesktop.owner(ofDesktopSession: "local_abc", among: instances)?.pid == 20)
+        #expect(ClaudeDesktop.owner(ofDesktopSession: "local_yok", among: instances) == nil)
+        #expect(ClaudeDesktop.sessionRoots(among: instances).contains { $0.path.hasSuffix("second/claude-code-sessions") })
+    }
+
+    @Test func listsTheRunningMainProcessesOnly() {
+        // Yardımcı süreçler (Claude Helper) sayılmaz; çalışan örnek yoksa boş.
+        #expect(ClaudeDesktop.instances().allSatisfy { $0.pid > 0 })
     }
 }

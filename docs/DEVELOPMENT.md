@@ -276,6 +276,13 @@ engellemez. `notch` aracının yolu `NOTCH_CLI` ile verilir (varsayılan `/Appli
     gelir. ⚠️ macOS 27'de (2026-10-17) uygulama listeye kendiliğinden EKLENMİYOR: ne `AXIsProcessTrustedWithOptions`
     istemi ne izinsiz bir AX çağrısı ekledi (bölme ekran görüntüsüyle doğrulandı); kullanıcı istemi görüp ne
     yapacağını bulamadı. Bölmenin adı "Aygıt Denetimi ve Veri Erişimi" / "Device Control and Data Access".
+    ⚠️ Birden çok Claude hesabı aynı anda açıksa (aynı uygulama, ayrı `--user-data-dir`) `claude://` bağlantısını
+    macOS HEP en eski örneğe veriyor (bu hesabın Claude'u öndeyken bile diğer hesap öne geldi) ve
+    `NSRunningApplication.first` da yanlış örneği seçiyordu (tanı: "1 pencere, hiçbir öğede metin yok").
+    `ClaudeDesktop`: çalışan ana süreçler (`proc_listallpids` + `KERN_PROCARGS2` ile veri klasörü), oturumun sahibi
+    veri klasöründe `local_….json`'u olan örnek; bağlantı ona `GURL` Apple Event'iyle gider (Otomasyon izni, ilk
+    seferde sistem sorar; izin yoksa `open`), düğme ve erişilebilirlik ağacı yalnız o örnekte. Kanca oturum
+    eşlemesi de bütün örneklerin klasörlerinde arar.
     Debug: `decision:choose:<sıra>` karttaki seçeneğe basmış gibi; basılamazsa kutunun çevresinin yapısı
     `~/Library/Application Support/com.talatozcoban.browline/debug-decision-ax.txt`'e yazılır (yalnız debug). Diğer seçenek (Stop kancasıyla turu bloke edip seçimi "kanca
     geri bildirimi" olarak vermek) kullanıcı tarafından seçilmedi. Kanca kimliği → masaüstü kimliği:

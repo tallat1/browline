@@ -141,7 +141,7 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 | Takvimler, Anımsatıcılar | Bugünün etkinlikleri ve anımsatıcıları |
 | Kamera | Ayna, yalnız açıkken |
 | Sistem sesi kaydı | Müziğe tepki veren çubuklar. Hiçbir şey kaydedilmez ya da saklanmaz. |
-| Otomasyon | Sistem medya hizmeti kullanılamadığında Music ve Spotify'ı denetlemek |
+| Otomasyon | Sistem medya hizmeti kullanılamadığında Music ve Spotify'ı denetlemek ve birden çok Claude hesabı açıkken doğru Claude penceresini açmak |
 | Erişilebilirlik | Sistemin ses ve parlaklık göstergesinin yerine geçmek ve notch'ta seçtiğiniz Claude karar düğmesine basmak (ikisi de isteğe bağlı) |
 | Diğer uygulamalardan yapıştırma | Pano geçmişi (isteğe bağlı) |
 

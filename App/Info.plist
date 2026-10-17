@@ -36,7 +36,7 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Music ve Spotify'da çalanı denetlemek için: oynat/duraklat, parça geçişi ve konuma atlama.</string>
+	<string>Music ve Spotify'da çalanı denetlemek ve karar kartından doğru Claude penceresini açmak için.</string>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>Çubukların çalan müziğe tepki vermesi için sesin anlık frekans dağılımını okumak. Ses kaydedilmez, hiçbir yere gönderilmez.</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>

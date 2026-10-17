@@ -141,7 +141,7 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 | Calendars, Reminders | Today's events and reminders |
 | Camera | Mirror, only while it is open |
 | System audio recording | Music bars that react to the audio. Nothing is recorded or saved. |
-| Automation | Controlling Music and Spotify when the system media service is unavailable |
+| Automation | Controlling Music and Spotify when the system media service is unavailable, and opening the right Claude window when several Claude accounts are open |
 | Accessibility | Replacing the system volume and brightness overlay, and clicking a Claude decision button you chose in the notch (both optional) |
 | Paste from other apps | Clipboard history (optional) |
 
