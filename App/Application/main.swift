@@ -11,6 +11,7 @@ MainActor.assumeIsolated {
     let app = NSApplication.shared
     let delegate = AppDelegate()
     app.delegate = delegate
+    TerminationSignals.install()  // kill/⌃C da applicationWillTerminate'ten geçsin
     app.setActivationPolicy(.accessory)  // LSUIElement ile aynı; Info.plist yedeği
     app.run()
 }

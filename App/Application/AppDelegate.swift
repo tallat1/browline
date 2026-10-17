@@ -17,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         HelperQuarantine.clear()
+        // Önceki çalışma kill -9/çökmeyle bittiyse perl yardımcıları yetim kalmıştır.
+        DispatchQueue.global(qos: .utility).async { OrphanedHelpers.terminate() }
         coordinator.start()
         #if DEBUG
         debugChannel.start()

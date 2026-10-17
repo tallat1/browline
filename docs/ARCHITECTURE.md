@@ -38,7 +38,7 @@ Rules:
 
 ```
 App/
-├─ Application/   main.swift, AppDelegate (+StatusMenu), AppUpdater (Sparkle), logging, quarantine cleanup for bundled helpers
+├─ Application/   main.swift, AppDelegate (+StatusMenu), AppUpdater (Sparkle), logging, quarantine cleanup for bundled helpers, termination signals
 ├─ Core/          AppCoordinator (+ purpose extensions), Navigation (sections, pages, UI state), AppSettings (+Migration)
 ├─ Notch/
 │  ├─ Closed/     NotchRootView, compact leading/trailing wings, lock screen views

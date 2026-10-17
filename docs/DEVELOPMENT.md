@@ -164,6 +164,19 @@ bağımsız), 1,4 eğriyle vuruş belirginleşir; hızlı yükselir, yavaş iner
    - ⚠️ İki uzun ömürlü süreç çıktısı `FileHandle.bytes` ile okunmaz: okumalar ortak yürütücüde sıraya giriyor,
      veri beklemeyen akış diğerini durduruyor (yardımcı dolu boruda `write`'ta kaldı). `PipeLineReader`
      (`readabilityHandler`) kullanılır.
+5. Yardımcıların ömrü. Menüden çıkışta `applicationWillTerminate` → `coordinator.stop` ikisini de kapatır.
+   SIGTERM, SIGINT ve SIGHUP (`kill`, `pkill`, terminalde ⌃C) `App/Application/TerminationSignals.swift`'te ana
+   kuyrukta yakalanıp `NSApp.terminate` ile aynı yoldan geçer. `kill -9` ve çökme yakalanamaz: çoklu oturum
+   yardımcısı döngüsünde `getppid() == 1` görünce kendisi çıkar (≤ 5 sn), üçüncü taraf adaptörün `stream`'i ise
+   süresiz yaşar (2026-10-17'de 5 tane birikmişti). Açılışta `OrphanedHelpers` (Integrations, testli) ebeveyni 1
+   olan, bu kullanıcıya ait, `/usr/bin/perl` ile çalışan ve ilk argümanı bu paketin `mediaremote-adapter.pl` ya da
+   `media-sessions.pl` yoluyla birebir aynı süreçlere SIGTERM gönderir. Başka kopyanın (başka yol) ve çalışan
+   uygulamanın (ebeveyni yaşıyor) yardımcısına dokunulmaz. ⚠️ App Translocation'la açılan kopyada (karantinalı
+   paket indirildiği yerden taşınmadan açılınca) yol her açılışta değişir; onun yetimleri eşleşmez.
+   ✓ 2026-10-17 (Debug): `pkill -TERM -x Browline` → günlükte "sinyal 15 alındı", iki yardımcı uygulamayla
+   kapandı. `kill -9` → iki yardımcı yetim kaldı, oturum yardımcısı 15 sn içinde kendisi çıktı, adaptör kaldı;
+   yeniden açılışta "Önceki çalışmadan kalan 1 Now Playing yardımcısı kapatıldı (pid …)". Başka yoldaki aynı
+   adlı betiği çalıştıran sahte yetim yerinde kaldı.
 
 ## Etkinlik API'si
 
@@ -583,8 +596,9 @@ ikinci açılışta kendisi sorar.
   `release.sh --beta` → `gh release create vX <dmg> <sha256> --prerelease` → `appcast.xml`'i commit'le ve it (DMG
   yayımlandıktan SONRA, yoksa denetleyen kullanıcı 404 alır).
 - ✓ Uçtan uca (2026-10-17): Release kopyası A (derleme 1) yerel appcast'ten (127.0.0.1, `SUFeedURL` kullanıcı
-  ayarıyla geçici) derleme 99'u indirdi, kapanınca Sparkle aynı yere kurdu, imza geçerli. ⚠️ Uygulama `kill` ile
-  kapanınca Now Playing yardımcıları (`perl`) yetim kalıyor; menüden çıkışta kapanıyorlar.
+  ayarıyla geçici) derleme 99'u indirdi, kapanınca Sparkle aynı yere kurdu, imza geçerli. Denemede `kill`'le
+  kapatılan kopyaların bıraktığı yetim `perl` yardımcıları artık oluşmuyor ya da açılışta kapanıyor (Now Playing
+  katmanları, madde 5).
 
 ## Eski macOS uyumluluğu
 
