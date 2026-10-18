@@ -69,7 +69,7 @@
 
 ## Install
 
-1. Download `Browline-0.9.0.dmg` from the [latest release](https://github.com/tallat1/browline/releases/latest) and drag Browline to Applications.
+1. Download `Browline-0.9.1.dmg` from the [latest release](https://github.com/tallat1/browline/releases/latest) and drag Browline to Applications.
 2. Open Browline. Because the beta is not notarized, macOS blocks the first launch:
    - **macOS 15 and later:** open System Settings › Privacy & Security, scroll down to "Browline was blocked…" and click **Open Anyway**.
    - **macOS 14:** Control-click Browline in Applications, choose **Open**, then **Open** again.
@@ -79,7 +79,7 @@ Permissions are requested only when you turn on a feature that needs them. Setti
 
 **Updates.** From 0.9.1 on, Browline updates itself with [Sparkle](https://sparkle-project.org): on the second launch it asks whether to check automatically, and every update is verified with Browline's signing key before it's installed. Settings › General has the switch and a Check Now button. 0.9.0 has to be updated by hand from the releases page.
 
-To verify the download, compare `shasum -a 256 Browline-0.9.0.dmg` with the checksum in the release notes.
+To verify the download, compare `shasum -a 256 Browline-0.9.1.dmg` with the checksum in the release notes.
 
 ## Using Browline
 

@@ -69,7 +69,7 @@
 
 ## Kurulum
 
-1. [Son sürümden](https://github.com/tallat1/browline/releases/latest) `Browline-0.9.0.dmg` dosyasını indirin ve Browline'ı Uygulamalar klasörüne sürükleyin.
+1. [Son sürümden](https://github.com/tallat1/browline/releases/latest) `Browline-0.9.1.dmg` dosyasını indirin ve Browline'ı Uygulamalar klasörüne sürükleyin.
 2. Browline'ı açın. Beta notarize edilmediği için macOS ilk açılışı engeller:
    - **macOS 15 ve sonrası:** Sistem Ayarları › Gizlilik ve Güvenlik'i açın, aşağıdaki "Browline engellendi…" satırında **Yine de Aç**'a tıklayın.
    - **macOS 14:** Uygulamalar'da Browline'a Control tuşuyla tıklayın, **Aç**'ı seçin, ardından yine **Aç**'a tıklayın.
@@ -79,7 +79,7 @@
 
 **Güncellemeler.** 0.9.1'den itibaren Browline kendini [Sparkle](https://sparkle-project.org) ile günceller: ikinci açılışta otomatik denetim isteyip istemediğinizi sorar ve her güncellemeyi kurmadan önce Browline'ın imza anahtarıyla doğrular. Anahtar ve "Şimdi denetle" düğmesi Ayarlar › Genel'de. 0.9.0 elle, sürümler sayfasından güncellenir.
 
-İndirmeyi doğrulamak için `shasum -a 256 Browline-0.9.0.dmg` çıktısını sürüm notlarındaki değerle karşılaştırın.
+İndirmeyi doğrulamak için `shasum -a 256 Browline-0.9.1.dmg` çıktısını sürüm notlarındaki değerle karşılaştırın.
 
 ## Kullanım
 

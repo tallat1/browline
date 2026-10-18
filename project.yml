@@ -54,8 +54,8 @@ targets:
       properties:
         CFBundleName: Browline
         CFBundleDisplayName: Browline
-        CFBundleShortVersionString: "0.9.0"
-        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.9.1"
+        CFBundleVersion: "2"
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         # Ajan uygulama: Dock simgesi ve uygulama menüsü yok.
         LSUIElement: true

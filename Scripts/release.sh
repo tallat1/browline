@@ -18,7 +18,7 @@
 #              --password <uygulamaya özel parola>   (parola betiğe ya da depoya yazılmaz)
 #       İsteğe bağlı: --identity "Developer ID Application: Ad (TAKIM)" (yoksa Anahtar Zinciri'nden ilki).
 #
-# Çıktı: dist/Browline-<sürüm>.dmg ve .sha256. Sparkle eklenince appcast adımı buraya gelir (README).
+# Çıktı: dist/Browline-<sürüm>.dmg ve .sha256; appcast.xml'e EdDSA imzalı sürüm girdisi (kuru çalıştırmada dist/dry-run).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

@@ -4,6 +4,8 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-10-18
+
 ### Added
 - Answer Claude Code's multiple-choice questions in the notch (single and multiple choice); permission prompts and choice questions have separate switches.
 - Automatic updates with Sparkle: asks before checking, verifies every update with Browline's EdDSA key, and has a switch and a Check Now button in Settings › General and the menu bar.
@@ -16,6 +18,12 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 ### Changed
 - Source code reorganized by feature with a documented architecture ([docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)); no behavior change.
 - The `notch` command-line tool and the activity API answer in English or Turkish, following the first language in your system's language list.
+- Accessibility permission is now granted step by step from Settings (the pane opens and Browline is shown in Finder to drag into the list); macOS 27 no longer adds the app to that list by itself.
+
+### Known issues
+- Not notarized: macOS asks you to confirm the first launch (see the README).
+- Tested on macOS 27 on Apple silicon only.
+- 0.9.0 has no updater: install 0.9.1 by hand once; later versions update automatically.
 
 ## [0.9.0] - 2026-10-16
 
@@ -40,4 +48,6 @@ First public beta.
 - Tested on macOS 27 on Apple silicon only.
 - No automatic updates yet; watch the GitHub releases.
 
+[Unreleased]: https://github.com/tallat1/browline/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/tallat1/browline/releases/tag/v0.9.1
 [0.9.0]: https://github.com/tallat1/browline/releases/tag/v0.9.0
