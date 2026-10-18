@@ -98,7 +98,9 @@ if [ "$IDENTITY" = - ]; then
   # uygulamaya; notch aracı ve Developer ID imzası buna ihtiyaç duymaz.
   ENT_FILE="$DERIVED/adhoc-entitlements.plist"
   codesign -d --entitlements - --xml "$APP" > "$ENT_FILE" 2>/dev/null
-  /usr/libexec/PlistBuddy -c "Add :com.apple.security.cs.disable-library-validation bool true" "$ENT_FILE"
+  # Kaynak değişmediyse Xcode yeniden imzalamaz ve anahtar önceki çalıştırmadan kalır: varsa yalnız değer konur.
+  /usr/libexec/PlistBuddy -c "Set :com.apple.security.cs.disable-library-validation true" "$ENT_FILE" 2>/dev/null ||
+    /usr/libexec/PlistBuddy -c "Add :com.apple.security.cs.disable-library-validation bool true" "$ENT_FILE"
   codesign --force --sign - --options runtime --entitlements "$ENT_FILE" "$APP"
   echo "  com.apple.security.cs.disable-library-validation ✓"
 fi
