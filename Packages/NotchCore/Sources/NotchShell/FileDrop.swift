@@ -59,6 +59,11 @@ public enum FileDrop {
         return queue
     }()
 
+    /// Sürükleme bu uygulamadan mı başladı (ör. raftan dışarı çekilen öğe)? AppKit `draggingSource`'u yalnız aynı
+    /// uygulamadan gelen sürüklemede doldurur.
+    @MainActor
+    static func isOwnDrag(_ info: NSDraggingInfo) -> Bool { info.draggingSource != nil }
+
     /// /var/folders altındaki geçici öğeler (ör. `TemporaryItems/NSIRD_screencaptureui_…`).
     static func isTemporary(_ url: URL) -> Bool {
         let path = url.resolvingSymlinksInPath().path
@@ -106,8 +111,10 @@ public enum FileDrop {
 }
 
 /// Panelin en üstünde, yalnız dosya sürüklenirken isabet alan bırakma katmanı: tıklamalar ve imleç
-/// her zaman alttaki içeriğe gider. Kendi raf öğemizi sürüklerken (kaynak bu uygulama, genel izleyici
-/// görmez) devreye girmez; öğe rafa ikinci kez eklenmez.
+/// her zaman alttaki içeriğe gider. Bu uygulamadan başlayan sürükleme (raftan dışarı çekilen öğe) reddedilir.
+/// ⚠️ Önce "genel izleyici kendi sürüklememizi görmez" varsayılmıştı; yanlış: imleç panelden çıkınca görüyor,
+/// katman açılıyor ve geri bırakılan öğe (bazen geçici kopyası, yeni adla) rafa yeniden ekleniyordu, sonsuz kez
+/// (2026-10-19). `draggingSource` yalnız aynı uygulamadan gelen sürüklemede dolu.
 final class FileDropView: NSView {
     weak var model: NotchSurfaceModel?
 
@@ -133,12 +140,12 @@ final class FileDropView: NSView {
 
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         model?.isDropTargeted = false
-        guard let model, model.isOpen, let onFileDrop = model.onFileDrop else { return false }
+        guard let model, model.isOpen, let onFileDrop = model.onFileDrop, !FileDrop.isOwnDrag(sender) else { return false }
         return onFileDrop(sender.draggingPasteboard)
     }
 
     private func update(_ sender: NSDraggingInfo) -> NSDragOperation {
-        guard let model, model.isOpen, model.onFileDrop != nil,
+        guard let model, model.isOpen, model.onFileDrop != nil, !FileDrop.isOwnDrag(sender),
               FileDrop.carriesFiles(sender.draggingPasteboard) else { return [] }
         model.isDropTargeted = true
         return .copy

@@ -4,6 +4,9 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Fixed
+- Dragging a file out of the shelf and back onto the notch no longer adds it again (it could be repeated endlessly).
+
 ## [0.9.1] - 2026-10-18
 
 ### Added

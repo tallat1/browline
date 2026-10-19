@@ -64,3 +64,36 @@ struct FileDropTests {
         #expect(isDirectory.boolValue)
     }
 }
+
+/// Raftan dışarı çekilip geri bırakılan öğe yeniden eklenmesin (2026-10-19: sonsuz kez çoğalıyordu).
+@MainActor
+struct OwnDragTests {
+    /// Yalnız `draggingSource` önemli; gerisi protokolün zorunlu üyeleri.
+    final class StubDrag: NSObject, NSDraggingInfo {
+        let source: Any?
+        init(source: Any?) { self.source = source }
+        var draggingSource: Any? { source }
+        var draggingDestinationWindow: NSWindow? { nil }
+        var draggingSourceOperationMask: NSDragOperation { .copy }
+        var draggingLocation: NSPoint { .zero }
+        var draggedImageLocation: NSPoint { .zero }
+        var draggedImage: NSImage? { nil }
+        var draggingPasteboard: NSPasteboard { NSPasteboard(name: NSPasteboard.Name("notch-own-drag-test")) }
+        var draggingSequenceNumber: Int { 0 }
+        var draggingFormation: NSDraggingFormation = .default
+        var animatesToDestination = false
+        var numberOfValidItemsForDrop = 1
+        var springLoadingHighlight: NSSpringLoadingHighlight { .none }
+        func slideDraggedImage(to screenPoint: NSPoint) {}
+        func enumerateDraggingItems(options enumOpts: NSDraggingItemEnumerationOptions = [], for view: NSView?,
+                                    classes classArray: [AnyClass], searchOptions: [NSPasteboard.ReadingOptionKey: Any] = [:],
+                                    using block: (NSDraggingItem, Int, UnsafeMutablePointer<ObjCBool>) -> Void) {}
+        func resetSpringLoading() {}
+    }
+
+    @Test func dragsFromThisAppAreOwn() {
+        #expect(FileDrop.isOwnDrag(StubDrag(source: NSView())))
+        // Finder ya da ekran görüntüsü küçük resmi: kaynak başka uygulamada, AppKit nil verir.
+        #expect(!FileDrop.isOwnDrag(StubDrag(source: nil)))
+    }
+}
