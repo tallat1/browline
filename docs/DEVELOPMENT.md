@@ -456,6 +456,26 @@ sistem dilinin UTF-8 yereli, `SSH_AUTH_SOCK`, `PATH`, `TMPDIR`; bash'in zsh uyar
 - Debug: `terminal:state` (ızgara, pencere, odak), `terminal:check` (içerik yazmadan tampon özeti),
   `terminal:feed-test` (yalnız ekrana bir deneme satırı yazar, kabuğa gitmez).
 
+## Claude Code bağlantısı
+
+Ayarlar › Şimdi › Claude Code › "Bağla…" (`ClaudeCodeHooks`, `ClaudeCodeConnectionRow`, 2026-10-20). Kancalar
+`~/.claude/settings.json`'a yazılır; betik uygulamanın içinden: `embed-adapter.sh` `Examples/claude-code/notch-hook.sh`'ı
+`Contents/Resources/notch-hook.sh` olarak koyar (imzadan önce, kaynak olarak mühürlenir). Komutlar
+`NOTCH_CLI='<paket>/Contents/Helpers/notch' /bin/bash '<paket>/Contents/Resources/notch-hook.sh'` ve izin için
+`'<paket>/Contents/Helpers/notch' claude-permission --timeout 110` (tek tırnakla kabuk kaçışı; çalıştırma biti
+gerekmesin diye `/bin/bash`). Olaylar örnek dosyayla aynı altı: UserPromptSubmit, PostToolUse (`*`), Notification, Stop,
+SessionEnd, PermissionRequest (`*`, 120 sn).
+- Browline girdisi = komutunda `notch-hook.sh` ya da `/Helpers/notch` geçen (eski elle kurulumlar dahil). Bağla önce
+  bunları temizler, sonra güncelleri olayların sonuna ekler; Kaldır yalnız bunları siler, boşalan grup/olay/`hooks` da gider.
+- Durum: `claudeNotFound` (`~/.claude` yok), `notConnected`, `connected` (altı girdi bu paketin komutlarıyla birebir),
+  `needsUpdate` (başka yol: uygulama taşınmış, elle kurulum ya da debug derlemesi).
+- Dosya `OrderedJSON` ile okunup yazılır: anahtar sırası ve sayıların yazılışı korunur, çıktı `JSON.stringify(…, null, 2)`
+  biçiminde; Claude Code dosyayı böyle yazdığı için değişmeyen dosya bayt bayt aynı çıkar (✓ gerçek dosyanın KOPYASINDA,
+  2026-10-20). Yazmadan önce `settings.json.browline-<tarih>.bak`, izin (600) korunur, yazılan dosya `JSONSerialization`
+  ile yeniden doğrulanır, bozuksa eskisi geri konur; okunamayan (bozuk) dosyaya hiç dokunulmaz.
+- Bağlanınca `activityAPIEnabled` açılır. Kancalar yeni Claude Code oturumlarında geçerli. `CLAUDE_CONFIG_DIR` ile başka
+  klasör kullanan kurulum görülmez.
+
 ## Claude limitleri
 
 ⛔ 0.9.0'da kaldırıldı: Claude Code'un Anahtar Zinciri'ndeki oturum anahtarıyla belgelenmemiş `oauth/usage` ucunu

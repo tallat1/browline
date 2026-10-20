@@ -34,6 +34,9 @@ struct NowSettingsPage: View {
                     }
                 }
             }
+            Section("Claude Code") {
+                ClaudeCodeConnectionRow(settings: settings)
+            }
             Section("Dış etkinlikler") {
                 Toggle("Betik ve AI ajanı etkinlikleri", isOn: $settings.activityAPIEnabled)
                     .settingsAnchor("activities")

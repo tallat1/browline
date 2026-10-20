@@ -31,6 +31,7 @@ enum SettingsSearch {
             .init(id: "micShortcut", page: .now, title: String(localized: "Sessize alma kısayolu"), keywords: ["kısayol", "shortcut", "klavye", "⌃⌥M"]),
             .init(id: "activities", page: .now, title: String(localized: "Betik ve AI ajanı etkinlikleri"), keywords: ["api", "betik", "script", "ajan", "agent", "etkinlik", "activity", "notch push"]),
             .init(id: "urlScheme", page: .now, title: String(localized: "browline:// bağlantıları"), keywords: ["url", "şema", "scheme", "raycast", "alfred", "kestirme", "shortcuts", "bağlantı", "link"]),
+            .init(id: "claudeCode", page: .now, title: String(localized: "Claude Code bağlantısı"), keywords: ["claude", "claude code", "kanca", "hook", "bağla", "connect", "settings.json"]),
             .init(id: "questions", page: .now, title: String(localized: "Claude Code izin istemlerini notch'ta yanıtla"), keywords: ["claude", "izin", "permission", "onay", "approve"]),
             .init(id: "choiceQuestions", page: .now, title: String(localized: "Claude'un seçenekli sorularını notch'ta yanıtla"), keywords: ["claude", "soru", "question", "seçenek", "choice", "askuserquestion"]),
             .init(id: "decisionCards", page: .now, title: String(localized: "Claude'un karar kutularını notch'ta göster"), keywords: ["claude", "karar", "decision", "masaüstü", "desktop", "bekliyor", "waiting"]),

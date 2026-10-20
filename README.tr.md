@@ -108,10 +108,10 @@ Kestirmeler'e üç yerleşik eylem de gelir: etkinlik göster, etkinliği bitir 
 
 ### Claude Code ve Codex
 
-[`Examples/`](Examples) klasöründe hazır kancalar var:
+**Claude Code'u tek tıkla bağlayın:** Ayarlar › Şimdi › Claude Code › **Bağla…**. Browline, `~/.claude/settings.json` dosyasının yedeğini alıp kendi kancalarını ekler; diğer ayarlarınıza ve kancalarınıza dokunmaz ve kancaların güncel olup olmadığını gösterir. Uygulamayı taşırsanız Güncelle düzeltir, Kaldır yalnız Browline'ın girdilerini siler. Yeni Claude Code oturumlarında geçerli olur. Elle kurmak isterseniz [`Examples/claude-code/settings-hooks.json`](Examples/claude-code/settings-hooks.json) içindeki `hooks` girdilerini birleştirin.
 
-- **Claude Code durumu:** [`Examples/claude-code/settings-hooks.json`](Examples/claude-code/settings-hooks.json) içindeki `hooks` girdilerini `~/.claude/settings.json` ile birleştirin ve betik yolunu yazın.
-- **İzin soruları:** aynı dosyadaki `PermissionRequest` girdisi çentiği araç, proje ve tam komutla açar; yalnız o istek için İzin ver ya da Reddet sunar.
+- **Claude Code durumu:** kapalı çentikte oturum başına "çalışıyor", "seni bekliyor" ve "bitti".
+- **İzin soruları:** `PermissionRequest` kancası çentiği araç, proje ve tam komutla açar; yalnız o istek için İzin ver ya da Reddet sunar.
   - Karar yalnız sizin tıklamanızla verilir.
   - Kalıcı kural hiç yazılmaz.
   - Yanıt vermezseniz Claude Code kendi sorusuyla devam eder. Claude'un kendisinde yanıtlarsanız araç çalışır çalışmaz notch'taki kopyası kalkar.

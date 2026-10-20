@@ -4,6 +4,9 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Added
+- Connect Claude Code in one click from Settings › Now › Claude Code: Browline backs up `~/.claude/settings.json`, adds its hooks without touching your other settings, shows whether they are current, and can update or remove only its own entries.
+
 ### Fixed
 - Dragging a file out of the shelf and back onto the notch no longer adds it again (it could be repeated endlessly).
 

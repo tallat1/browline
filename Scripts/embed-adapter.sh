@@ -18,6 +18,10 @@ if [ -x "$BUILT_PRODUCTS_DIR/notch" ]; then
   codesign --force "$TIMESTAMP" --options runtime --sign "$IDENTITY" "$APP/Contents/Helpers/notch"
 fi
 
+# Claude Code kanca betiği: Ayarlar › Şimdi › Claude Code "Bağla" bu kopyayı gösterir (ClaudeCodeHooks).
+mkdir -p "$APP/Contents/Resources"
+cp "$SRCROOT/Examples/claude-code/notch-hook.sh" "$APP/Contents/Resources/notch-hook.sh"
+
 # Çoklu medya oturumu yardımcısı (Helpers/MediaSessions); yoksa tek oturum gösterilir.
 SESSIONS_LIBRARY="$SRCROOT/build/sessions/MediaSessions.dylib"
 if [ -f "$SESSIONS_LIBRARY" ]; then

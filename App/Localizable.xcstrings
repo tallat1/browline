@@ -689,12 +689,82 @@
         }
       }
     },
+    "Bağla": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect"
+          }
+        }
+      }
+    },
+    "Bağla, ~/.claude/settings.json dosyasına Browline'ın kancalarını ekler; diğer ayarlarınıza dokunmaz.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect adds Browline's hooks to ~/.claude/settings.json and leaves your other settings alone."
+          }
+        }
+      }
+    },
+    "Bağlandı. Açık Claude Code oturumları yeniden başlatılınca kancaları görür.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected. Open Claude Code sessions pick up the hooks after a restart."
+          }
+        }
+      }
+    },
+    "Bağlantı kaldırıldı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnected."
+          }
+        }
+      }
+    },
     "Bağlanınca, ayrılınca ve pil %20 ile %10'un altına inince kısa gösterge; Sistem sayfasında pil kartı.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "A short indicator on connect, disconnect and when battery drops below 20% and 10%; a battery card on the System page."
+          }
+        }
+      }
+    },
+    "Bağla…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect…"
+          }
+        }
+      }
+    },
+    "Bağlı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected"
+          }
+        }
+      }
+    },
+    "Bağlı değil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
           }
         }
       }
@@ -979,6 +1049,16 @@
         }
       }
     },
+    "Browline, ~/.claude/settings.json dosyasına altı kanca ekler: istem, araç, bildirim, tur sonu, oturum sonu ve izin istemi. Önce dosyanın yedeği alınır; diğer ayarlarınız ve kancalarınız değişmez. Yeni Claude Code oturumlarında geçerli olur.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Browline adds six hooks to ~/.claude/settings.json: prompt, tool, notification, end of turn, end of session and permission request. The file is backed up first; your other settings and hooks stay as they are. New Claude Code sessions use them."
+          }
+        }
+      }
+    },
     "Browline: uyanık tut": {
       "localizations": {
         "en": {
@@ -1079,6 +1159,16 @@
         }
       }
     },
+    "Bulunamadı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not found"
+          }
+        }
+      }
+    },
     "Bunlar çalışma anında aranır; bulunamazsa ilgili özellik kapanır, uygulama çökmez.": {
       "localizations": {
         "en": {
@@ -1109,12 +1199,52 @@
         }
       }
     },
+    "Claude Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code"
+          }
+        }
+      }
+    },
     "Claude Code API anahtarıyla çalışıyor; limitler yalnız Pro ve Max aboneliklerinde var.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Claude Code is using an API key; plan limits exist only on Pro and Max subscriptions."
+          }
+        }
+      }
+    },
+    "Claude Code bağlantısı": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code connection"
+          }
+        }
+      }
+    },
+    "Claude Code bağlantısı kaldırılsın mı?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect Claude Code?"
+          }
+        }
+      }
+    },
+    "Claude Code bu Mac'te hiç çalıştırılmamış (~/.claude yok). Önce bir kez çalıştırın.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code hasn't run on this Mac yet (no ~/.claude). Run it once first."
           }
         }
       }
@@ -1129,12 +1259,32 @@
         }
       }
     },
+    "Claude Code bulunamadı (~/.claude yok).": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claude Code not found (no ~/.claude)."
+          }
+        }
+      }
+    },
     "Claude Code izin istemlerini notch'ta yanıtla": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Answer Claude Code permission prompts in the notch"
+          }
+        }
+      }
+    },
+    "Claude Code'a bağlansın mı?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect to Claude Code?"
           }
         }
       }
@@ -1365,6 +1515,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "File shelf, AirDrop, converting and clipboard history"
+          }
+        }
+      }
+    },
+    "Dosya yazılamadı; eski hâli geri kondu.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't write the file; it was restored."
           }
         }
       }
@@ -1889,6 +2049,26 @@
         }
       }
     },
+    "Güncel değil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outdated"
+          }
+        }
+      }
+    },
+    "Güncelle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update"
+          }
+        }
+      }
+    },
     "Güncellemeler": {
       "localizations": {
         "en": {
@@ -1925,6 +2105,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "If not updated, it is removed automatically after this time."
+          }
+        }
+      }
+    },
+    "Güncelle…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update…"
           }
         }
       }
@@ -2089,6 +2279,26 @@
         }
       }
     },
+    "Kaldır": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        }
+      }
+    },
+    "Kaldır…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect…"
+          }
+        }
+      }
+    },
     "Kamera": {
       "localizations": {
         "en": {
@@ -2145,6 +2355,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Allow Camera Access"
+          }
+        }
+      }
+    },
+    "Kanca betiği uygulamanın içinde yok; Browline'ı yeniden kurun.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hook script is missing from the app; reinstall Browline."
+          }
+        }
+      }
+    },
+    "Kancalar başka bir Browline'ı gösteriyor (uygulama taşınmış ya da elle kurulmuş). Güncelle, bu uygulamaya çevirir.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The hooks point to another copy of Browline (the app moved or was set up by hand). Update points them to this one."
           }
         }
       }
@@ -4021,6 +4251,16 @@
         }
       }
     },
+    "Vazgeç": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
     "Verildi": {
       "localizations": {
         "en": {
@@ -4087,6 +4327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Calendar access is needed to show upcoming meetings."
+          }
+        }
+      }
+    },
+    "Yalnız Browline'ın kancaları kaldırılır; önce ~/.claude/settings.json dosyasının yedeği alınır.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only Browline's hooks are removed; ~/.claude/settings.json is backed up first."
           }
         }
       }
@@ -4191,6 +4441,16 @@
         }
       }
     },
+    "Yedek: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backup: %@"
+          }
+        }
+      }
+    },
     "Yeni sürümler GitHub'dan gelir ve imzaları doğrulanır. Denetimde yalnız sürüm listesi indirilir; kişisel bilgi gönderilmez.": {
       "localizations": {
         "en": {
@@ -4207,6 +4467,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Restart"
+          }
+        }
+      }
+    },
+    "Yeniden dene": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
           }
         }
       }
@@ -4499,6 +4769,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "no data"
+          }
+        }
+      }
+    },
+    "~/.claude/settings.json okunamadı (geçersiz JSON); dosyaya dokunulmadı.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't read ~/.claude/settings.json (invalid JSON); the file was left untouched."
           }
         }
       }
@@ -4819,6 +5099,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Each permission also appears on its feature's page. The status refreshes when you come back from System Settings."
+          }
+        }
+      }
+    },
+    "İzin soruları, karar kartları ve oturum durumu notch'ta. Yeni Claude Code oturumlarında geçerli.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permission prompts, decision cards and session status in the notch. Applies to new Claude Code sessions."
           }
         }
       }

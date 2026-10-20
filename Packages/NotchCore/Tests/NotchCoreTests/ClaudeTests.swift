@@ -230,3 +230,112 @@ struct ClaudeDecisionPresserTests {
         #expect(ClaudeDecisionPresser.normalize("`602efb2` **commit**'ini") == "602efb2 commit'ini")
     }
 }
+
+struct ClaudeCodeHooksTests {
+    let paths = ClaudeCodeHooks.Paths(cli: URL(fileURLWithPath: "/Applications/Browline.app/Contents/Helpers/notch"),
+                                      script: URL(fileURLWithPath: "/Applications/Browline.app/Contents/Resources/notch-hook.sh"))
+
+    /// Claude Code'un yazdığı biçimde (JSON.stringify, 2 boşluk): başka kanca, Türkçe metin, sayı ve elle kurulmuş
+    /// eski Browline kancası (geliştirme yolları).
+    let sample = """
+    {
+      "cleanupPeriodDays": 60,
+      "env": {
+        "BASH_DEFAULT_TIMEOUT_MS": "300000"
+      },
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Bash",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "~/bin/guard.sh \\"çalış\\"",
+                "timeout": 1.5
+              }
+            ]
+          }
+        ],
+        "Stop": [
+          {
+            "hooks": [
+              {
+                "type": "command",
+                "command": "NOTCH_CLI=\\"/Users/x/notch-mvp/build/Debug/Browline.app/Contents/Helpers/notch\\" \\"/Users/x/notch-mvp/Examples/claude-code/notch-hook.sh\\"",
+                "timeout": 5
+              },
+              {
+                "type": "command",
+                "command": "say done"
+              }
+            ]
+          }
+        ]
+      },
+      "statusLine": {
+        "type": "command",
+        "command": "~/bin/line.sh"
+      },
+      "empty": {},
+      "list": []
+    }
+
+    """
+
+    @Test func orderedJSONWritesClaudeFormatBack() throws {
+        let parsed = try OrderedJSON.parse(Data(sample.utf8))
+        #expect(parsed.serialized() + "\n" == sample)
+        #expect(throws: OrderedJSON.ParseError.self) { try OrderedJSON.parse(Data("{\"a\": 1,}".utf8)) }
+    }
+
+    @Test func connectReplacesOldBrowlineHooksAndKeepsTheRest() throws {
+        let root = try OrderedJSON.parse(Data(sample.utf8))
+        #expect(ClaudeCodeHooks.status(of: root, paths: paths) == .needsUpdate)
+        let connected = ClaudeCodeHooks.connecting(root, paths: paths)
+        #expect(ClaudeCodeHooks.status(of: connected, paths: paths) == .connected)
+        #expect(ClaudeCodeHooks.ownedEntries(in: connected).count == 6)
+        // Başka kancalar, `say done` dahil, ve diğer ayarlar aynen kalır.
+        #expect(ClaudeCodeHooks.disconnected(connected) == ClaudeCodeHooks.disconnected(root))
+        #expect(connected["hooks"]?["Stop"]?.arrayValue?.first?["hooks"]?.arrayValue?.count == 1)
+        // Bağlıyken yeniden bağlamak hiçbir şeyi değiştirmez.
+        #expect(ClaudeCodeHooks.connecting(connected, paths: paths) == connected)
+        // Kaldırınca boşalan olaylar silinir, başkalarınınki kalır.
+        let removed = ClaudeCodeHooks.disconnected(connected)
+        #expect(ClaudeCodeHooks.status(of: removed, paths: paths) == .notConnected)
+        #expect(removed["hooks"]?["PreToolUse"] != nil)
+        #expect(removed["hooks"]?["UserPromptSubmit"] == nil)
+        #expect(ClaudeCodeHooks.disconnected(try OrderedJSON.parse(Data(#"{"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "x/Helpers/notch claude-stop"}]}]}}"#.utf8)))["hooks"] == nil)
+    }
+
+    @Test func commandsQuotePathsForTheShell() {
+        let odd = ClaudeCodeHooks.Paths(cli: URL(fileURLWithPath: "/Apps/Bob's Tools/Browline.app/Contents/Helpers/notch"),
+                                        script: URL(fileURLWithPath: "/Apps/Bob's Tools/Browline.app/Contents/Resources/notch-hook.sh"))
+        let command = ClaudeCodeHooks.entries(for: odd)[0].command
+        #expect(command == #"NOTCH_CLI='/Apps/Bob'\''s Tools/Browline.app/Contents/Helpers/notch' /bin/bash '/Apps/Bob'\''s Tools/Browline.app/Contents/Resources/notch-hook.sh'"#)
+    }
+
+    @Test func fileIsBackedUpAndBrokenFilesAreLeftAlone() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("claude-hooks-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: home) }
+        let settings = home.appendingPathComponent(".claude/settings.json")
+        #expect(ClaudeCodeHooks.status(paths: paths, settingsURL: settings) == .claudeNotFound)
+        #expect(throws: ClaudeCodeHooks.Failure.claudeNotFound) { try ClaudeCodeHooks.connect(paths: paths, settingsURL: settings) }
+
+        try FileManager.default.createDirectory(at: settings.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // Dosya yoksa yenisi açılır, yedek yok.
+        #expect(try ClaudeCodeHooks.connect(paths: paths, settingsURL: settings) == nil)
+        #expect(ClaudeCodeHooks.status(paths: paths, settingsURL: settings) == .connected)
+
+        try Data(sample.utf8).write(to: settings)
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: settings.path)
+        let backup = try #require(try ClaudeCodeHooks.connect(paths: paths, settingsURL: settings,
+                                                              now: Date(timeIntervalSince1970: 1_760_900_000)))
+        #expect(try Data(contentsOf: backup) == Data(sample.utf8))
+        #expect((try FileManager.default.attributesOfItem(atPath: settings.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600)
+
+        let broken = Data("{ \"hooks\": ".utf8)
+        try broken.write(to: settings)
+        #expect(throws: ClaudeCodeHooks.Failure.unreadable) { try ClaudeCodeHooks.connect(paths: paths, settingsURL: settings) }
+        #expect(try Data(contentsOf: settings) == broken)
+    }
+}

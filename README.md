@@ -108,10 +108,10 @@ Shortcuts also gets three native actions: show an activity, end an activity and 
 
 ### Claude Code and Codex
 
-[`Examples/`](Examples) contains ready-made hooks:
+**Connect Claude Code in one click:** Settings › Now › Claude Code › **Connect…**. Browline adds its hooks to `~/.claude/settings.json` after backing the file up, leaves your other settings and hooks untouched, and shows whether the hooks are current; Update fixes them if you move the app, and Disconnect removes only Browline's entries. New Claude Code sessions use them. To set them up by hand instead, merge the `hooks` from [`Examples/claude-code/settings-hooks.json`](Examples/claude-code/settings-hooks.json).
 
-- **Claude Code status:** merge the `hooks` from [`Examples/claude-code/settings-hooks.json`](Examples/claude-code/settings-hooks.json) into `~/.claude/settings.json` and set the script path.
-- **Permission prompts:** the `PermissionRequest` entry in the same file opens the notch with the tool, project and full command, and offers Allow or Deny for that single request.
+- **Claude Code status:** "working", "waiting for you" and "done" per session in the closed notch.
+- **Permission prompts:** the `PermissionRequest` hook opens the notch with the tool, project and full command, and offers Allow or Deny for that single request.
   - A decision only ever comes from your click.
   - No permanent rule is ever written.
   - If you don't answer, Claude Code falls back to its own prompt. If you answer in Claude itself, the notch copy disappears as soon as the tool runs.
