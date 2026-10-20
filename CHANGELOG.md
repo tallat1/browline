@@ -4,6 +4,8 @@ All notable changes to Browline are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-10-20
+
 ### Added
 - Connect Claude Code in one click from Settings › Now › Claude Code: Browline backs up `~/.claude/settings.json`, adds its hooks without touching your other settings, shows whether they are current, and can update or remove only its own entries.
 
@@ -54,6 +56,7 @@ First public beta.
 - Tested on macOS 27 on Apple silicon only.
 - No automatic updates yet; watch the GitHub releases.
 
-[Unreleased]: https://github.com/tallat1/browline/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/tallat1/browline/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/tallat1/browline/releases/tag/v0.9.2
 [0.9.1]: https://github.com/tallat1/browline/releases/tag/v0.9.1
 [0.9.0]: https://github.com/tallat1/browline/releases/tag/v0.9.0
