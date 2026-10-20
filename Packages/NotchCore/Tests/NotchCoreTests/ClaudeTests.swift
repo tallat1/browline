@@ -331,6 +331,8 @@ struct ClaudeCodeHooksTests {
         let backup = try #require(try ClaudeCodeHooks.connect(paths: paths, settingsURL: settings,
                                                               now: Date(timeIntervalSince1970: 1_760_900_000)))
         #expect(try Data(contentsOf: backup) == Data(sample.utf8))
+        // Yedek asıl dosyanın iznini alır (2026-10-20: 644 yazılıyordu).
+        #expect((try FileManager.default.attributesOfItem(atPath: backup.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600)
         #expect((try FileManager.default.attributesOfItem(atPath: settings.path)[.posixPermissions] as? NSNumber)?.intValue == 0o600)
 
         let broken = Data("{ \"hooks\": ".utf8)

@@ -168,6 +168,7 @@ public enum ClaudeCodeHooks {
         let data = Data(text.utf8)
         if data == original { return nil }
 
+        let permissions = (try? fileManager.attributesOfItem(atPath: settingsURL.path))?[.posixPermissions]
         var backup: URL?
         if let original {
             let formatter = DateFormatter()
@@ -175,9 +176,10 @@ public enum ClaudeCodeHooks {
             let url = settingsURL.deletingLastPathComponent()
                 .appendingPathComponent("settings.json.browline-\(formatter.string(from: now)).bak")
             guard (try? original.write(to: url)) != nil else { throw .writeFailed }
+            // Yedek de asıl dosya kadar gizli: ortam değişkenlerinde anahtar olabilir (asıl 600, varsayılan 644 olurdu).
+            try? fileManager.setAttributes([.posixPermissions: permissions ?? NSNumber(value: 0o600)], ofItemAtPath: url.path)
             backup = url
         }
-        let permissions = (try? fileManager.attributesOfItem(atPath: settingsURL.path))?[.posixPermissions]
         do {
             try data.write(to: settingsURL, options: .atomic)
             if let permissions { try? fileManager.setAttributes([.posixPermissions: permissions], ofItemAtPath: settingsURL.path) }
